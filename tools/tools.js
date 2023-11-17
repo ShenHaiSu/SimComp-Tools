@@ -260,7 +260,26 @@ class tools {
     let dbComponentSwitchList = dbData.componentSwitchList;
     delete dbData.id;
     delete dbData.componentSwitchList;
-    feature_config = { ...feature_config, ...dbData };
+    // 字面量赋值
+    for (const key in feature_config) {
+      if (!Object.hasOwnProperty.call(feature_config, key) || dbData[key] == undefined) continue; // 跳过
+      if (typeof feature_config[key] !== "object") {
+        // 字面量赋值
+        feature_config[key] = dbData[key];
+      } else if (Array.isArray(feature_config[key])) {
+        // 数组赋值
+        feature_config[key] = feature_config[key].map((value, index) => dbData[key][index] == undefined ? value : dbData[key][index]);
+      } else {
+        // 对象赋值
+        for (const key2 in feature_config[key]) {
+          if (!Object.hasOwnProperty.call(feature_config[key], key)) continue;
+          if (dbData[key] == undefined || dbData[key][key2] == undefined) continue;
+          feature_config[key][key2].enable = Boolean(dbData[key][key2]);
+        }
+      }
+    }
+    // feature_config = { ...feature_config, ...dbData };
+    // // 功能开关赋值
     for (const key in dbComponentSwitchList) {
       if (!Object.hasOwnProperty.call(dbComponentSwitchList, key) || !componentList[key]) continue;
       componentList[key].enable = Boolean(dbComponentSwitchList[key]);

@@ -14,8 +14,6 @@ async function scriptMainInit() {
   // 格式化组件信息，形成函数列表
   for (const key in componentList) {
     let component = componentList[key];
-    console.log(component);
-    console.log(component.constructor.name);
     runtimeData[key] = component.componentData;
     indexDBData[key] = component.indexDBData;
     feature_config.componentSwitchList[key] = component.enable;

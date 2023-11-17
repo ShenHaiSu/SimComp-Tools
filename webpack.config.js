@@ -2,8 +2,8 @@ const path = require('path');
 const moment = require("moment");
 const TerserPlugin = require('terser-webpack-plugin');
 
-const timeStamp = moment().format('YYYYMMDD_HHmmss');
-const fileName = `bundle_${timeStamp}.js`;
+const timeStamp = moment().format('MMDD-HHmmss');
+const fileName = `build-${timeStamp}.user.js`;
 
 module.exports = {
   mode: "production",
@@ -30,5 +30,4 @@ module.exports = {
       },
     ],
   },
-
 };

@@ -212,8 +212,8 @@ class basisCPT extends BaseComponent {
     for (let i = 0; i < trList.length; i++) {
       let element = trList[i];
       let component = componentList[element.id];
-      let frontUI = component.frontUI == undefined ? this.sideBarSub_noFront : () => this.sideBarSub_showFront(component);
-      let settingUI = component.settingUI == undefined ? this.sideBarSub_noSetting : () => this.sideBarSub_showSetting(component);
+      let frontUI = component.frontUI == undefined ? () => this.sideBarSub_noFront() : () => this.sideBarSub_showFront(component);
+      let settingUI = component.settingUI == undefined ? () => this.sideBarSub_noSetting() : () => this.sideBarSub_showSetting(component);
       element.querySelector("button.CPTOptionLeft").addEventListener('click', frontUI);
       element.querySelector("button.CPTOptionRight").addEventListener('click', settingUI);
     }
@@ -254,6 +254,7 @@ class basisCPT extends BaseComponent {
   // 基础组件设置界面
   uisetting() {
     // 组件开关和基础插件的所有设置
+    console.log(feature_config);
     let newNode = document.createElement("div");
     newNode.id = "script_setting_basisCPT";
     newNode.className = "col-sm-12 setting-container";
@@ -283,7 +284,7 @@ class basisCPT extends BaseComponent {
       location.reload();
     });
     newNode.querySelector("button.script_opt_submit").addEventListener('click', event => {
-      this.uisettingSub.call(this);
+      this.uisettingSub();
     });
     return newNode;
   }
