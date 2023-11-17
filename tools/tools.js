@@ -1,0 +1,424 @@
+let componentList = {}; // 子组件列表
+let runtimeData = {};
+let indexDBData = {};
+let feature_config = {
+  debug: false, // debug模式
+  version: 2, // 配置的版本，当前配置
+  net_gap_ms: 10000, // 网络请求最小间隔 默认10s 10000ms
+  notificationMode: [1, 0], // 通知模式，0 原生Notification对象 1 网页内信息 -1 是无
+  fontColor: "#ffffff", // 插件通用文本颜色 默认#ffffff  ##FONTCOLOR##
+  zoomRate: "100%", // 主界面缩放比例
+  componentSwitchList: {}, // 组件开关列表
+};
+
+// 工具类
+class tools {
+  static scriptLoadAcc = false; // 插件加载完毕标记
+  static browserKind = ""; // 浏览器类型
+  static netFetchPool = []; // 网络请求缓存池
+  static eventCount = 0; // 事件触发计次
+  static lastURL = ""; // 最近记录的URL
+  static clientHorV = 0; // 窗口横纵 0 横 1 纵
+  static dbOpenFlag = false; // 数据库的开启标志
+  static dbObj = undefined; // 数据库操作对象
+  static dbStoreName = "main"; // 数据库StoreName
+  static uuid = undefined; // 用户uuid
+  static publicCSS = ""; // 所有组件使用的css
+  static msgBodyNode = undefined; // 网页内消息使用的元素
+  static lastMutation = undefined; // 最近一次元素变动记录
+
+  static baseURL = {
+    // 用户基础信息 GET
+    userBase: "https://www.simcompanies.com/api/v2/companies/me/",
+    // 建筑信息 GET
+    building: "https://www.simcompanies.com/api/v2/companies/me/buildings/",
+    // 仓库数据 GET
+    warehouse: "https://www.simcompanies.com/api/v2/resources/",
+    // 交易所 /realm/resid
+    market: "https://www.simcompanies.com/api/v3/market/all"
+  }
+  static log() {
+    if (!feature_config.debug) return;
+    console.log.call(this, ...arguments);
+  }
+  static errorLog() {
+    if (!feature_config.debug) return;
+    console.error.call(this, ...arguments);
+  }
+  static getParentByIndex(node, index) {
+    return index ? this.getParentByIndex(node.parentElement, --index) : node;
+  }
+  static formatFeatureConfigComponentList() {
+    Object.values(componentList).forEach(item => feature_config.componentSwitchList[item.constructor.name] = item.enable);
+  }
+  static CSSMount(mode = "add", cssText = "") {
+    if (mode == "add") {
+      this.publicCSS += cssText.replaceAll("}", "}\n");
+    } else if (mode == "mount") {
+      this.CSSMount("clearRepeat");
+      // ##FONTCOLOR##
+      tools.log(this.publicCSS);
+      this.publicCSS = this.publicCSS.replaceAll("##FONTCOLOR##", feature_config.fontColor + ";");
+      let styleElement = document.createElement("style");
+      styleElement.setAttribute("type", "text/css");
+      styleElement.textContent = this.publicCSS;
+      document.head.appendChild(styleElement);
+    } else if (mode == "clearRepeat") {
+      let CSSList = this.publicCSS.split("\n");
+      let newCSSTextList = [];
+      for (let i = 0; i < CSSList.length; i++) {
+        if (newCSSTextList.findIndex(j => CSSList[i] == j) != -1) continue;
+        newCSSTextList.push(CSSList[i]);
+      }
+      this.publicCSS = newCSSTextList.join("\n");
+    }
+  }
+  static checkWindowHorV() {
+    // 0 横屏 1 竖屏  
+    this.log(`height:`, window.innerHeight);
+    this.log(`width:`, window.innerWidth);
+    this.clientHorV = window.innerHeight > window.innerWidth ? 1 : 0;
+  }
+  static checkBrowser() {
+    let userAgent = navigator.userAgent;
+    // 判断是否为 Chrome 浏览器
+    if (userAgent.includes('Chrome')) return this.browserKind = "Chrome";
+    // 判断是否为 Firefox 浏览器
+    if (userAgent.includes('Firefox')) return this.browserKind = "Firefox";
+    // 判断是否为 Safari 浏览器
+    if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return this.browserKind = "Safari";
+    // 判断是否为 Edge 浏览器
+    if (userAgent.includes('Edge')) return this.browserKind = "Edge";
+    // 判断是否为 IE 浏览器
+    if (userAgent.includes('Trident') || userAgent.includes('MSIE')) return this.browserKind = "IE";
+    return this.browserKind = "Unknown";
+  }
+  static mpFormat(mpData = []) {
+    let result = [Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity];
+    for (let i = 0; i < mpData.length; i++) {
+      if (result[mpData[i].quality] != Infinity) continue;
+      result[mpData[i].quality] = mpData[i].price;
+    }
+    for (let i = 0; i < result.length; i++) {
+      result[i] = Math.min(result[i], ...result.slice(i + 1));
+    }
+    result = result.map(item => item == Infinity ? 0 : item);
+    return result;
+  }
+  static zoomRateApply() {
+    if (this.browserKind != "Firefox") return document.body.style.zoom = feature_config.zoomRate;
+    // document.body.style.setProperty("-moz-transform", `scale(${feature_config.zoomRate})`);
+  }
+  static hexArgbCheck(input) {
+    if (input == "" || input == undefined) return false;
+    return /^#[0-9a-fA-F]{6}$/.test(input) || /^rgba?\((\s*\d+\s*,){2}\s*\d+(\.\d+)?(\s*,\s*\d+(\.\d+)?)?\s*\)$/.test(input);
+  }
+  static setInput(inputNode, value) {
+    let lastValue = inputNode.value;
+    inputNode.value = value;
+    let event = new Event("input", { bubbles: true });
+    event.simulated = true; // hack React15
+    if (inputNode._valueTracker) inputNode._valueTracker.setValue(lastValue); // hack React16 内部定义了descriptor拦截value，此处重置状态
+    inputNode.dispatchEvent(event);
+  }
+  static itemName2Index(name) {
+    for (const key in indexDBData.basisCPT.langData) {
+      if (!Object.hasOwnProperty.call(indexDBData.basisCPT.langData, key)) continue;
+      if (!/^be-re-/.test(key)) continue;
+      if (indexDBData.basisCPT.langData[key] != name) continue;
+      let result = Math.floor(key.replace("be-re-", ""));
+      return result;
+    }
+  }
+  static itemIndex2Name(index) {
+    return indexDBData.basisCPT.langData["be-re-" + index];
+  }
+  static async getMarketPrice(resid, quality, realm) {
+    let netData = await tools.getNetData(`${tools.baseURL.market}/${realm}/${resid}/`);
+    let resultList;
+    if (!netData) {
+      if (!indexDBData.basisCPT.resourcePool[realm][resid]) return 0;
+      resultList = indexDBData.basisCPT.resourcePool[realm][resid];
+    } else {
+      resultList = tools.mpFormat(netData);
+      indexDBData.basisCPT.resourcePool[realm][resid] = resultList;
+    }
+    if (resultList[quality] == 0) {
+      for (let i = quality; i <= 12; i++) {
+        if (resultList[i] == 0) continue;
+        return resultList[i];
+      }
+    }
+    return resultList[quality];
+  }
+  static async getNetData(target, method = "GET", body = undefined) {
+    let fetch_name = method + target;
+    tools.log(fetch_name);
+    let time_stamp = new Date().getTime();
+    let gap_index = this.netFetchPool.findIndex((item) => item.url == fetch_name);
+    if (gap_index == -1) {
+      this.netFetchPool.push({ url: fetch_name, time: time_stamp });
+    } else if (time_stamp - this.netFetchPool[gap_index].time >= feature_config.net_gap_ms) {
+      this.netFetchPool[gap_index].time = time_stamp;
+    } else {
+      return false;
+    }
+    return await fetch(target, { method, body }).then(async resp => await resp.json());
+  }
+  static async generateUUID() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0, v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+  static convert12To24Hr(timeString) {
+    try {
+      let [time, period] = timeString.split(" ");
+      let [hours, minutes] = time.split(":");
+      hours = (parseInt(hours, 10) % 12) + (period.toLowerCase() === "pm" ? 12 : 0);
+      return `${hours.toString().padStart(2, "0")}:${minutes}`;
+    } catch {
+      return false;
+    }
+  }
+  static async indexDB_openDB() {
+    return new Promise((resolve, reject) => {
+      let request = window.indexedDB.open("SimCompsScriptDB1", 1);
+      request.onupgradeneeded = (event) => {
+        indexedDB.dbObj = event.target.result;
+        if (!indexedDB.dbObj.objectStoreNames.contains(this.dbStoreName)) {
+          indexedDB.storeObj = indexedDB.dbObj.createObjectStore(this.dbStoreName, { keyPath: "id" });
+        }
+      }
+      request.onerror = () => reject("数据库的打开失败");
+      request.onsuccess = (event) => {
+        this.dbObj = event.target.result;
+        this.dbOpenFlag = true;
+        resolve("数据库连接完毕");
+      }
+    })
+  }
+  static async indexDB_addData(data, id) {
+    return new Promise((resolve, reject) => {
+      if (!this.dbOpenFlag) return reject("数据库未打开");
+      if (!data.id && !id) return reject("缺少主键");
+      if (id) data = { id, ...data };
+      let request = this.dbObj
+        .transaction(this.dbStoreName, "readwrite")
+        .objectStore(this.dbStoreName)
+        .add(data);
+      request.onsuccess = () => resolve("数据添加成功");
+      request.onerror = () => reject("数据添加失败");
+    })
+  }
+  static async indexDB_deleteData(id) {
+    return new Promise((resolve, reject) => {
+      if (!this.dbOpenFlag) reject("数据库未打开");
+      if (!id) reject("缺少id主键");
+      let request = this.dbObj
+        .transaction(this.dbStoreName, "readwrite")
+        .objectStore(this.dbStoreName)
+        .delete(id);
+      request.onsuccess = () => resolve("数据删除成功");
+      request.onerror = () => reject("数据删除失败");
+    });
+  }
+  static async indexDB_updateData(data, id) {
+    return new Promise((resolve, reject) => {
+      if (!this.dbOpenFlag) return reject("数据库未打开");
+      if (!data.id && !id) return reject("缺少主键");
+      if (id) data = { id, ...data };
+      let request = this.dbObj
+        .transaction(this.dbStoreName, "readwrite")
+        .objectStore(this.dbStoreName)
+        .put(data);
+      request.onsuccess = () => resolve("数据添加成功");
+      request.onerror = () => reject("数据添加失败");
+    })
+  }
+  static async indexDB_getData(id) {
+    return new Promise((resolve, reject) => {
+      if (!this.dbOpenFlag) reject("数据库未打开");
+      if (!id) reject("缺少id主键");
+      let request = this.dbObj
+        .transaction(this.dbStoreName, "readonly")
+        .objectStore(this.dbStoreName)
+        .get(id);
+      request.onsuccess = () => resolve(Boolean(request.result) ? request.result : null);
+      request.onerror = () => reject("数据查询失败");
+    });
+  }
+  static async indexDB_updateUUID() {
+    let dbData = await this.indexDB_getData("uuid");
+    if (dbData) return this.uuid = dbData.uuid;
+    this.uuid = await this.generateUUID();
+    await this.indexDB_updateData({ id: "uuid", uuid: this.uuid });
+  }
+  static async indexDB_loadFeatureConf() {
+    let dbData = await this.indexDB_getData("feature_conf");
+    if (!dbData) return this.indexDB_addData(feature_config, "feature_conf");
+    let dbComponentSwitchList = dbData.componentSwitchList;
+    delete dbData.id;
+    delete dbData.componentSwitchList;
+    feature_config = { ...feature_config, ...dbData };
+    for (const key in dbComponentSwitchList) {
+      if (!Object.hasOwnProperty.call(dbComponentSwitchList, key) || !componentList[key]) continue;
+      componentList[key].enable = Boolean(dbComponentSwitchList[key]);
+    }
+    tools.log(feature_config);
+    tools.indexDB_updateFeatureConf();
+  }
+  static async indexDB_loadIndexDBData() {
+    let dbData = await this.indexDB_getData("indexDBData");
+    if (!dbData) return this.indexDB_addData(indexDBData, "indexDBData");
+    delete dbData.id;
+    for (const key in dbData) {
+      if (!Object.hasOwnProperty.call(dbData, key) || !componentList[key]) continue;
+      for (const key2 in dbData[key]) {
+        if (!Object.hasOwnProperty.call(dbData[key], key2)) continue;
+        componentList[key].indexDBData[key2] = dbData[key][key2];
+      }
+    }
+  }
+  static async indexDB_updateFeatureConf() {
+    this.formatFeatureConfigComponentList();
+    return await tools.indexDB_updateData(feature_config, "feature_conf");
+  }
+  static async indexDB_updateIndexDBData() {
+    return await tools.indexDB_updateData(indexDBData, "indexDBData");
+  }
+  static async indexDB_updateLoadCount() {
+    let dbData = await this.indexDB_getData("loadCount");
+    if (!dbData) return this.indexDB_addData({ id: "loadCount", count: 1 });
+    this.indexDB_updateData({ id: "loadCount", count: ++dbData.count });
+  }
+  static async indexDB_deleteAllData() {
+    await this.indexDB_deleteData("feature_conf");
+    await this.indexDB_deleteData("indexDBData");
+    await this.indexDB_deleteData("uuid");
+    await this.indexDB_deleteData("loadCount");
+  }
+  static async msg_check(payload, update = false) {
+    // 原生对象检测
+    if (feature_config.notificationMode.includes(0)) {
+      if (!window.Notification || Notification.permission == "denied" || (!!payload && payload === "denied")) {
+        if (update) window.alert(`浏览器通知接口获取失败，可能是以下原因：\n  1.浏览器不支持\n  2.权限未同意`);
+      } else if (Notification.permission == "granted" || payload == "granted") {
+        tools.log("Notification对象权限已授权");
+      } else if (Notification.permission == "default") {
+        return await tools.msg_check(await Notification.requestPermission(), true);
+      }
+    }
+    // 网页内对象检测
+    if (feature_config.notificationMode.includes(1) && this.msgBodyNode == undefined) {
+      tools.log("网页内消息插件未检测到容器元素,无法正常执行.");
+    }
+  }
+  static msg_send(title, body = "", channel = undefined) {
+    // 通知模式，0 原生Notification对象 1 网页内信息 -1 是无
+    let actimeChannel = [];
+    if (channel == undefined) {
+      actimeChannel = feature_config.notificationMode;
+    } else if (feature_config.notificationMode.includes(channel)) {
+      actimeChannel.push(channel);
+    }
+
+    // 判断是否有通道0
+    if (actimeChannel.includes(0)) new Notification(title, { body });
+    // 判断是否有通道1
+    if (actimeChannel.includes(1)) {
+      let newNode = document.createElement("tr");
+      let time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+      newNode.innerHTML = `<td>${time}</td><td>${title}\n${body}</td>`;
+      this.msgBodyNode.appendChild(newNode);
+    }
+  }
+  static msg_clear() {
+
+  }
+  static eventBus(event) {
+    if (!this.scriptLoadAcc) return;
+    if (event) this.eventCount++;
+    for (const key in componentList) {
+      if (!Object.hasOwnProperty.call(componentList, key)) continue;
+      let component = componentList[key];
+      // 检测组件是否被启动
+      if (!component.enable && component.canDisable) continue;
+
+      // 常规函数事件分发
+      for (let j = 0; j < component.commonFuncList.length; j++) {
+        let funcObj = component.commonFuncList[j];
+        try {
+          if (!funcObj.match(event)) continue;
+          setTimeout(function () {
+            try { funcObj.func.call(component, event) } catch (error) { tools.errorLog(error) }
+          }, 1);
+        } catch (error) {
+          tools.errorLog(error);
+          continue;
+        }
+      }
+
+      // 防抖函数事件分发
+      for (let j = 0; j < component.debounceFuncList.length; j++) {
+        let funcObj = component.debounceFuncList[j];
+        try {
+          if (this.eventCount % funcObj.bounce != 0) continue;
+          setTimeout(function () {
+            try { funcObj.func.call(component, event) } catch (error) { tools.errorLog(error) }
+          }, 1);
+        } catch (error) {
+          tools.errorLog(error);
+          continue;
+        }
+      }
+
+    }
+  }
+  static intervalEventBus() {
+    if (location.href == this.lastURL) return;
+    this.lastURL = location.href;
+    this.eventBus(undefined);
+  }
+  static netEventBus(url, method, resp) {
+    tools.log(method, url);
+    for (const key in componentList) {
+      if (!Object.hasOwnProperty.call(componentList, key) || componentList[key].netFuncList.length == 0) continue;
+      if (!componentList[key].enable && componentList[key].canDisable) continue;
+      let component = componentList[key];
+      let netFuncList = component.netFuncList;
+      for (let i = 0; i < netFuncList.length; i++) {
+        if (!netFuncList[i].urlMatch(url)) continue;
+        try {
+          netFuncList[i].func.call(component, url, method, resp);
+        } catch (error) {
+          tools.errorLog(error);
+        }
+      }
+    }
+  }
+  static mutationHandle(mutation) {
+    try {
+      if (mutation[0].target.className.match("chat-notifications")) return;
+      if (mutation.length == 2 && mutation[0].target == mutation[1].target) return;
+      if (tools.getParentByIndex(mutation[0].target, 5).tagName == "TBODY") return;
+      if (
+        this.lastMutation != undefined &&
+        mutation[0].type == "childList" &&
+        mutation[0].type == this.lastMutation.type &&
+        mutation[0].target == this.lastMutation.target &&
+        mutation[0].addedNodes && this.lastMutation.addedNodes &&
+        mutation[0].addedNodes[0].data == this.lastMutation.addedNodes[0].data
+      ) return;
+      this.log("检测到DOM变动,Mutation: ", mutation[0]);
+      this.lastMutation = mutation[0];
+      this.eventBus(undefined);
+    } catch (error) {
+      tools.log(mutation);
+      tools.errorLog(error);
+      this.eventBus(undefined);
+    }
+  }
+}
+
+module.exports = { tools, componentList, runtimeData, indexDBData, feature_config }
