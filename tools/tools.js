@@ -10,6 +10,7 @@ let feature_config = {
   zoomRate: "100%", // 主界面缩放比例
   componentSwitchList: {}, // 组件开关列表
 };
+let langData = {}; // 中文语言包数据
 
 // 工具类
 class tools {
@@ -122,16 +123,16 @@ class tools {
     inputNode.dispatchEvent(event);
   }
   static itemName2Index(name) {
-    for (const key in indexDBData.basisCPT.langData) {
-      if (!Object.hasOwnProperty.call(indexDBData.basisCPT.langData, key)) continue;
+    for (const key in langData) {
+      if (!Object.hasOwnProperty.call(langData, key)) continue;
       if (!/^be-re-/.test(key)) continue;
-      if (indexDBData.basisCPT.langData[key] != name) continue;
+      if (langData[key] != name) continue;
       let result = Math.floor(key.replace("be-re-", ""));
       return result;
     }
   }
   static itemIndex2Name(index) {
-    return indexDBData.basisCPT.langData["be-re-" + index];
+    return langData["be-re-" + index];
   }
   static async getMarketPrice(resid, quality, realm) {
     let netData = await tools.getNetData(`${tools.baseURL.market}/${realm}/${resid}/`);
@@ -223,6 +224,12 @@ class tools {
       request.onerror = () => reject("数据删除失败");
     });
   }
+  /**
+   * 更新/创建数据
+   * @param {Object} data 数据
+   * @param {String} id 主键名
+   * @returns 
+   */
   static async indexDB_updateData(data, id) {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未打开");
@@ -236,6 +243,11 @@ class tools {
       request.onerror = () => reject("数据添加失败");
     })
   }
+  /**
+   * 通过主键名获取数据库数据
+   * @param {String} id 数据库主键名
+   * @returns {Object | null} 数据库数据或者null
+   */
   static async indexDB_getData(id) {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) reject("数据库未打开");
@@ -248,12 +260,20 @@ class tools {
       request.onerror = () => reject("数据查询失败");
     });
   }
+  /**
+   * 更新/创建脚本内存uuid
+   * @returns 
+   */
   static async indexDB_updateUUID() {
     let dbData = await this.indexDB_getData("uuid");
     if (dbData) return this.uuid = dbData.uuid;
     this.uuid = await this.generateUUID();
     await this.indexDB_updateData({ id: "uuid", uuid: this.uuid });
   }
+  /**
+   * 加载数据库的插件通用基础配置
+   * @returns 
+   */
   static async indexDB_loadFeatureConf() {
     let dbData = await this.indexDB_getData("feature_conf");
     if (!dbData) return this.indexDB_addData(feature_config, "feature_conf");
@@ -287,6 +307,10 @@ class tools {
     tools.log(feature_config);
     tools.indexDB_updateFeatureConf();
   }
+  /**
+   * 加载数据库的插件子组件数据
+   * @returns 
+   */
   static async indexDB_loadIndexDBData() {
     let dbData = await this.indexDB_getData("indexDBData");
     if (!dbData) return this.indexDB_addData(indexDBData, "indexDBData");
@@ -299,23 +323,53 @@ class tools {
       }
     }
   }
+  /**
+   * 更新/创建数据库组件通用基础配置
+   * @returns 
+   */
   static async indexDB_updateFeatureConf() {
     this.formatFeatureConfigComponentList();
     return await tools.indexDB_updateData(feature_config, "feature_conf");
   }
+  /**
+   * 更新/创建数据库子组件私有数据
+   * @returns 
+   */
   static async indexDB_updateIndexDBData() {
     return await tools.indexDB_updateData(indexDBData, "indexDBData");
   }
+  /**
+   * 更新/创建启动计数
+   * @returns 
+   */
   static async indexDB_updateLoadCount() {
     let dbData = await this.indexDB_getData("loadCount");
     if (!dbData) return this.indexDB_addData({ id: "loadCount", count: 1 });
     this.indexDB_updateData({ id: "loadCount", count: ++dbData.count });
   }
+  /**
+   * 删除所有的数据库缓存
+   */
   static async indexDB_deleteAllData() {
-    await this.indexDB_deleteData("feature_conf");
-    await this.indexDB_deleteData("indexDBData");
-    await this.indexDB_deleteData("uuid");
-    await this.indexDB_deleteData("loadCount");
+    let dataNameList = ["feature_conf", "indexDBData", "uuid", "loadCount", "langData"];
+    dataNameList.forEach(async item => await this.indexDB_deleteData("feature_conf"));
+  }
+  /**
+   * 加载IndexedDB中的语言包文件
+   */
+  static async indexDB_loadLangData() {
+    let dbData = await this.indexDB_getData("langData");
+    if (!dbData) return;
+    delete dbData.id
+    langData = dbData;
+  }
+  /**
+   * 更新/创建语言包数据
+   * @param {Object} langData 语言包数据
+   */
+  static async indexDB_updateLangData(langData) {
+    if (langData.id != "langData") langData.id = "langData";
+    await this.indexDB_updateData(langData);
   }
   static async msg_check(payload, update = false) {
     // 原生对象检测
@@ -440,4 +494,4 @@ class tools {
   }
 }
 
-module.exports = { tools, componentList, runtimeData, indexDBData, feature_config }
+module.exports = { tools, componentList, runtimeData, indexDBData, feature_config, langData }

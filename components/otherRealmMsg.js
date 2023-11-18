@@ -19,6 +19,7 @@ class otherRealmMsg extends BaseComponent {
   ]
   cssText = [`div#script_unreadMsg {display:none;position:relative;left:5px;top:4px;}`]
   async startupMsgCheck(window, count = 0) {
+    if (location.href.match(/zh\/$/) || runtimeData.basisCPT.realm == undefined) return setTimeout(() => { this.startupMsgCheck(undefined, 0) }, 5000);
     if (count == 0) return setTimeout(() => { this.startupMsgCheck(undefined, ++count) }, 5000);
     let realm = runtimeData.basisCPT.realm;
     // 隐藏原有图标
