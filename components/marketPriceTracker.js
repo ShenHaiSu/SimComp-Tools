@@ -14,6 +14,12 @@ class marketPriceTracker extends BaseComponent {
     min_net_time_gap: 60 * 1000, // 最小查询时间间隔
     trackTargetList: [], // 监控物品列表 [{id:123,quality:0,realm:0,target_price:0.159}]
   };
+  componentData = {
+    trackerIntervalList: [], // 价格追踪计时器列表
+  };
+  startupFuncList = [
+    this.mainFunc
+  ];
   settingUI = () => {
     let newNode = document.createElement("div");
     let htmlText = `<div><div class='header'>交易所低价提示设置</div><div class='container'><div><div><button class="btn script_opt_submit">保存并重启监控</button></div></div><div style=text-align:center;width:100%;height:100%><div class="buttonContainer row"style=margin-top:10px><button id='script_mptrack_setting_show' class="btn col-sm-4 dbButton">罗列</button> <button id='script_mptrack_setting_add' class="btn col-sm-4 dbButton">增添</button> <button id='script_mptrack_setting_delete' class="btn col-sm-4 dbButton">删除</button></div><table><tr><td>资源id<td><input class=form-control type=number><tr><td>资源品质<td><select class=form-control value=0><option value=0>所有q<option value=1>q1或以上<option value=2>q2或以上<option value=3>q3或以上<option value=4>q4或以上<option value=5>q5或以上<option value=6>q6或以上<option value=7>q7或以上<option value=8>q8或以上<option value=9>q9或以上<option value=10>q10或以上<option value=11>q11或以上<option value=12>q12</select><tr><td>服务器<td><select class=form-control value=0><option value=0>R1 M服<option value=1>R2 E服</select><tr><td>目标价格<td><input class=form-control type=number></table></div></div></div>`;
@@ -86,12 +92,6 @@ class marketPriceTracker extends BaseComponent {
     this.indexDBData.trackTargetList.splice(itemIndex, 1);
     window.alert("已经删除对该目标的监控，请点击保存并重启按钮应用设置。");
   }
-  componentData = {
-    trackerIntervalList: [], // 价格追踪计时器列表
-  };
-  startupFuncList = [
-    this.mainFunc
-  ];
   mainFunc(window, mode = "start") {
     // mode = start clear restart
     if (!this.enable) return;

@@ -152,7 +152,7 @@ class tools {
     }
     return resultList[quality];
   }
-  static async getNetData(target, method = "GET", body = undefined) {
+  static async netRequest(target, method = "GET", body = undefined, header = []) {
     let fetch_name = method + target;
     tools.log(fetch_name);
     let time_stamp = new Date().getTime();
@@ -161,10 +161,23 @@ class tools {
       this.netFetchPool.push({ url: fetch_name, time: time_stamp });
     } else if (time_stamp - this.netFetchPool[gap_index].time >= feature_config.net_gap_ms) {
       this.netFetchPool[gap_index].time = time_stamp;
+    } else return false;
+
+    if (method == "GET") {
+      return await fetch(target);
     } else {
-      return false;
+      return await fetch(target, { method, body, headers: header });
     }
-    return await fetch(target, { method, body }).then(async resp => await resp.json());
+  }
+  static async getNetData(target, method = "GET", body = undefined, header = []) {
+    let netResp = await this.netRequest(target, method, body, header);
+    if (!netResp) return false;
+    return await netResp.json();
+  }
+  static async getNetText(target, method = "GET", body = undefined) {
+    let netResp = await this.netRequest(target, method, body, header);
+    if (!netResp) return false;
+    return await netResp.text();
   }
   static async generateUUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -491,6 +504,18 @@ class tools {
       tools.errorLog(error);
       this.eventBus(undefined);
     }
+  }
+
+  static getBuildKind(id = 0) {
+    if (id == 0) return undefined;
+    let realm = runtimeData.basisCPT.realm;
+    if (indexDBData.basisCPT.building[realm].length == 0) return undefined;
+    for (let i = 0; i < indexDBData.basisCPT.building[realm].length; i++) {
+      let build = indexDBData.basisCPT.building[realm][i];
+      if (build.id != id) continue;
+      return build.kind;
+    }
+    return undefined;
   }
 }
 

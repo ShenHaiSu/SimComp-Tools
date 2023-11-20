@@ -100,6 +100,7 @@ class basisCPT extends BaseComponent {
   }
   // 用户信息拦截处理
   userInfo(url, method, resp) {
+    resp = JSON.parse(resp);
     this.indexDBData.userInfo[resp.authCompany.realmId] = resp;
     this.componentData.realm = resp.authCompany.realmId;
     tools.log("用户数据获取完毕：", resp);
@@ -107,12 +108,14 @@ class basisCPT extends BaseComponent {
   }
   // 建筑信息拦截处理
   buildingInfo(url, method, resp) {
+    resp = JSON.parse(resp);
     if (this.componentData.realm == undefined) return;
     this.indexDBData.building[this.componentData.realm] = resp;
     tools.indexDB_updateIndexDBData();
   }
   // 仓库信息拦截处理
   warehouseInfo(url, method, resp) {
+    resp = JSON.parse(resp);
     if (this.componentData.realm == undefined) return;
     tools.log("Current Realm: ", this.componentData.realm);
     this.indexDBData.warehouse[this.componentData.realm] = resp;
@@ -120,6 +123,7 @@ class basisCPT extends BaseComponent {
   }
   // 市场价格拦截处理
   marketData(url, method, resp) {
+    resp = JSON.parse(resp);
     if (!this.componentData.realm == undefined) return;
     let mpData = tools.mpFormat(resp);
     let res_id = Math.floor(url.match(/\d+(?=\D*$)/)[0]);
@@ -131,6 +135,7 @@ class basisCPT extends BaseComponent {
   }
   // 语言包拦截处理
   langData(url, method, resp) {
+    resp = JSON.parse(resp);
     for (const key in resp) {
       if (!Object.hasOwnProperty.call(resp, key) && !Object.hasOwnProperty.call(langData, key)) continue;
       langData[key] = resp[key];

@@ -19,7 +19,7 @@ class biggerAmcharts extends BaseComponent {
       // 总览界面
       let target_node = document.querySelector("div.row > div.col-sm-6 > div > div > div");
       Object.assign(target_node.style, { height: "600px" });
-      let msg_node = target_node.parentElement.parentElement.parentElement.parentElement.lastChild;
+      let msg_node = tools.getParentByIndex(target_node, 4).lastChild;
       msg_node.className = "col-sm-6 text-center";
       if (msg_node.querySelectorAll("br").length > 1) return;
       msg_node.lastChild.prepend(document.createElement("br"));
