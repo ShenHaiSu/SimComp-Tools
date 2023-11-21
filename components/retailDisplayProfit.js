@@ -22,7 +22,7 @@ class retailDisplayProfit extends BaseComponent {
     retaiInfoList: [], // 零售物品信息库 [{id,name,price,marketSaturation.....}]
     recommendList: [], // 推荐定价列表 [id:121]
     apiDataList: {}, // API的数据列表 {G:{resources:{}}}
-    lastNetTime:0, // 最近一次请求网络
+    lastNetTime: 0, // 最近一次请求网络
   }
   netFuncList = [{
     urlMatch: (url) => Boolean(url.match(/administration-overhead\/$/)),
@@ -136,6 +136,7 @@ class retailDisplayProfit extends BaseComponent {
     indexDBData.basisCPT.userInfo[realm].adminRate = adminRate;
     this.componentData.adminRate = adminRate;
   }
+
   // 拦截物品的零售数据
   getResourcesRetailInfo(url, method, resp) {
     let newResp = JSON.parse(resp);
@@ -146,12 +147,13 @@ class retailDisplayProfit extends BaseComponent {
   // 生成推荐定价的提前检测与获取
   async genRecommendPrice(resID = 0, quality = 0, quantity = 0, nowPrice = 0) {
     let timeStamp = new Date().getTime();
-    if (timeStamp - this.componentData.lastCountTimeStamp < 2000) return this.lastPrice();
+    if (timeStamp - this.componentData.lastCountTimeStamp < 2000) return this.lastPrice(resID);
     let realm = runtimeData.basisCPT.realm;
     let buildID = parseInt(location.href.match(/\d+\/$/)[0].replace("/", ""));
     let buildKind = tools.getBuildKind(buildID);
     let fileName = `${buildKind}-${realm == 0 ? "R1" : "R2"}.json`;
     let apiData = await this.innerGetNetData(fileName);
+    if (!apiData && !this.componentData.apiDataList[buildKind]) return 0.0;
     if (!apiData) apiData = this.componentData.apiDataList[buildKind];
     this.componentData.apiDataList[buildKind] = apiData;
     let saturation = this.componentData.retaiInfoList[resID].marketSaturation;
@@ -168,7 +170,9 @@ class retailDisplayProfit extends BaseComponent {
       maxSellPrice = index;
       maxHourProfit = newHourProfit;
     }
-    return maxSellPrice.toFixed(3);
+    this.componentData.recommendList[resID] = maxSellPrice.toFixed(2);
+    this.componentData.lastCountTimeStamp = timeStamp;
+    return maxSellPrice.toFixed(2);
   }
   // 计算时利润
   countOutHourProfit(sellprice, saturation, retail_modeling, quality, sellBonus, building_wages, adminRate, courcCost) {
@@ -182,14 +186,14 @@ class retailDisplayProfit extends BaseComponent {
     return revenuesPerHour - cost;
   }
   // 获取上一次计算的结果 或者 0.0
-  lastPrice() {
-    this.componentData.recommendList[tools.itemName2Index(baseInfo.name)] || 0.0;
+  lastPrice(resID) {
+    return this.componentData.recommendList[resID] || 0.0;
   }
-  async innerGetNetData(fileName){
+  innerGetNetData(fileName) {
     let nowTime = new Date().getTime();
     if (nowTime - this.componentData.lastNetTime <= 10000) return false;
     this.componentData.lastNetTime = nowTime;
-    return await tools.getNetData(`https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy@main/toolsData/least/${fileName}`);
+    return tools.getNetData(`https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy@main/toolsData/least/${fileName}`);
   }
 }
 new retailDisplayProfit();
