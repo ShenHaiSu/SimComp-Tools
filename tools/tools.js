@@ -422,6 +422,7 @@ class tools {
   static msg_clear() {
 
   }
+  
   static eventBus(event) {
     if (!this.scriptLoadAcc) return;
     if (event) this.eventCount++;
@@ -461,11 +462,13 @@ class tools {
 
     }
   }
+
   static intervalEventBus() {
     if (location.href == this.lastURL) return;
     this.lastURL = location.href;
     this.eventBus(undefined);
   }
+
   static netEventBus(url, method, resp) {
     tools.log(method, url);
     for (const key in componentList) {
@@ -483,6 +486,7 @@ class tools {
       }
     }
   }
+
   static mutationHandle(mutation) {
     try {
       if (mutation[0].target.className.match("chat-notifications")) return;

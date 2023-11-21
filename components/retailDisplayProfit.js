@@ -67,7 +67,7 @@ class retailDisplayProfit extends BaseComponent {
     // 填充内容
     let totalProfit = (baseInfo.profit * quantity).toFixed(3);
     let hourProfit = (totalProfit / baseInfo.duration_hour).toFixed(3);
-    this.componentData.containerNode.innerText = `预估数据：\n总利润：${totalProfit}\n时利润：${hourProfit}\n参考定价:${recommendPrice}`;
+    this.componentData.containerNode.innerText = `预估数据：\n总利润：${totalProfit}\n时利润：${hourProfit}\n参考数据:${recommendPrice}`;
     Object.assign(this.componentData.containerNode.style, {
       display: "flex",
       top: `${activeNodeRect.top + activeNodeRect.height + 64}px`,
@@ -170,9 +170,15 @@ class retailDisplayProfit extends BaseComponent {
       maxSellPrice = index;
       maxHourProfit = newHourProfit;
     }
-    this.componentData.recommendList[resID] = maxSellPrice.toFixed(2);
+
+    // 价格格式化
+    if (maxSellPrice <= 8) maxSellPrice = maxSellPrice.toFixed(2);
+    if (maxSellPrice > 8 && maxSellPrice <= 500) maxSellPrice = maxSellPrice.toFixed(1);
+    if (maxSellPrice > 500) maxSellPrice = maxSellPrice.toFixed(0);
+
+    this.componentData.recommendList[resID] = maxSellPrice;
     this.componentData.lastCountTimeStamp = timeStamp;
-    return maxSellPrice.toFixed(2);
+    return maxSellPrice;
   }
   // 计算时利润
   countOutHourProfit(sellprice, saturation, retail_modeling, quality, sellBonus, building_wages, adminRate, courcCost) {

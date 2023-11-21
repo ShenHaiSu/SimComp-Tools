@@ -18,11 +18,15 @@ class newTabProfile extends BaseComponent {
     targetNode.addEventListener('click', event => this.clickHandle(event));
   }
   clickHandle(event) {
-    if (!event.target) return;
-    let result = this.nodeTagCheck(event.target);
-    if (!result || !result[0]) return;
-    window.open(result[1]);
-    event.preventDefault();
+    try {
+      if (!event.target) return;
+      let result = this.nodeTagCheck(event.target);
+      if (!result || !result[0]) return;
+      window.open(result[1]);
+      event.preventDefault();
+    } catch (error) {
+      tools.errorLog(error);
+    }
   }
   nodeTagCheck(node, index = 0) {
     let realm = runtimeData.basisCPT.realm;
