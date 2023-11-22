@@ -12,9 +12,7 @@ class salesOfficeIncomeDisplay extends BaseComponent {
     match: (event) => {
       try {
         if (!/b\/\d+\/$/.test(location.href)) return false;
-        let buildingID = Math.floor(location.href.match(/b\/(\d+)\/$/)[1]);
-        let buildKind = tools.getBuildKind(buildingID);
-        return buildKind == "B";
+        return tools.getBuildKind(Math.floor(location.href.match(/b\/(\d+)\/$/)[1])) == "B";
       } catch { return false }
     },
     func: this.mainFunc

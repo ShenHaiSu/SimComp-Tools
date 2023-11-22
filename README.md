@@ -8,6 +8,9 @@
 - https://greasyfork.org/zh-CN/scripts/475328
 - 从代码构建 `yarn run build`
 
+# 肚子饿饿
+- https://afdian.net/a/SCT-Editor
+
 # 功能如下
 - `仓库单物总价`
   - 在仓库界面鼠标放在物品图标上可以看到成本*数量得到的物品总价值
