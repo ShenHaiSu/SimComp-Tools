@@ -237,6 +237,32 @@ class tools {
       request.onerror = () => reject("数据删除失败");
     });
   }
+  static getBuildKind(id = 0) {
+    if (id == 0) return undefined;
+    let realm = runtimeData.basisCPT.realm;
+    if (indexDBData.basisCPT.building[realm].length == 0) return undefined;
+    let building = indexDBData.basisCPT.building[realm].find(building => building.id == id);
+    return building == undefined ? undefined : building.kind;
+    // for (let i = 0; i < indexDBData.basisCPT.building[realm].length; i++) {
+    //   let build = indexDBData.basisCPT.building[realm][i];
+    //   if (build.id != id) continue;
+    //   return build.kind;
+    // }
+    // return undefined;
+  }
+  static numberAddCommas(input = 0) {
+    let str = parseInt(input).toString();
+    let result = '';
+    let count = 0;
+    for (let i = str.length - 1; i >= 0; i--) {
+      result = str[i] + result;
+      count++;
+      if (count % 3 === 0 && i !== 0) {
+        result = ',' + result;
+      }
+    }
+    return result;
+  }
   /**
    * 更新/创建数据
    * @param {Object} data 数据
@@ -422,7 +448,6 @@ class tools {
   static msg_clear() {
 
   }
-  
   static eventBus(event) {
     if (!this.scriptLoadAcc) return;
     if (event) this.eventCount++;
@@ -436,7 +461,7 @@ class tools {
       for (let j = 0; j < component.commonFuncList.length; j++) {
         let funcObj = component.commonFuncList[j];
         try {
-          if (!funcObj.match(event)) continue;
+          if (!funcObj.match.call(component, event)) continue;
           setTimeout(function () {
             try { funcObj.func.call(component, event) } catch (error) { tools.errorLog(error) }
           }, 1);
@@ -462,13 +487,11 @@ class tools {
 
     }
   }
-
   static intervalEventBus() {
     if (location.href == this.lastURL) return;
     this.lastURL = location.href;
     this.eventBus(undefined);
   }
-
   static netEventBus(url, method, resp) {
     tools.log(method, url);
     for (const key in componentList) {
@@ -486,7 +509,6 @@ class tools {
       }
     }
   }
-
   static mutationHandle(mutation) {
     try {
       if (mutation[0].target.className.match("chat-notifications")) return;
@@ -508,18 +530,6 @@ class tools {
       tools.errorLog(error);
       this.eventBus(undefined);
     }
-  }
-
-  static getBuildKind(id = 0) {
-    if (id == 0) return undefined;
-    let realm = runtimeData.basisCPT.realm;
-    if (indexDBData.basisCPT.building[realm].length == 0) return undefined;
-    for (let i = 0; i < indexDBData.basisCPT.building[realm].length; i++) {
-      let build = indexDBData.basisCPT.building[realm][i];
-      if (build.id != id) continue;
-      return build.kind;
-    }
-    return undefined;
   }
 }
 

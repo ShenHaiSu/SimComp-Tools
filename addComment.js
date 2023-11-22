@@ -30,7 +30,7 @@ if (latestJsFile) {
     `// ==UserScript==`,
     `// @name         SimComps - tools`,
     `// @namespace    http://shenhaisu.cc/`,
-    `// @version      2.1.${timeStamp}`,
+    `// @version      2.3.${timeStamp}`,
     `// @description  给国人使用的SimComps脚本`,
     `// @author       ShenHaiSu`,
     `// @match        http://www.simcompanies.com/*`,
