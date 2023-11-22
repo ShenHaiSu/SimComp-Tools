@@ -3,6 +3,8 @@ let path = require('path');
 let distPath = path.join(__dirname, 'dist');
 let moment = require("moment");
 
+let preVersion = `2.3`; // 手动定制版本
+
 function getLatestJsFile(dir) {
   const files = fs.readdirSync(dir);
   const jsFiles = files.filter(file => path.extname(file) === '.js');
@@ -24,13 +26,13 @@ let latestJsFile = getLatestJsFile(distPath);
 
 if (latestJsFile) {
   let filePath = path.join(distPath, latestJsFile);
-  let timeStamp = moment().format('YYMMDDHHmmss');
+  let timeStamp = moment().format('YYMMDDHHmmss'); // 自动生成子版本
 
   let customText = [
     `// ==UserScript==`,
     `// @name         SimComps - tools`,
     `// @namespace    http://shenhaisu.cc/`,
-    `// @version      2.3.${timeStamp}`,
+    `// @version      ${preVersion}.${timeStamp}`,
     `// @description  给国人使用的SimComps脚本`,
     `// @author       ShenHaiSu`,
     `// @match        http://www.simcompanies.com/*`,

@@ -52,11 +52,13 @@ class searchDisplayOnline extends BaseComponent {
       this.componentData.showFlag = true;
       flag = "none";
     }
-    document.querySelectorAll("div > div.row > div.col-sm-6").forEach((item) => {
+    let elements = document.querySelectorAll("div > div.row > div.col-sm-6");
+    for (let i = 0; i < elements.length; i++) {
+      let item = elements[i];
       let text = item.querySelector("div.pull-right").nextElementSibling.innerText;
-      if (text !== "n/a" && text !== "offline") return;
+      if (text !== "n/a" && text !== "offline") continue;
       item.style.display = flag;
-    });
+    }
   }
 }
 new searchDisplayOnline();
