@@ -36,10 +36,10 @@ class salesOfficeIncomeDisplay extends BaseComponent {
       let qualityBonus = parseFloat(rootNode.childNodes[0].innerText.split(/\n/).filter(text => text.match(/品质奖励/))[0]) / 100;
       let htmlText = `<input max=12 min=0 type=range value=1><div><div>Quality 品质: ${1}</div>`
       newNode.id = "script_incomeDisplay_root";
-      itemInfo.forEach(item => {
-        let bonus = item[1] * qualityBonus;
-        htmlText += `<div>${item[0]} $${tools.numberAddCommas(item[1] + bonus)} (+$${tools.numberAddCommas(bonus)})</div>`
-      })
+      for (let i = 0; i < itemInfo.length; i++) {
+        let bonus = itemInfo[i][1] * qualityBonus;
+        htmlText += `<div>${itemInfo[i][0]} $${tools.numberAddCommas(itemInfo[i][1] + bonus)} (+$${tools.numberAddCommas(bonus)})</div>`
+      }
       htmlText += `</div>`;
       newNode.innerHTML = htmlText;
       rootNode.firstChild.firstChild.childNodes[1].append(newNode);

@@ -23,6 +23,11 @@ class retailDisplayProfit extends BaseComponent {
     recommendList: [], // 推荐定价列表 [id:121]
     apiDataList: {}, // API的数据列表 {G:{resources:{}}}
     lastNetTime: 0, // 最近一次请求网络
+    lockProfit: {  // 锁定时利润
+      isLock: false,
+      profit: 0.0
+    },
+    lastActiveInputNode:undefined, // 最后一次激活中的input标签
   }
   netFuncList = [{
     urlMatch: (url) => Boolean(url.match(/administration-overhead\/$/)),
@@ -31,7 +36,7 @@ class retailDisplayProfit extends BaseComponent {
     urlMatch: (url) => Boolean(url.match(/encyclopedia\/resources\/\d+\/\d+\/$/)),
     func: this.getResourcesRetailInfo
   }]
-  cssText = [`#retail_display_div {color:var(--fontColor);border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%);width:150px;z-index:1032;justify-content:center;align-items:center;}`];
+  cssText = [`#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%);width:150px;z-index:1032;justify-content:center;align-items:center;}`];
 
   async mainFunc() {
     // 初始化
@@ -40,6 +45,7 @@ class retailDisplayProfit extends BaseComponent {
     let targetNode = tools.getParentByIndex(activeNode, 5).previousElementSibling.querySelector("div > div > h3").parentElement;
     let quantity = tools.getParentByIndex(activeNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
     let quality = this.getQuality(activeNode);
+    let buildingLevel = parseInt(Object.values(document.querySelectorAll("div>span>b")).filter(node => /\d+级/.test(node.innerText))[0].innerText);
     let price = activeNode.value;
     let baseInfo;
     try { baseInfo = this.getInfo(targetNode) } catch (error) { return }
@@ -52,6 +58,9 @@ class retailDisplayProfit extends BaseComponent {
     // 清除原有计时器
     if (this.componentData.fadeTimer) clearTimeout(this.componentData.fadeTimer);
 
+    // 更新最近input标记
+    this.componentData.lastActiveInputNode = document.activeElement;
+
     // 构建元素并挂载
     if (!this.componentData.containerNode) {
       let newNode = document.createElement("div");
@@ -59,17 +68,26 @@ class retailDisplayProfit extends BaseComponent {
       Object.assign(newNode.style, { display: "none" });
       this.componentData.containerNode = newNode;
       document.body.appendChild(newNode);
+      // 挂载锁定时利润事件委派
+      newNode.addEventListener('click', event => this.lockProfitHandle(event));
     }
 
     // 计算推荐价格
-    let recommendPrice = await this.genRecommendPrice(tools.itemName2Index(baseInfo.name), quality, quantity, price);
+    let [recommendPrice, maxHourProfit] = await this.genRecommendPrice(tools.itemName2Index(baseInfo.name), quality, quantity, price, buildingLevel);
 
     // 填充内容
     let totalProfit = (baseInfo.profit * quantity).toFixed(3);
     let hourProfit = (totalProfit / baseInfo.duration_hour).toFixed(3);
-    this.componentData.containerNode.innerText = `预估数据：\n总利润：${totalProfit}\n时利润：${hourProfit}\n参考数据:${recommendPrice}`;
+    // console.log("hourProfit", parseFloat(hourProfit), "maxHourProfit", maxHourProfit, "差值", parseFloat(hourProfit) - maxHourProfit);
+    // let htmlText = `预估数据：\n总利润：${totalProfit}\n时利润：${hourProfit} <input type='checkbox' ${this.componentData.lockProfit.isLock ? "checked" : ""}>锁定</input>\n参考数据:${recommendPrice}`
+    let htmlText = `<div>预估数据: </div>`;
+    htmlText += `<div>总利润：${totalProfit}</div>`;
+    // htmlText += `<div>时利润：${hourProfit} <input id='script_lockProfit' type='checkbox' ${this.componentData.lockProfit.isLock ? "checked" : ""}>锁定</div>`;
+    htmlText += `<div>时利润：${hourProfit}</div>`;
+    htmlText += `<div>参考数据：${recommendPrice}</div>`;
+    this.componentData.containerNode.innerHTML = htmlText;
     Object.assign(this.componentData.containerNode.style, {
-      display: "flex",
+      display: "block",
       top: `${activeNodeRect.top + activeNodeRect.height + 64}px`,
       left: `${activeNodeRect.left}px`,
     })
@@ -83,19 +101,23 @@ class retailDisplayProfit extends BaseComponent {
     let textList = node.innerText.split("\n");
     let name = textList[0];
     let profit = parseFloat(textList[3].replaceAll(",", "").match(/\$(-)?\d+\.\d+/)[0].replace("$", ""));
-    let duration_hour = this.getTimeFormat(textList[4].match(/\(.+\)/)[0].replaceAll(/\(|\)/g, ""));
+    let matchList = textList[4].match(/(\d+:\d+)|(\(.+\))/g);
+    let duration_hour = this.getTimeFormat(matchList[0], matchList[1]);
     return { name, profit, duration_hour };
   }
-  getTimeFormat(timeString) {
-    let timeRegex = /(\d+)\s*([a-z]+)/gi;
-    let timeUnits = { y: 8760, mo: 720, w: 168, d: 24, h: 1, m: 1 / 60, s: 1 / 3600 };
-    let totalHours = 0;
-    let match;
-    while ((match = timeRegex.exec(timeString)) !== null) {
-      let unit = match[2].toLowerCase();
-      if (timeUnits.hasOwnProperty(unit)) totalHours += parseFloat(match[1]) * timeUnits[unit];
-    }
-    return parseFloat(totalHours.toFixed(3));
+  getTimeFormat(targetStamp, durationTime) {
+    let nowTime = new Date();
+    let [targetHour, targetMinutes] = targetStamp.split(":");
+    let targetTime = new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate(), targetHour, targetMinutes);
+    let timeDiff = parseFloat(((targetTime.getTime() - nowTime.getTime()) / (1000 * 60 * 60)).toFixed(3));
+    let dayCount = 0;
+    // 获取日数
+    dayCount += (/(\d+)d/.test(durationTime)) ? parseInt(durationTime.match(/(\d+)d/)[1]) : 0;
+    // 获取周数
+    dayCount += (/(\d+)w/.test(durationTime)) ? parseInt(durationTime.match(/(\d+)w/)[1]) * 7 : 0;
+    timeDiff += (timeDiff < 0) ? ((dayCount + 1) * 24) : dayCount * 24;
+    tools.log(`销售完成时间:${new Date(new Date().getTime() + timeDiff * 60 * 60 * 1000).toLocaleString()}`);
+    return timeDiff;
   }
   getQuality(node) {
     let rootNode = tools.getParentByIndex(node, 6);
@@ -128,7 +150,16 @@ class retailDisplayProfit extends BaseComponent {
     }
     return (totalCost / nowQuantity).toFixed(2);
   }
-
+  // 锁定当前时利润事件委派
+  lockProfitHandle(event) {
+    if (event.target.tagName != "INPUT" || event.target.id != "script_lockProfit") return;
+    this.componentData.lockProfit.profit = parseFloat(event.target.parentElement.innerText.replace(/时利润：|锁定/g, ""));
+    this.componentData.lockProfit.isLock = event.target.checked;
+    console.log(this.componentData.lockProfit);
+    // 清空原有计算记录
+    this.componentData.lastCountTimeStamp = 0;
+    this.componentData.lastNetTime = 0;
+  }
   // 拦截保存账号管理费比率
   adminRateGet(url, method, resp) {
     let realm = runtimeData.basisCPT.realm;
@@ -136,25 +167,23 @@ class retailDisplayProfit extends BaseComponent {
     indexDBData.basisCPT.userInfo[realm].adminRate = adminRate;
     this.componentData.adminRate = adminRate;
   }
-
   // 拦截物品的零售数据
   getResourcesRetailInfo(url, method, resp) {
     let newResp = JSON.parse(resp);
     let resID = parseInt(url.match(/\d+\/$/)[0].replace("/", ""));
     this.componentData.retaiInfoList[resID] = newResp;
   }
-
   // 生成推荐定价的提前检测与获取
-  async genRecommendPrice(resID = 0, quality = 0, quantity = 0, nowPrice = 0) {
+  async genRecommendPrice(resID = 0, quality = 0, quantity = 0, nowPrice = 0, buildingLevel) {
     let timeStamp = new Date().getTime();
-    if (timeStamp - this.componentData.lastCountTimeStamp < 2000) return this.lastPrice(resID);
+    if (timeStamp - this.componentData.lastCountTimeStamp < 2000) return [this.lastPrice(resID), 0];
     let realm = runtimeData.basisCPT.realm;
     let buildID = parseInt(location.href.match(/\d+\/$/)[0].replace("/", ""));
     let buildKind = tools.getBuildKind(buildID);
     let fileName = `${buildKind}-${realm == 0 ? "R1" : "R2"}.json`;
-    let apiData = await this.innerGetNetData(fileName);
-    if (!apiData && !this.componentData.apiDataList[buildKind]) return 0.0;
-    if (!apiData) apiData = this.componentData.apiDataList[buildKind];
+    // 获取API数据
+    let apiData = this.componentData.apiDataList[buildKind] || await this.innerGetNetData(fileName);
+    if (!apiData) return [0.0, 0];
     this.componentData.apiDataList[buildKind] = apiData;
     let saturation = this.componentData.retaiInfoList[resID].marketSaturation;
     let retail_modeling = apiData.resources[resID.toString()].retail_modeling;
@@ -166,9 +195,18 @@ class retailDisplayProfit extends BaseComponent {
     let maxHourProfit = 0;
     for (let index = maxSellPrice; index < nowPrice * 1.5; index += 0.01) {
       let newHourProfit = this.countOutHourProfit(index, saturation, retail_modeling, quality, sellBonus, building_wages, adminRate, cost);
-      if (newHourProfit - maxHourProfit <= 0) continue;
-      maxSellPrice = index;
-      maxHourProfit = newHourProfit;
+      newHourProfit *= buildingLevel;
+      if (this.componentData.lockProfit.isLock) {
+        if (newHourProfit < this.componentData.lockProfit.profit) continue;
+        // console.log(index, newHourProfit);
+        maxSellPrice = index;
+        maxHourProfit = newHourProfit;
+        break;
+      } else {
+        if (newHourProfit - maxHourProfit <= 0) continue;
+        maxSellPrice = index;
+        maxHourProfit = newHourProfit;
+      }
     }
 
     // 价格格式化
@@ -178,7 +216,7 @@ class retailDisplayProfit extends BaseComponent {
 
     this.componentData.recommendList[resID] = maxSellPrice;
     this.componentData.lastCountTimeStamp = timeStamp;
-    return maxSellPrice;
+    return [maxSellPrice, maxHourProfit];
   }
   // 计算时利润
   countOutHourProfit(sellprice, saturation, retail_modeling, quality, sellBonus, building_wages, adminRate, courcCost) {
@@ -195,11 +233,11 @@ class retailDisplayProfit extends BaseComponent {
   lastPrice(resID) {
     return this.componentData.recommendList[resID] || 0.0;
   }
-  innerGetNetData(fileName) {
+  async innerGetNetData(fileName) {
     let nowTime = new Date().getTime();
     if (nowTime - this.componentData.lastNetTime <= 10000) return false;
     this.componentData.lastNetTime = nowTime;
-    return tools.getNetData(`https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy@main/toolsData/least/${fileName}`);
+    return tools.getNetData(`https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy@main/toolsData/least/${fileName}?${await tools.generateUUID()}`);
   }
 }
 new retailDisplayProfit();

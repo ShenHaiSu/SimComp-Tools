@@ -46,10 +46,7 @@ class globalBlock extends BaseComponent {
     return newNode;
   }
   settingSubmit() {
-    let valueList = [];
-    document
-      .querySelectorAll("div#script_globalBlock_setting input, div#script_globalBlock_setting select")
-      .forEach(node => valueList.push(node.value));
+    let valueList = Object.values(document.querySelectorAll("div#script_globalBlock_setting input, div#script_globalBlock_setting select")).map(node => node.value);;
     if (valueList[1] != "" && !/^https:\/\/[\w.-]+\.[a-zA-Z]{2,}/.test(valueList[1])) return window.alert("当前的遮罩使用的图片网址不符合规范");
     if (valueList[1] == "") valueList[1] = undefined;
     this.indexDBData.maskImgUrl = valueList[1];

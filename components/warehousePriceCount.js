@@ -29,10 +29,10 @@ class warehousePriceCount extends BaseComponent {
         Object.values(item.cost).forEach(singlePrice => price += singlePrice);
         priceList[item.kind.name] += price;
       }
-      itemNodeList.forEach(function (item) {
-        let name = item.querySelector("b").innerText;
-        item.setAttribute("title", `成本价值：$${priceList[name].toFixed(2)}`);
-      });
+      for (let i = 0; i < itemNodeList.length; i++) {
+        let name = itemNodeList[i].querySelector("b").innerText;
+        itemNodeList[i].setAttribute("title", `成本价值：$${priceList[name].toFixed(2)}`);
+      }
     } catch (error) {
       tools.errorLog(error);
     }

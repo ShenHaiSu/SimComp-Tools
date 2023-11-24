@@ -1,5 +1,6 @@
 const { tools, componentList, runtimeData, indexDBData, feature_config } = require("./tools/tools.js");
 require("./tools/baseComponent.js");
+require("./components/basisCPT.js");
 
 // 导入components文件夹下的所有JavaScript文件
 const components = require.context('./components', true, /\.js$/);
