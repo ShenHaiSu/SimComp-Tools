@@ -36,7 +36,7 @@ class economicCycleDetect extends BaseComponent {
     let distance = targetTime.getTime() - nowTime.getTime();
     // 十秒一次检测
     // 未到周五23点 以及最后10秒钟
-    if (distance < 0 && distance <= 20 * 1000) return this.checkNewData();
+    if (distance < 0 && distance > -30 * 1000) return this.checkNewData();
   }
   async checkNewData() {
     let newData = await tools.getNetData(`${tools.baseURL.userBase}#${await tools.generateUUID()}`);
