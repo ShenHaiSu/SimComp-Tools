@@ -20,7 +20,7 @@ class retailDisplayProfit extends BaseComponent {
     lastActiveInputNode: undefined, // 最后一次激活中的input标签
   }
   cssText = [
-    `#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%);width:160px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#6B6B6B;margin-top:5px;}`
+    `#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%) translateX(-50%);width:270px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#6B6B6B;margin-top:5px;}`
   ];
 
   async mainFunc() {
@@ -60,16 +60,20 @@ class retailDisplayProfit extends BaseComponent {
     // 填充内容
     let totalProfit = parseFloat((baseInfo.profit * quantity).toFixed(2));
     let hourProfit = parseFloat((totalProfit / baseInfo.duration_hour).toFixed(2));
-    let htmlText = `<div>预估数据: </div>`;
+    let htmlText = ``;
+    htmlText += `<div>预估数据: </div>`
     htmlText += `<div>总利润：${totalProfit}</div>`;
     htmlText += `<div>时利润：${hourProfit}</div>`;
-    htmlText += `<button class='btn' id='script_reatil_maxHour'>max时利润</button>`;
-    htmlText += `<button class='btn' id='script_reatil_targetHour'>锁定时利润</button>`;
+    htmlText += `<div>`;
+    htmlText += `  <button class='btn' id='script_reatil_maxHour'>最大时利</button>`;
+    htmlText += `  <button class='btn' id='script_reatil_maxUnit'>最大单利</button>`
+    htmlText += `  <button class='btn' id='script_reatil_targetHour'>指定时利</button>`;
+    htmlText += `</div>`;
     this.componentData.containerNode.innerHTML = htmlText;
     Object.assign(this.componentData.containerNode.style, {
       display: "block",
-      top: `${activeNodeRect.top + activeNodeRect.height + 80}px`,
-      left: `${activeNodeRect.left - 20}px`,
+      top: `${activeNodeRect.top + activeNodeRect.height + 100}px`,
+      left: `${activeNodeRect.left + activeNodeRect.width}px`,
     })
 
     // 创建计时器
@@ -129,28 +133,53 @@ class retailDisplayProfit extends BaseComponent {
     }
     return (totalCost / nowQuantity).toFixed(2);
   }
-  // 按钮时间委派
+  // 按钮事件委派
   clickEventHandle(event) {
     // if (event.target.tagName == "INPUT" && event.target.id == "script_lockProfit") return this.lockHourProfit(event);
     if (event.target.tagName == "BUTTON" && event.target.id == "script_reatil_maxHour") return this.setMaxProfitPrice(event);
+    if (event.target.tagName == "BUTTON" && event.target.id == "script_reatil_maxUnit") return this.setMaxUnitProfit(event);
     if (event.target.tagName == "BUTTON" && event.target.id == "script_reatil_targetHour") return this.lockHourProfit(event);
   }
-  // 锁定当前时利润并求最小价格
-  lockHourProfit(event) {
+  // 最大单利润
+  async setMaxUnitProfit() {
+    try {
+      // 锁定填写框
+      this.componentData.lastActiveInputNode.disabled = true;
+      // 前置行为
+      let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      // 开始模拟
+      let maxUnitProfit = 0.0;
+      let baseInfo;
+      for (let tampPrice = basePrice; tampPrice < maxPrice; tampPrice += step) {
+        await tools.dely(1);
+        tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
+        baseInfo = this.getInfo(targetNode);
+        let tempUnitProfit = parseFloat(baseInfo.profit);
+        if (tempUnitProfit <= maxUnitProfit) continue;
+        maxUnitProfit = tempUnitProfit;
+        basePrice = tampPrice;
+      }
+      tools.log("价格", basePrice, "单利润", maxUnitProfit);
+      tools.setInput(this.componentData.lastActiveInputNode, basePrice);
+    } finally {
+      // 解锁填写框
+      this.componentData.lastActiveInputNode.disabled = false;
+    }
+  }
+  // 指定时利润
+  async lockHourProfit(event) {
     let targetHourProfit = window.prompt("输入期望的小时收益", "0.0");
     if (isNaN(parseFloat(targetHourProfit))) return;
     try {
       // 锁定填写框
       this.componentData.lastActiveInputNode.disabled = true;
-      // 获取数据
-      let targetNode = tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.querySelector("div > div > h3").parentElement;
-      let quantity = tools.getParentByIndex(this.componentData.lastActiveInputNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
-      let basePrice = parseFloat(this.componentData.lastActiveInputNode.value) * 0.5;
-      let maxPrice = basePrice * 3;
+      // 前置行为
+      let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      // 开始模拟
       let maxProfit = parseFloat(targetHourProfit);
-      let step = this.getStep(maxPrice);
       let baseInfo;
       for (let tampPrice = basePrice; tampPrice < maxPrice; tampPrice += step) {
+        await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
@@ -165,20 +194,18 @@ class retailDisplayProfit extends BaseComponent {
       this.componentData.lastActiveInputNode.disabled = false;
     }
   }
-  // 将价格设定为最大时利润
-  setMaxProfitPrice(event) {
+  // 最大时利润
+  async setMaxProfitPrice(event) {
     try {
       // 锁定填写框
       this.componentData.lastActiveInputNode.disabled = true;
-      // 获取数据
-      let targetNode = tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.querySelector("div > div > h3").parentElement;
-      let quantity = tools.getParentByIndex(this.componentData.lastActiveInputNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
-      let basePrice = parseFloat(this.componentData.lastActiveInputNode.value) * 0.5;
-      let maxPrice = basePrice * 3;
+      // 前置行为
+      let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      // 开始模拟
       let maxProfit = 0.0;
-      let step = this.getStep(maxPrice);
       let baseInfo;
       for (let tampPrice = basePrice; tampPrice < maxPrice; tampPrice += step) {
+        await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
@@ -192,6 +219,19 @@ class retailDisplayProfit extends BaseComponent {
       // 解锁填写框
       this.componentData.lastActiveInputNode.disabled = false;
     }
+  }
+  // 步进模拟前置行为
+  preAction() {
+    // 获取平均价格
+    tools.setInput(this.componentData.lastActiveInputNode, 0);
+    let avgPrice = parseFloat(tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.innerText.split(/\n/).filter(text => text.match("平均价格"))[0].replace("平均价格： $", ""))
+    // 获取数据
+    let targetNode = tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.querySelector("div > div > h3").parentElement;
+    let quantity = tools.getParentByIndex(this.componentData.lastActiveInputNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
+    let basePrice = parseFloat(avgPrice) * 0.8;
+    let maxPrice = parseFloat(avgPrice) * 1.2;
+    let step = this.getStep(maxPrice);
+    return { targetNode, quantity, basePrice, maxPrice, step };
   }
   // 获取步长
   getStep(basePrice) {

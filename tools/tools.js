@@ -49,6 +49,9 @@ class tools {
   static getParentByIndex(node, index) {
     return index ? this.getParentByIndex(node.parentElement, --index) : node;
   }
+  static dely(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
   static formatFeatureConfigComponentList() {
     Object.values(componentList).forEach(item => feature_config.componentSwitchList[item.constructor.name] = item.enable);
   }

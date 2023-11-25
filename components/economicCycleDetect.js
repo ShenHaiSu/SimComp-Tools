@@ -35,7 +35,7 @@ class economicCycleDetect extends BaseComponent {
     let targetTime = new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate() + 5 - nowTime.getDay(), 23, 0, 0, 0);
     let distance = targetTime.getTime() - nowTime.getTime();
     // 十秒一次检测
-    // 未到周五23点 以及最后10秒钟
+    // 周五晚上十一点后三十秒会触发检查周期变动的函数
     if (distance < 0 && distance > -30 * 1000) return this.checkNewData();
   }
   async checkNewData() {
