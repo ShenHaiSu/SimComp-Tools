@@ -98,8 +98,8 @@ class marketPriceTracker extends BaseComponent {
     if (mode == "clear") {
       return this.componentData.trackerIntervalList.map((item) => clearInterval(item));
     } else if (mode == "restart") {
-      this.mainFunc("clear");
-      return this.mainFunc("start");
+      this.mainFunc(undefined,"clear");
+      return this.mainFunc(undefined,"start");
     } else if (mode != "start") return;
     // 启动监控
     let itemMap = []; // {id:1, realm:0, price:[0.1,231,12,12,121,21,12]};
