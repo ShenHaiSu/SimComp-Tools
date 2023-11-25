@@ -128,7 +128,7 @@ class basisCPT extends BaseComponent {
     let mpData = tools.mpFormat(resp);
     let res_id = Math.floor(url.match(/\d+(?=\D*$)/)[0]);
     let realm = Math.floor(url.match(/\/(\d+)/)[1]);
-    tools.log("Realm", realm, "物品名", this.indexDBData.langData["be-re-" + res_id], "物品ID", res_id, "价格", mpData);
+    tools.log("Realm", realm, "物品名", tools.itemIndex2Name(res_id), "物品ID", res_id, "价格", mpData);
     if (!this.indexDBData.resourcePool[realm]) this.indexDBData.resourcePool[realm] = [];
     this.indexDBData.resourcePool[realm][res_id] = mpData;
     tools.indexDB_updateIndexDBData();

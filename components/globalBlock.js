@@ -86,7 +86,7 @@ class globalBlock extends BaseComponent {
   // 交易所屏蔽
   marketBlockFunc(event) {
     // 屏蔽键盘事件
-    if (event.type == "keydown") return;
+    if (event == undefined || event.type == "keydown") return;
     if (this.indexDBData.blockZone == 2) return;
     // 检查交易所列表以及上次执行时间差
     let infoList = Object.values(document.querySelectorAll("tr>td>div>div>span")).map(node => tools.getParentByIndex(node, 4));
@@ -126,7 +126,7 @@ class globalBlock extends BaseComponent {
   // 聊天室屏蔽
   chatBlockFunc(event) {
     // 屏蔽键盘事件
-    if (event.type == "keydown") return;
+    if (event == undefined || event.type == "keydown") return;
     if (this.indexDBData.blockZone == 1) return;
     // 检查消息长度
     let msgDivList = Object.values(document.querySelectorAll("div>a>div>img.logo")).map(node => tools.getParentByIndex(node, 3));

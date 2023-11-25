@@ -133,6 +133,7 @@ class tools {
       let result = Math.floor(key.replace("be-re-", ""));
       return result;
     }
+    return undefined;
   }
   static itemIndex2Name(index) {
     return langData["be-re-" + index];

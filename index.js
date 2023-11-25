@@ -25,6 +25,7 @@ async function scriptMainInit() {
   await tools.indexDB_updateLoadCount();
   await tools.indexDB_loadFeatureConf();
   await tools.indexDB_loadIndexDBData();
+  await tools.indexDB_loadLangData();
   // 挂载css
   tools.CSSMount("mount");
   // 执行缩放比例

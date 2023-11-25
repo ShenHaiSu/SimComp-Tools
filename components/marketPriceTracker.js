@@ -16,28 +16,80 @@ class marketPriceTracker extends BaseComponent {
   };
   componentData = {
     trackerIntervalList: [], // 价格追踪计时器列表
+    settingTemplateNode: undefined, // 设置界面模板要素
   };
+  cssText = [
+    `#setting-container-7 input.script_mpTracker_resid{min-width:70px;}#setting-container-7 input.script_mpTracker_price{min-width:110px;}#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}`
+  ];
   startupFuncList = [
     this.mainFunc
   ];
   settingUI = () => {
+    // 创建挂载标签
     let newNode = document.createElement("div");
-    let htmlText = `<div><div class='header'>交易所低价提示设置</div><div class='container'><div><div><button class="btn script_opt_submit">保存并重启监控</button></div></div><div style=text-align:center;width:100%;height:100%><div class="buttonContainer row"style=margin-top:10px><button id='script_mptrack_setting_show' class="btn col-sm-4 dbButton">罗列</button> <button id='script_mptrack_setting_add' class="btn col-sm-4 dbButton">增添</button> <button id='script_mptrack_setting_delete' class="btn col-sm-4 dbButton">删除</button></div><table><tr><td>资源id<td><input class=form-control type=number><tr><td>资源品质<td><select class=form-control value=0><option value=0>所有q<option value=1>q1或以上<option value=2>q2或以上<option value=3>q3或以上<option value=4>q4或以上<option value=5>q5或以上<option value=6>q6或以上<option value=7>q7或以上<option value=8>q8或以上<option value=9>q9或以上<option value=10>q10或以上<option value=11>q11或以上<option value=12>q12</select><tr><td>服务器<td><select class=form-control value=0><option value=0>R1 M服<option value=1>R2 E服</select><tr><td>目标价格<td><input class=form-control type=number></table></div></div></div>`;
-    newNode.innerHTML = htmlText;
-    newNode.id = "setting-container-7";
+    newNode.innerHTML = `<div class=header>交易所低价提示设置</div><div class=container><div><div><button class="btn script_opt_submit">保存并重启监控</button></div></div><div><table><thead><tr><td>ID<td>品质<td>服务器<td>价格<td>删除<tbody id=script_itemTargetNode></table><button class="col-sm-12 form-control"id=script_mpTracker_addT>添加</button></div></div>`;
+    newNode.id = `setting-container-7`;
     newNode.className = "col-sm-12 setting-container";
-    // 挂载按钮函数
-    newNode.querySelector("div.setting-container button.script_opt_submit").addEventListener("click", () => this.settingSubmitHandle());
-    newNode.querySelector("div.setting-container button#script_mptrack_setting_show").addEventListener("click", () => this.showAllConf());
-    newNode.querySelector("div.setting-container button#script_mptrack_setting_add").addEventListener("click", () => this.addData());
-    newNode.querySelector("div.setting-container button#script_mptrack_setting_delete").addEventListener("click", () => this.deleteData());
-    // 返回元素
+    // 初始化模板对象以及获取挂载目标
+    let templateTarget = newNode.querySelector("tbody#script_itemTargetNode");
+    if (!this.componentData.settingTemplateNode) {
+      this.componentData.settingTemplateNode = document.createElement("tr");
+      this.componentData.settingTemplateNode.innerHTML = `<td><input class="form-control script_mpTracker_resid"type=number><td><select class="form-control script_mpTracker_quality"><option value=0>0<option value=1>1<option value=2>2<option value=3>3<option value=4>4<option value=5>5<option value=6>6<option value=7>7<option value=8>8<option value=9>9<option value=10>10<option value=11>11<option value=12>12</select><td><select class="form-control script_mpTracker_realm"><option value=0>R1 M服<option value=1>R2 E服</select><td><input class="form-control script_mpTracker_price"type=number><td><button class="btn script_mpTracker_delete">删除</button>`;
+    }
+    // 绑定事件分发
+    newNode.addEventListener('click', event => this.settingRootClickHandle(event));
+    // 克隆并更新数据后挂载
+    for (let i = 0; i < this.indexDBData.trackTargetList.length; i++) {
+      let item = this.indexDBData.trackTargetList[i];
+      let itemInfoNode = this.componentData.settingTemplateNode.cloneNode(true);
+      itemInfoNode.querySelector("input.script_mpTracker_resid").value = item.id;
+      itemInfoNode.querySelector("select.script_mpTracker_quality").value = item.quality;
+      itemInfoNode.querySelector("select.script_mpTracker_realm").value = item.realm;
+      itemInfoNode.querySelector("input.script_mpTracker_price").value = item.target_price;
+      templateTarget.appendChild(itemInfoNode);
+    }
+    // 返回挂载标签
     return newNode;
   }
+  // 设置界面点击事件分发
+  settingRootClickHandle(event) {
+    if (event.target.tagName != "BUTTON") return;
+    if (event.target.className.match("script_opt_submit")) return this.settingSubmitHandle();
+    if (event.target.className.match("script_mpTracker_delete")) return this.settingDeleteButtonHandle(event);
+    if (event.target.id == "script_mpTracker_addT") return this.settingAddItem();
+  }
+  // 保存并重启监控
   async settingSubmitHandle() {
+    // 获取数据
+    let valueNodeList = Object.values(document.querySelectorAll("tbody#script_itemTargetNode>tr>td>input, tbody#script_itemTargetNode>tr>td>select"));
+    // 审查并添加数据
+    let newArray = []; // [{id:123,quality:0,realm:0,target_price:0.159}]
+    for (let i = 0; i < valueNodeList.length; i += 4) {
+      // 格式化
+      let resid = Math.floor(valueNodeList[i].value);
+      let quality = Math.floor(valueNodeList[i + 1].value);
+      let realm = Math.floor(valueNodeList[i + 2].value);
+      let price = parseFloat(valueNodeList[i + 3].value);
+      // 审查
+      if (resid <= 0 || price <= 0) return window.alert("id和价格不能小于等于0");
+      if (tools.itemIndex2Name(resid) == undefined) return window.alert("有存在无法找到物品名的id,请检查是否有id错误.");
+      // 添加
+      newArray.push({ id: resid, quality, realm, target_price: price });
+    }
+    this.indexDBData.trackTargetList = newArray;
+    // 保存并重载
     await tools.indexDB_updateIndexDBData();
     this.mainFunc(undefined, "restart");
     window.alert("以保存配置并发起功能重启。");
+  }
+  // 添加一个监控编辑框
+  settingAddItem() {
+    document.querySelector("tbody#script_itemTargetNode").appendChild(this.componentData.settingTemplateNode.cloneNode(true));
+  }
+  // 删除当前监控编辑框
+  settingDeleteButtonHandle(event) {
+    console.log(tools.getParentByIndex(event.target, 2));
+    tools.getParentByIndex(event.target, 2).remove();
   }
   async showAllConf() {
     // 罗列
@@ -98,8 +150,8 @@ class marketPriceTracker extends BaseComponent {
     if (mode == "clear") {
       return this.componentData.trackerIntervalList.map((item) => clearInterval(item));
     } else if (mode == "restart") {
-      this.mainFunc(undefined,"clear");
-      return this.mainFunc(undefined,"start");
+      this.mainFunc(undefined, "clear");
+      return this.mainFunc(undefined, "start");
     } else if (mode != "start") return;
     // 启动监控
     let itemMap = []; // {id:1, realm:0, price:[0.1,231,12,12,121,21,12]};
