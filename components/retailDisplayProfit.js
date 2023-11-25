@@ -224,7 +224,7 @@ class retailDisplayProfit extends BaseComponent {
   preAction() {
     // 获取平均价格
     tools.setInput(this.componentData.lastActiveInputNode, 0);
-    let avgPrice = parseFloat(tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.innerText.split(/\n/).filter(text => text.match("平均价格"))[0].replace("平均价格： $", ""))
+    let avgPrice = parseFloat(tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.innerText.split(/\n/).filter(text => text.match("平均价格"))[0].replace(/平均价格： \$|,/g, ""))
     // 获取数据
     let targetNode = tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.querySelector("div > div > h3").parentElement;
     let quantity = tools.getParentByIndex(this.componentData.lastActiveInputNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
