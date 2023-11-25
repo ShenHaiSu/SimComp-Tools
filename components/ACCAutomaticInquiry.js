@@ -20,9 +20,8 @@ class ACCAutomaticInquiry extends BaseComponent {
     if (document.querySelectorAll("b.script_automatic_inquiry_b").length != 0) return;
     if (this.componentData.loadFlag) return;
     this.componentData.loadFlag = true;
-    let nodeList = [];
+    let nodeList = Object.values(document.querySelectorAll("a[aria-label='Sign contract']")).map(node => tools.getParentByIndex(node,3));
     let realm = runtimeData.basisCPT.realm;
-    document.querySelectorAll("a[aria-label='Sign contract']").forEach((node) => nodeList.push(tools.getParentByIndex(node, 3)));
     for (let i = 0; i < nodeList.length; i++) {
       let node = nodeList[i];
       let nodeInfo = this.queryNodeInfo(node.getAttribute("aria-label"));
@@ -55,7 +54,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     matchOut = input.match(/(\d+)\squality\s(\d+)\s(.+?)\s/);
     output.push(tools.itemName2Index(matchOut[3]));
     output = output.concat([matchOut[3], matchOut[1], matchOut[2]]);
-    matchOut = input.match(/\$(\d+.\d+)/g);
+    matchOut = input.match(/\$(\d+.\d+|\d+)/g);
     output = output.concat([parseFloat(matchOut[0].replace("$", "")), parseFloat(matchOut[1].replace("$", ""))]);
     output.push(input.match(/from.+?(.+)/)[1]);
     return output;
