@@ -252,7 +252,7 @@ class retailDisplayProfit extends BaseComponent {
     let quantity = tools.getParentByIndex(this.componentData.lastActiveInputNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
     let basePrice = parseFloat(avgPrice) * this.indexDBData.minRate;
     let maxPrice = parseFloat(avgPrice) * this.indexDBData.maxRate;
-    let step = this.getStep(maxPrice);
+    let step = this.getStep(basePrice);
     return { targetNode, quantity, basePrice, maxPrice, step };
   }
   // 获取步长

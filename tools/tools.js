@@ -28,6 +28,10 @@ class tools {
   static msgBodyNode = undefined; // 网页内消息使用的元素
   static lastMutation = undefined; // 最近一次元素变动记录
   static windowMask = undefined; // 网页遮罩页面
+  static msgShowFlag = {  // SCT底色改变
+    timer: undefined,
+    flag: false,
+  };
 
   static baseURL = {
     // 用户基础信息 GET
@@ -452,12 +456,11 @@ class tools {
       tools.log("网页内消息插件未检测到容器元素,无法正常执行.");
     }
   }
-/**
- * 
- * @param {String} title 信息标题
- * @param {string|Node} body 信息内容,可以是文字或者html节点
- * @param {number} channel 通知通道 0原生 1网页内
- */
+  /**
+   * @param {String} title 信息标题
+   * @param {string|Node} body 信息内容,可以是文字或者html节点
+   * @param {number} channel 通知通道 0原生 1网页内
+   */
   static msg_send(title, body = "", channel = undefined) {
     // 通知模式，0 原生Notification对象 1 网页内信息 -1 是无
     let actimeChannel = [];
@@ -480,6 +483,11 @@ class tools {
         newNode.querySelector("td:nth-of-type(2)").appendChild(body);
       }
       this.msgBodyNode.appendChild(newNode);
+      // 底色改变通知
+      this.msgShowFlag.timer = setInterval(() => {
+        Object.assign(document.querySelector("div#script_hover_node>div>span").style, { backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c" });
+        this.msgShowFlag.flag = !this.msgShowFlag.flag;
+      }, 2000);
     }
 
   }

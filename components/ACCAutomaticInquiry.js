@@ -13,14 +13,33 @@ class ACCAutomaticInquiry extends BaseComponent {
     match: () => Boolean(location.href.match("headquarters/warehouse/incoming-contracts")),
     func: this.mainFunc
   }];
+  indexDBData = {
+    exactDigit: 0, // 精度 默认0
+  }
   componentData = {
     loadFlag: false, // 加载标记
   };
+  settingUI = () => {
+    let newNode = document.createElement("div");
+    newNode.id = "script_ACCAutoQuery_setting";
+    newNode.innerHTML = `<div class=header>接受合同界面自动询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input class=form-control type=number step='1' value='${this.indexDBData.exactDigit}'></table></div>`
+    newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmit());
+    return newNode;
+  }
+  settingSubmit() {
+    let valueList = Object.values(document.querySelectorAll("div#script_ACCAutoQuery_setting input")).map(node => node.value);
+    // 检查数据
+    if (valueList[0] < 0) return window.alert("精度必须是整数且大于等于0");
+    // 更新数据保存
+    this.indexDBData.exactDigit = parseFloat(valueList[0]);
+    tools.indexDB_updateIndexDBData();
+    window.alert("提交更新");
+  }
   async mainFunc() {
     if (document.querySelectorAll("b.script_automatic_inquiry_b").length != 0) return;
     if (this.componentData.loadFlag) return;
     this.componentData.loadFlag = true;
-    let nodeList = Object.values(document.querySelectorAll("a[aria-label='Sign contract']")).map(node => tools.getParentByIndex(node,3));
+    let nodeList = Object.values(document.querySelectorAll("a[aria-label='Sign contract']")).map(node => tools.getParentByIndex(node, 3));
     let realm = runtimeData.basisCPT.realm;
     for (let i = 0; i < nodeList.length; i++) {
       let node = nodeList[i];
@@ -30,7 +49,7 @@ class ACCAutomaticInquiry extends BaseComponent {
       let market_price = await tools.getMarketPrice(nodeInfo[0], nodeInfo[3], realm);
       let market_price_offset = 0;
       try {
-        market_price_offset = ((nodeInfo[4] / market_price - 1) * 100).toFixed(0);
+        market_price_offset = ((nodeInfo[4] / market_price - 1) * 100).toFixed(this.indexDBData.exactDigit);
         market_price_offset = market_price_offset > 0 ? `+${market_price_offset}` : market_price_offset.toString();
       } catch {
         market_price_offset = "";

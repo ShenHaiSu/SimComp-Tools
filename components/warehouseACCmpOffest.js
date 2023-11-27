@@ -11,6 +11,7 @@ class warehouseACCmpOffest extends BaseComponent {
   }
   indexDBData = {
     mp_offest: 3, // mp-0 默认是0 就是 市场价-0%
+    percentSign: false, // 是否显示百分比符号 默认false
   }
   componentData = {
     onLoad: false, // 正在加载标记
@@ -21,20 +22,25 @@ class warehouseACCmpOffest extends BaseComponent {
   }]
   settingUI = () => {
     let newNode = document.createElement("div");
-    newNode.className = "col-sm-12 setting-container";
     newNode.id = "accMPoffsetSetting";
-    newNode.innerHTML = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td>功能</td><td>设置</td></tr></thead><tbody><tr><td title="MarketPrice Offest 偏移量 填写1 就是 mp-1">mp量</td><td><input type='number' class="form-control" value="#####"></td></tr></tbody></table></div>`;
+    newNode.innerHTML = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td>功能</td><td>设置</td></tr></thead><tbody><tr><td title="MarketPrice Offest 偏移量 填写1 就是 mp-1">mp量</td><td><input type='number' class="form-control" value="#####"></td></tr><tr><td title="勾选就是显示百分比符号,仅仅是显示而已,勾选与否都是使用百分比去计算的">是否显示百分号</td><td><input type='checkbox' style='height:20px;' class="form-control" ######></td></tr></tbody></table></div>`;
     newNode.innerHTML = newNode.innerHTML.replace("#####", this.indexDBData.mp_offest);
+    newNode.innerHTML = newNode.innerHTML.replace("######", this.indexDBData.percentSign ? "checked" : "");
     // 绑定按钮
     newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmit())
     // 返回元素
     return newNode;
   }
   settingSubmit() {
-    let value = parseFloat(document.querySelector("div#accMPoffsetSetting input").value);
-    if (value == 0) value == 0;
-    if (value < 0 || value >= 100) return window.alert("你要不要看看你填的啥?");
-    this.indexDBData.mp_offest = value;
+    let valueList = Object.values(document.querySelectorAll("div#accMPoffsetSetting input")).map(node => {
+      if (node.type == "number") return parseFloat(node.value);
+      if (node.type == "checkbox") return node.checked;
+      return node.value;
+    });
+    // 信息检查
+    if (valueList[0] < 0 || valueList[0] >= 100) return window.alert("你要不要看看你填的啥?");
+    this.indexDBData.mp_offest = valueList[0];
+    this.indexDBData.percentSign = valueList[1];
     tools.indexDB_updateIndexDBData();
     window.alert("已提交更改");
   }
@@ -56,7 +62,7 @@ class warehouseACCmpOffest extends BaseComponent {
       let quality = this.getQuality(document.querySelector("form"));
       let market_price = await tools.getMarketPrice(res_id, quality, realm);
       if (market_price == 0) market_price = 0;
-      let displayText = `MP-${this.indexDBData.mp_offest}：`;
+      let displayText = `MP-${this.indexDBData.mp_offest}${this.indexDBData.percentSign ? "%" : ""}：`;
       displayText += `${(market_price * (100 - this.indexDBData.mp_offest) / 100).toFixed(3)}`;
       newNode.innerText = displayText;
       document.querySelector("input[name='price']").parentElement.appendChild(newNode);
