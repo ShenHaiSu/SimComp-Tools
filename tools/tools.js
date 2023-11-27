@@ -27,6 +27,7 @@ class tools {
   static publicCSS = ""; // 所有组件使用的css
   static msgBodyNode = undefined; // 网页内消息使用的元素
   static lastMutation = undefined; // 最近一次元素变动记录
+  static windowMask = undefined; // 网页遮罩页面
 
   static baseURL = {
     // 用户基础信息 GET
@@ -49,7 +50,7 @@ class tools {
   static getParentByIndex(node, index) {
     return index ? this.getParentByIndex(node.parentElement, --index) : node;
   }
-  static dely(ms) {
+  static async dely(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
   static formatFeatureConfigComponentList() {
@@ -124,6 +125,27 @@ class tools {
     event.simulated = true; // hack React15
     if (inputNode._valueTracker) inputNode._valueTracker.setValue(lastValue); // hack React16 内部定义了descriptor拦截value，此处重置状态
     inputNode.dispatchEvent(event);
+  }
+  static createWindowMask() {
+    if (Boolean(tools.windowMask)) return;
+    // 构建css标签
+    let styleElement = document.createElement("style");
+    let windowMaskNode = document.createElement("div");
+    styleElement.setAttribute("type", "text/css");
+    styleElement.textContent = `div#script_tools_windowMask{height:100%;width:100%;position:absolute;top:0;left:0;z-index:5000;background-color:rgb(0,0,0,0.5);}div#script_tools_windowMask>div>svg{width:30%;height:30%;display:block;position:absolute;top:35%;left:50%;transform:translateX(-50%) translateY(-50%);}div#script_tools_windowMask>div:nth-of-type(2){color:var(--fontColor);align-items:center;text-align:center;display:block;width:fit-content;height:fit-content;transform:translateX(-50%) translateY(-50%);position:absolute;top:65%;left:50%;}div#script_tools_windowMask>div:nth-of-type(2)>div{padding:20px;font-size:30px;width:fit-content;height:fit-content;border:solid 5px black;border-radius:10px;box-shadow:0 0 10px 10px white;background-color:rgb(0,0,0,0.5);}div#script_tools_windowMask>div:nth-of-type(2)>button{background-color:rgb(0,0,0,0.8);margin-top:20px;width:160px;height:40px;}`;
+    windowMaskNode.id = "script_tools_windowMask";
+    windowMaskNode.innerHTML = `<div><svg viewBox="0 0 24 24" xmlns=http://www.w3.org/2000/svg><path d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"fill=currentColor opacity=.5></path><path d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"fill=currentColor><animateTransform attributeName=transform dur=1s from="0 12 12"repeatCount=indefinite to="360 12 12"type=rotate></animateTransform></path></svg></div><div><div><span>操作进行中</span></div><button class=btn>取消操作</button></div>`;
+    windowMaskNode.querySelector("button").addEventListener('click', () => window.confirm("确定终止操作并刷新网页吗?") ? location.reload() : null);
+    Object.assign(windowMaskNode.style, { display: "none" });
+    tools.windowMask = windowMaskNode;
+    // 挂载标签
+    document.head.appendChild(styleElement);
+    document.body.appendChild(windowMaskNode);
+  }
+  static setWindowMask(flag = false) {
+    if (typeof flag !== "boolean") return;
+    if (!tools.windowMask) tools.createWindowMask();
+    Object.assign(tools.windowMask.style, { display: flag ? "block" : "none" });
   }
   static itemName2Index(name) {
     for (const key in langData) {
@@ -430,6 +452,12 @@ class tools {
       tools.log("网页内消息插件未检测到容器元素,无法正常执行.");
     }
   }
+/**
+ * 
+ * @param {String} title 信息标题
+ * @param {string|Node} body 信息内容,可以是文字或者html节点
+ * @param {number} channel 通知通道 0原生 1网页内
+ */
   static msg_send(title, body = "", channel = undefined) {
     // 通知模式，0 原生Notification对象 1 网页内信息 -1 是无
     let actimeChannel = [];
@@ -445,9 +473,15 @@ class tools {
     if (actimeChannel.includes(1)) {
       let newNode = document.createElement("tr");
       let time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-      newNode.innerHTML = `<td>${time}</td><td>${title}\n${body}</td>`;
+      if (body.tagName == undefined) {
+        newNode.innerHTML = `<td>${time}</td><td>${title}\n${body}</td>`;
+      } else {
+        newNode.innerHTML = `<td>${time}</td><td>${title}\n</td>`;
+        newNode.querySelector("td:nth-of-type(2)").appendChild(body);
+      }
       this.msgBodyNode.appendChild(newNode);
     }
+
   }
   static msg_clear() {
 

@@ -19,10 +19,32 @@ class retailDisplayProfit extends BaseComponent {
     containerNode: undefined, // 显示容器元素
     lastActiveInputNode: undefined, // 最后一次激活中的input标签
   }
+  indexDBData = {
+    minRate: 0.8, // 遍历价格初始倍率
+    maxRate: 1.2, // 遍历价格最大倍率
+  }
   cssText = [
-    `#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%) translateX(-50%);width:270px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#6B6B6B;margin-top:5px;}`
+    `#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%) translateX(-50%);width:270px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}`
   ];
 
+  settingUI = () => {
+    let newNode = document.createElement("div");
+    let htmlText = `<div class=header>零售利润显示组件设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=遍历价格的初始倍率>初始倍率<td><input class=form-control type=number value=######><tr><td title=遍历价格的最大倍率>最大倍率<td><input class=form-control type=number value=######></table></div>`;
+    htmlText = htmlText.replace("######", this.indexDBData.minRate);
+    htmlText = htmlText.replace("######", this.indexDBData.maxRate);
+    newNode.id = "script_srtting_retailProfit";
+    newNode.innerHTML = htmlText;
+    newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmitHandle());
+    return newNode;
+  }
+  settingSubmitHandle() {
+    let valueList = Object.values(document.querySelectorAll("div#script_srtting_retailProfit input")).map(node => parseFloat(node.value));
+    if (valueList.includes(NaN) || valueList.findIndex(rate => rate <= 0) != -1) return window.alert("数据不正确");
+    this.indexDBData.minRate = valueList[0];
+    this.indexDBData.maxRate = valueList[1];
+    tools.indexDB_updateIndexDBData();
+    window.alert("已提交更改");
+  }
   async mainFunc() {
     // 初始化
     let activeNode = document.activeElement;
@@ -228,8 +250,8 @@ class retailDisplayProfit extends BaseComponent {
     // 获取数据
     let targetNode = tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.querySelector("div > div > h3").parentElement;
     let quantity = tools.getParentByIndex(this.componentData.lastActiveInputNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
-    let basePrice = parseFloat(avgPrice) * 0.8;
-    let maxPrice = parseFloat(avgPrice) * 1.2;
+    let basePrice = parseFloat(avgPrice) * this.indexDBData.minRate;
+    let maxPrice = parseFloat(avgPrice) * this.indexDBData.maxRate;
     let step = this.getStep(maxPrice);
     return { targetNode, quantity, basePrice, maxPrice, step };
   }

@@ -15,7 +15,8 @@ class basisCPT extends BaseComponent {
     this.startupUserInfo,
     this.startupWarehouseInfo,
     this.startupSideBarMain,
-    this.startupSettingContainer
+    this.startupSettingContainer,
+    this.startupForDonation
   ]
   netFuncList = [
     {    // 用户信息拦截
@@ -235,6 +236,8 @@ class basisCPT extends BaseComponent {
   sideBarSub_showSetting(component) {
     if (this.componentData.cptSettingShow) return;
     let cptSettingNode = component.settingUI.call(component);
+    // 添加默认class
+    if (!cptSettingNode.className.includes("col-sm-12 setting-container")) cptSettingNode.className += " col-sm-12 setting-container";
     this.componentData.cptSettingBodyNode.appendChild(cptSettingNode);
     Object.assign(document.querySelector("div#script_cpt_setting_container").style, { display: "block" });
     this.componentData.cptSettingShow = true;
@@ -253,6 +256,8 @@ class basisCPT extends BaseComponent {
     document.body.appendChild(settingContainerNode);
     this.componentData.cptSettingContainerNode = settingContainerNode;
     this.componentData.cptSettingBodyNode = settingContainerNode.querySelector("div#script_setting_body");
+
+    // 关闭按钮绑定事件
     settingContainerNode
       .querySelector("div#script_setting_head button")
       .addEventListener("click", () => {
@@ -349,6 +354,29 @@ class basisCPT extends BaseComponent {
     tools.log("触发防抖保存IndexedDB");
     await tools.indexDB_updateFeatureConf();
     await tools.indexDB_updateIndexDBData();
+  }
+  // 求捐赠函数
+  startupForDonation() {
+    let msgBody = document.createElement("div");
+    let donationSite = document.createElement("a");
+    donationSite.href = "https://afdian.net/a/SCT-Editor";
+    donationSite.innerText = "点我前往捐赠";
+    donationSite.setAttribute("target", "_blank");
+    donationSite.style.marginRight = "10px";
+    let donationList = document.createElement("a");
+    donationList.innerText = "捐赠者名单"
+    donationList.addEventListener('click', async (event) => {
+      event.preventDefault();
+      let list = await tools.getNetData("https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy@main/commonData/donors.json?" + await tools.generateUUID());
+      list.sort(() => (Math.random() - 0.5) > 0);
+      let shoMsg = "    作为SimCompsTools开发者道洛LTS,我非常感谢每一个用户的支持与帮助,更感谢所有支持者的慷慨捐赠.您的慷慨使我能够继续投入时间和精力来提供更好的功能/修复问题和满足更多用户的需求.非常感谢大家!\n  捐赠者名单:(不区分先后)\n\n";
+      shoMsg += `  ${list.join(", ")}\n\n`;
+      shoMsg += `    再次由衷的感谢所有支持者和用户!`
+      window.alert(shoMsg);
+    })
+    msgBody.appendChild(donationSite);
+    msgBody.appendChild(donationList);
+    tools.msg_send("肚肚饿饿", msgBody, 1);
   }
 }
 new basisCPT();
