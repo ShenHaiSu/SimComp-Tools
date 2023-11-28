@@ -19,7 +19,8 @@ class marketPriceTracker extends BaseComponent {
     settingTemplateNode: undefined, // 设置界面模板要素
   };
   cssText = [
-    `#setting-container-7 input.script_mpTracker_resid{min-width:70px;}#setting-container-7 input.script_mpTracker_price{min-width:110px;}#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}`
+    `#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}#setting-container-7 button.script_mpTracker_delete:hover{color: var(--fontColor);}#setting-container-7 tr>td:nth-of-type(1){min-width:70px;}#setting-container-7 tr>td:nth-of-type(2){min-width:64px;}#setting-container-7 tr>td:nth-of-type(3){min-width:96px;}#setting-container-7 tr>td:nth-of-type(4){min-width:110px;}`,
+    `#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}#setting-container-7 button.script_mpTracker_delete:hover{color:var(--fontColor);}#setting-container-7 tr>td:nth-of-type(1){min-width:50px;}#setting-container-7 tr>td:nth-of-type(2){min-width:64px;}#setting-container-7 tr>td:nth-of-type(3){min-width:96px;}#setting-container-7 tr>td:nth-of-type(4){min-width:80px;}`
   ];
   startupFuncList = [
     this.mainFunc

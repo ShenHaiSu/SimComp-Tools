@@ -41,7 +41,9 @@ class tools {
     // 仓库数据 GET
     warehouse: "https://www.simcompanies.com/api/v2/resources/",
     // 交易所 /realm/resid
-    market: "https://www.simcompanies.com/api/v3/market/all"
+    market: "https://www.simcompanies.com/api/v3/market/all",
+    // 高管信息
+    executives: "https://www.simcompanies.com/api/v2/companies/me/executives/"
   }
   static log() {
     if (!feature_config.debug) return;
@@ -150,6 +152,14 @@ class tools {
     if (typeof flag !== "boolean") return;
     if (!tools.windowMask) tools.createWindowMask();
     Object.assign(tools.windowMask.style, { display: flag ? "block" : "none" });
+  }
+  static async getRealm() {
+    let realm = runtimeData.basisCPT.realm;
+    while (realm == undefined) {
+      await tools.dely(1000);
+      realm = runtimeData.basisCPT.realm;
+    }
+    return realm;
   }
   static itemName2Index(name) {
     for (const key in langData) {
@@ -291,7 +301,7 @@ class tools {
         result = ',' + result;
       }
     }
-    return result;
+    return result.replace("-,","-");
   }
   /**
    * 更新/创建数据
@@ -484,6 +494,7 @@ class tools {
       }
       this.msgBodyNode.appendChild(newNode);
       // 底色改变通知
+      if (this.msgShowFlag.timer) clearInterval(this.msgShowFlag.timer);
       this.msgShowFlag.timer = setInterval(() => {
         Object.assign(document.querySelector("div#script_hover_node>div>span").style, { backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c" });
         this.msgShowFlag.flag = !this.msgShowFlag.flag;

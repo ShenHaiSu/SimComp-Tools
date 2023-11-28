@@ -96,16 +96,17 @@ class easyText extends BaseComponent {
   buildOldContainer() {
     let newButton = document.createElement("button");
     let newContainer = document.createElement("div");
-    let editerNode = document.createElement("textarea");
+    let editor = document.createElement("textarea");
     Object.assign(newButton.style, { backgroundColor: this.indexDBData.backgroundCSS });
     newButton.id = "script_easeyText_button";
     newContainer.id = "script_easeyText_rootOld";
-    editerNode.id = "script_easyText_textArea";
+    editor.id = "script_easyText_textArea";
     newButton.innerText = "eTEXT";
-    newContainer.appendChild(editerNode);
+    newContainer.appendChild(editor);
     document.body.appendChild(newButton);
     document.body.appendChild(newContainer);
     newButton.addEventListener("click", () => this.oldSwicthBtn());
+    editor.addEventListener("change", event => this.oldEditorChange(event));
     this.componentData.rootNode = newContainer;
     this.indexDBData.isShow = !this.indexDBData.isShow;
     this.oldSwicthBtn();
@@ -118,6 +119,11 @@ class easyText extends BaseComponent {
     });
     this.componentData.rootNode.querySelector("#script_easyText_textArea").value = this.indexDBData.textContent;
     this.indexDBData.isShow = !this.indexDBData.isShow;
+    tools.indexDB_updateIndexDBData();
+  }
+  // 旧版编辑器内容变动
+  oldEditorChange(event) {
+    this.indexDBData.textContent = event.target.value;
     tools.indexDB_updateIndexDBData();
   }
 

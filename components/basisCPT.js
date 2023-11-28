@@ -16,6 +16,7 @@ class basisCPT extends BaseComponent {
     this.startupWarehouseInfo,
     this.startupSideBarMain,
     this.startupSettingContainer,
+    this.startupExecutives,
     this.startupForDonation
   ]
   netFuncList = [
@@ -34,6 +35,9 @@ class basisCPT extends BaseComponent {
     }, { // 语言包拦截
       urlMatch: url => { return Boolean(url.match(/lang5\/zh.json$/)) },
       func: this.langData
+    }, { // 高管拦截
+      urlMatch: url => { },
+      func: this.netExecutives
     }
   ]
   debounceFuncList = [{
@@ -62,6 +66,7 @@ class basisCPT extends BaseComponent {
     userInfo: [[], []], // 用户数据，
     warehouse: [[], []], // 仓库数据
     resourcePool: [[], []], // 交易所数据 
+    executives:[[],[]], // 高管信息
   }
   settingUI = this.uisetting;
   // 组件开关提交按钮
@@ -144,6 +149,16 @@ class basisCPT extends BaseComponent {
     // 删除旧数据
     delete this.indexDBData["langData"];
     tools.indexDB_updateLangData(langData);
+  }
+  // 高管信息网络请求拦截函数
+  async netExecutives(url, method, resp) {
+    let data = JSON.parse(resp);
+    let realm = this.componentData.realm;
+    while(realm !== 0 && realm !== 1) {
+      await tools.dely(1000);
+      realm = this.componentData.realm;
+    }
+    this.indexDBData.executives[realm] = data;
   }
   // 自启动用户信息获取
   async startupUserInfo() {
@@ -374,14 +389,26 @@ class basisCPT extends BaseComponent {
       event.preventDefault();
       let list = await tools.getNetData("https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy@main/commonData/donors.json?" + await tools.generateUUID());
       list.sort(() => Math.random() - 0.5);
-      let shoMsg = "    作为SimCompsTools开发者道洛LTS,我非常感谢每一个用户的支持与帮助,更感谢所有支持者的慷慨捐赠.您的慷慨使我能够继续投入时间和精力来提供更好的功能/修复问题和满足更多用户的需求.非常感谢大家!\n  捐赠者名单:(不区分先后)\n\n";
-      shoMsg += `  ${list.join(", ")}\n\n`;
-      shoMsg += `    再次由衷的感谢所有支持者和用户!`
-      window.alert(shoMsg);
+      let shoMsg = "作为SimCompsTools开发者道洛LTS,我非常感谢每一个用户的支持与帮助,更感谢所有支持者的慷慨捐赠.您的慷慨使我能够继续投入时间和精力来提供更好的功能/修复问题和满足更多用户的需求.非常感谢大家!";
+      tools.msg_send("", shoMsg, 1);
+      tools.msg_send("", "捐赠者名单(不区分先后):", 1);
+      tools.msg_send("", `${list.join(", ")}`, 1);
+      tools.msg_send("", `再次由衷的感谢所有支持者和用户!`, 1);
     })
     msgBody.appendChild(donationSite);
     msgBody.appendChild(donationList);
     tools.msg_send("肚肚饿饿", msgBody, 1);
+  }
+  // 主动获取高管信息
+  async startupExecutives(){
+    let realm = await tools.getRealm();
+    let netData = await tools.getNetData(tools.baseURL.executives);
+    if (!netData) {
+      await tools.dely(5000);
+      return this.startupExecutives();
+    }
+    this.indexDBData.executives[realm] = netData;
+    await tools.indexDB_updateIndexDBData();
   }
 }
 new basisCPT();
