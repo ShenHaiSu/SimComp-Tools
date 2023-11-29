@@ -16,7 +16,7 @@ class queryHistoricalContracts extends BaseComponent {
     blockCataList: ["o", "p", "b"], // 屏蔽的变动类别
   }
   cssText = [
-    `#script_hisContracts_mainDiv{color:var(--fontColor);}#script_hisContracts_mainDiv table>thead{text-align:center;}#script_hisContracts_mainDiv table{width:100%;border-collapse:separate;border-spacing:10px;}#script_hisContracts_mainDiv table tr>td:nth-of-type(1)>span{display:block;width:100px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}#script_hisContracts_mainDiv table tr>td:nth-of-type(5){text-align:end;}`
+    `#script_hisContracts_mainDiv{color:var(--fontColor);background-color:rgb(0,0,0,0.7);}#script_hisContracts_mainDiv table>thead{text-align:center;}#script_hisContracts_mainDiv table{width:100%;border-collapse:separate;border-spacing:10px;}#script_hisContracts_mainDiv table tr>td:nth-of-type(1)>span{display:block;width:100px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}#script_hisContracts_mainDiv table tr>td:nth-of-type(5){text-align:end;}`
   ]
   commonFuncList = [{
     match: () => Boolean(/headquarters\/warehouse\/.+/.test(location.href) && document.querySelectorAll("button.link-button[type='button']").length != 0),
