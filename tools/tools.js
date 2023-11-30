@@ -498,7 +498,7 @@ class tools {
       this.msgShowFlag.timer = setInterval(() => {
         Object.assign(document.querySelector("div#script_hover_node>div>span").style, { backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c" });
         this.msgShowFlag.flag = !this.msgShowFlag.flag;
-      }, 2000);
+      }, 10*1000);
     }
 
   }

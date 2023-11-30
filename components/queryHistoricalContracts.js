@@ -37,7 +37,7 @@ class queryHistoricalContracts extends BaseComponent {
     } else {
       this.componentData.hisContaracts[netItemID] = this.componentData.hisContaracts[netItemID].concat(data);
     }
-    console.log(this.componentData.hisContaracts);
+    // console.log(this.componentData.hisContaracts);
   }
 
   // 挂载切换按钮

@@ -33,6 +33,10 @@ class mineReconstruction extends BaseComponent {
     func: this.mainFunc
   }]
 
+  frontUI = () => {
+    let buildingID = parseInt(location.href.match(/b\/(\d+)\/$/)[1]);
+    if (tools.getBuildKind(buildingID) == "M") this.rebuildHandle();
+  }
   settingUI = () => {
     let newNode = document.createElement("div");
     let htmlText = `<div class=header>矿井一键重建设置</div><div class=container><div><div><button class="btn script_opt_submit">保存</button></div></div><table><thead><tr><td>功能<td>设置<tbody><tr><td>矿物<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>铝土矿<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>金矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>铁矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######></table></div>`;
@@ -101,12 +105,12 @@ class mineReconstruction extends BaseComponent {
     tools.getParentByIndex(parentNodeList[1], 3).appendChild(tampNode2);
   }
   // 重建按钮函数
-  async rebuildHandle(event) {
+  async rebuildHandle() {
     // 再次确认
     if (!window.confirm("确认要重建吗?")) return;
     try {
       tools.setWindowMask(true);
-      tools.getParentByIndex(event.target, 1).querySelector(`button>svg[data-icon="dumpster"]`).parentElement.click();
+      document.querySelector(`button>svg[data-icon="dumpster"]`).parentElement.click();
       await tools.dely(2000);
       document.querySelector("div.modal-body.modal-upgrade button.btn-primary").click();
       await tools.dely(2000);
