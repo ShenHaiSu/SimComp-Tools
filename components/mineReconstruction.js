@@ -107,15 +107,15 @@ class mineReconstruction extends BaseComponent {
     try {
       tools.setWindowMask(true);
       tools.getParentByIndex(event.target, 1).querySelector(`button>svg[data-icon="dumpster"]`).parentElement.click();
-      await tools.dely(1000);
+      await tools.dely(2000);
       document.querySelector("div.modal-body.modal-upgrade button.btn-primary").click();
-      await tools.dely(1000);
+      await tools.dely(2000);
       Object.values(document.querySelectorAll("div#page>div>div>div>div>a")).filter(node => node.href.match(/\/landscape\/buildings\/\d+\//))[0].click();
-      await tools.dely(1000);
+      await tools.dely(2000);
       Object.values(document.querySelectorAll("div.hover-effect>p>b")).filter(node => node.innerText == "矿井")[0].click();
-      await tools.dely(1000);
+      await tools.dely(2000);
       document.querySelector(`button.btn.btn-primary`).click();
-      await tools.dely(1000);
+      await tools.dely(2000);
     } finally {
       tools.setWindowMask(false);
       window.alert("一键重建已完成.");
