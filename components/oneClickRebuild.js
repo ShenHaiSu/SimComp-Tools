@@ -1,15 +1,15 @@
 const BaseComponent = require("../tools/baseComponent.js");
 const { tools, componentList, runtimeData, indexDBData, feature_config, langData } = require("../tools/tools.js");
 
-class mineReconstruction extends BaseComponent {
+class oneClickRebuild extends BaseComponent {
   constructor() {
     super();
-    this.name = "更好的矿井重建";
+    this.name = "更好的一键重建";
     this.describe = `可以自定义矿井的重建丰度检测,只要不满足就会显示一键重建矿井按钮`;
     this.enable = true;
   }
   indexDBData = {
-    minAbundance: { // 矿井允许的最小丰富 只要有一个超过最小丰度就不显示重建按钮
+    mineMinAbundance: { // 矿井允许的最小丰富
       "14": 99.9, // 矿物
       "15": 99.9, // 铝土矿
       "68": 99.9, // 金矿石
@@ -39,11 +39,11 @@ class mineReconstruction extends BaseComponent {
   }
   settingUI = () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class=header>矿井一键重建设置</div><div class=container><div><div><button class="btn script_opt_submit">保存</button></div></div><table><thead><tr><td>功能<td>设置<tbody><tr><td>矿物<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>铝土矿<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>金矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>铁矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######></table></div>`;
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance[14]);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance[15]);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance[68]);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance[42]);
+    let htmlText = `<div class=header>更好的一键重建</div><div class=container><div><div><button class="btn script_opt_submit">保存</button></div></div><table><thead><tr><td>功能<td>设置<tbody><tr><td>矿物<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>铝土矿<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>金矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>铁矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######></table></div>`;
+    htmlText = htmlText.replace("######", this.indexDBData.mineMinAbundance[14]);
+    htmlText = htmlText.replace("######", this.indexDBData.mineMinAbundance[15]);
+    htmlText = htmlText.replace("######", this.indexDBData.mineMinAbundance[68]);
+    htmlText = htmlText.replace("######", this.indexDBData.mineMinAbundance[42]);
     newNode.innerHTML = htmlText;
     newNode.id = "script_mineRebuild_setting";
     newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmit())
@@ -54,10 +54,10 @@ class mineReconstruction extends BaseComponent {
     // 审核
     if (valueList.filter(value => Boolean(value < 0 || value >= 100)).length != 0) return window.alert("不能低于0或者大于等于100");
     // 更新
-    this.indexDBData.minAbundance[14] = valueList[0];
-    this.indexDBData.minAbundance[15] = valueList[1];
-    this.indexDBData.minAbundance[68] = valueList[2];
-    this.indexDBData.minAbundance[42] = valueList[3];
+    this.indexDBData.mineMinAbundance[14] = valueList[0];
+    this.indexDBData.mineMinAbundance[15] = valueList[1];
+    this.indexDBData.mineMinAbundance[68] = valueList[2];
+    this.indexDBData.mineMinAbundance[42] = valueList[3];
     // 保存
     tools.indexDB_updateIndexDBData();
     // 刷新显示
@@ -85,7 +85,7 @@ class mineReconstruction extends BaseComponent {
     let nowBuildAbundance = this.componentData.abundanceList[buildingID];
     for (const key in nowBuildAbundance) {
       if (!Object.hasOwnProperty.call(nowBuildAbundance, key)) continue;
-      if (nowBuildAbundance[key] < this.indexDBData.minAbundance[key]) continue;
+      if (nowBuildAbundance[key] < this.indexDBData.mineMinAbundance[key]) continue;
       return;
     }
     // 构建按钮
@@ -126,4 +126,4 @@ class mineReconstruction extends BaseComponent {
     }
   }
 }
-new mineReconstruction();
+new oneClickRebuild();
