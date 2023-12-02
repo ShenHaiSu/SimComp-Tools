@@ -161,6 +161,9 @@ class tools {
     }
     return realm;
   }
+  static getRandomNumber(min = 0, max = 1, parseFunc = parseFloat) {
+    return parseFunc(Math.random() * (max - min)) + min;
+  }
   static itemName2Index(name) {
     for (const key in langData) {
       if (!Object.hasOwnProperty.call(langData, key)) continue;
@@ -301,7 +304,7 @@ class tools {
         result = ',' + result;
       }
     }
-    return result.replace("-,","-");
+    return result.replace("-,", "-");
   }
   /**
    * 更新/创建数据
@@ -498,7 +501,7 @@ class tools {
       this.msgShowFlag.timer = setInterval(() => {
         Object.assign(document.querySelector("div#script_hover_node>div>span").style, { backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c" });
         this.msgShowFlag.flag = !this.msgShowFlag.flag;
-      }, 10*1000);
+      }, 10 * 1000);
     }
 
   }

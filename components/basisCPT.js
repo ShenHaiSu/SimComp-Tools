@@ -257,9 +257,9 @@ class basisCPT extends BaseComponent {
   sideBarSub_showFront(component) {
     component.frontUI.call(component);
   }
-  sideBarSub_showSetting(component) {
+  async sideBarSub_showSetting(component) {
     if (this.componentData.cptSettingShow) return;
-    let cptSettingNode = component.settingUI.call(component);
+    let cptSettingNode = await component.settingUI.call(component);
     // 添加默认class
     if (!cptSettingNode.className.includes("col-sm-12 setting-container")) cptSettingNode.className += " col-sm-12 setting-container";
     this.componentData.cptSettingBodyNode.appendChild(cptSettingNode);
