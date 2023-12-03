@@ -101,6 +101,7 @@ class oneClickRebuild extends BaseComponent {
     for (const key in nowBuildAbundance) {
       if (!Object.hasOwnProperty.call(nowBuildAbundance, key)) continue;
       if (this.indexDBData[`minAbundance_${key}`] == undefined) return false;
+      if (this.indexDBData[`minAbundance_${key}`] == 0) continue;
       if (nowBuildAbundance[key] < this.indexDBData[`minAbundance_${key}`]) continue;
       return false; // 不能重建
     }
