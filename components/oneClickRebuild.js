@@ -27,7 +27,7 @@ class oneClickRebuild extends BaseComponent {
     `button#script_mineRebuild_btn{padding:0;}`
   ]
   componentData = {
-    abundanceList: {}, // 建筑丰度列表 {id:{"14": 70.1, "15": 65.1, "68": 61, "42": 51.5}}
+    abundanceList: {}, // 缓存建筑丰度列表 {id:{"14": 70.1, "15": 65.1, "68": 61, "42": 51.5}}
     btnNode: undefined, // 按钮对象缓存
     tampTargetName: "", // 临时重建目标
     targetBuildList: ["M", "Q", "O"], // 目标建筑类型 矿井 采石场 油井
@@ -41,10 +41,15 @@ class oneClickRebuild extends BaseComponent {
     func: this.mainFunc
   }]
 
-  frontUI = () => {
-    let buildingID = parseInt(location.href.match(/b\/(\d+)\/$/)[1]);
-    if (!this.componentData.targetBuildList.includes(tools.getBuildKind(buildingID))) return window.alert("请先进入建筑界面,包括:矿井 采石场 油井");
-    this.rebuildHandle(undefined);
+  frontUI = async () => {
+    if (/b\/\d+\/$/.test(location.href)) {
+      let buildingID = parseInt(location.href.match(/b\/(\d+)\/$/)[1]);
+      if (!this.componentData.targetBuildList.includes(tools.getBuildKind(buildingID))) return window.alert("请先进入建筑界面,包括:矿井 采石场 油井");
+      this.rebuildHandle(undefined);
+      return;
+    } else if (/\/landscape\/$/.test(location.href) && window.confirm("现在将会使用插件组件配置来查询所有不符合条件的矿井/采石场/油井,你确定吗?(请仔细检查配置,仔细检查配置,仔细检查配置)")) {
+      return this.oneClickRebuildAll();
+    }
   }
   settingUI = () => {
     let newNode = document.createElement("div");
@@ -88,7 +93,18 @@ class oneClickRebuild extends BaseComponent {
   netReqGet(url, method, resp) {
     let data = JSON.parse(resp);
     this.componentData.abundanceList[data.buildingId] = data.abundance;
-    console.log(this.componentData.abundanceList);
+    // console.log(this.componentData.abundanceList);
+  }
+  // 丰度检测
+  abundanceCheck(buildingID) {
+    let nowBuildAbundance = this.componentData.abundanceList[buildingID];
+    for (const key in nowBuildAbundance) {
+      if (!Object.hasOwnProperty.call(nowBuildAbundance, key)) continue;
+      if (this.indexDBData[`minAbundance_${key}`] == undefined) return false;
+      if (nowBuildAbundance[key] < this.indexDBData[`minAbundance_${key}`]) continue;
+      return false; // 不能重建
+    }
+    return true; // 可以重建
   }
   // 检测并挂载重建按钮
   mainFunc() {
@@ -102,12 +118,7 @@ class oneClickRebuild extends BaseComponent {
     // 检测缓存数据
     if (this.componentData.abundanceList[buildingID] == undefined) return;
     // 检测丰富要求
-    let nowBuildAbundance = this.componentData.abundanceList[buildingID];
-    for (const key in nowBuildAbundance) {
-      if (!Object.hasOwnProperty.call(nowBuildAbundance, key)) continue;
-      if (nowBuildAbundance[key] < this.indexDBData[`minAbundance_${key}`]) continue;
-      return;
-    }
+    if (!this.abundanceCheck(buildingID)) return;
     // 构建按钮
     if (!this.componentData.btnNode) {
       this.componentData.btnNode = document.createElement("button");
@@ -125,22 +136,48 @@ class oneClickRebuild extends BaseComponent {
     tools.getParentByIndex(parentNodeList[1], 3).appendChild(tampNode2);
   }
   // 重建按钮函数
-  async rebuildHandle(event) {
+  async rebuildHandle(event, mode = "one") {
     // 再次确认
-    if (!window.confirm("确认要重建吗?")) return;
+    if (mode == "one" && !window.confirm("确认要重建吗?")) return;
     let buildName = document.querySelector("div>span>b").innerText;
     try {
       tools.setWindowMask(true);
       document.querySelector(`button>svg[data-icon="dumpster"]`).parentElement.click();
-      await tools.dely(2000);
+      await tools.dely(1500);
       document.querySelector("div.modal-body.modal-upgrade button.btn-primary").click();
-      await tools.dely(2000);
+      await tools.dely(1500);
       Object.values(document.querySelectorAll("div#page>div>div>div>div>a")).filter(node => node.href.match(/\/landscape\/buildings\/\d+\//))[0].click();
-      await tools.dely(2000);
+      await tools.dely(1500);
       Object.values(document.querySelectorAll("div.hover-effect>p>b")).filter(node => node.innerText == buildName)[0].click();
-      await tools.dely(2000);
+      await tools.dely(1500);
       document.querySelector(`button.btn.btn-primary`).click();
-      await tools.dely(2000);
+      await tools.dely(1500);
+    } finally {
+      if (mode == "one") {
+        tools.setWindowMask(false);
+        window.alert("一键重建已完成.");
+      }
+    }
+  }
+  // 一键重建全部
+  async oneClickRebuildAll() {
+    try {
+      tools.setWindowMask(true);
+      let realm = await tools.getRealm();
+      let buildList = indexDBData.basisCPT.building[realm];
+      buildList = buildList.filter(build => this.componentData.targetBuildList.includes(build.kind) && build.busy == undefined);
+      for (let i = 0; i < buildList.length; i++) {
+        let buildID = buildList[i].id;
+        if (this.componentData.abundanceList[buildID] == undefined) {
+          let netData = await tools.getNetData(`https://www.simcompanies.com/api/v2/companies/buildings/${buildID}/abundance/`);
+          if (!netData) continue;
+          this.componentData.abundanceList[buildID] = netData.abundance;
+        }
+        if (!this.abundanceCheck(buildID)) continue;
+        Object.values(document.querySelectorAll("div#page>div>div>div>div>a")).filter(node => node.href.match(buildID))[0].click();
+        await tools.dely(1500);
+        await this.rebuildHandle(undefined, "all");
+      }
     } finally {
       tools.setWindowMask(false);
       window.alert("一键重建已完成.");
