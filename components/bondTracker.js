@@ -30,7 +30,7 @@ class bondTracker extends BaseComponent {
   startupFuncList = [
     this.startTracker
   ]
-  frontUI = () => this.trackerHandle();
+  frontUI = () => this.trackerHandle("common");
   settingUI = async () => {
     let mainNode = document.createElement("div");
     let htmlText = `<div class=header>债券市场追踪器设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td>当前服务器<td>######<tr><td title=勾选就打开定时追踪,会在1-2分钟钟随机一个间隔进行周期性检查>定时追踪<td><input class=form-control type=checkbox ######><tr><td title=如题>最低数量<td><input class=form-control type=number value=######><tr><td title=如题>最低评级<td><select class=form-control><option value=0>AAA<option value=1>AA+<option value=2>AA<option value=3>AA-<option value=4>A+<option value=5>A<option value=6>A-<option value=7>BBB+<option value=8>BBB<option value=9>BBB-<option value=10>BB+<option value=11>BB<option value=12>BB-<option value=13>B+<option value=14>B<option value=15>B-<option value=16>C<option value=17>D</select><tr><td title=如题>最低利息<td><input class=form-control type=number value=######></table></div>`;
@@ -72,9 +72,9 @@ class bondTracker extends BaseComponent {
   startTracker() {
     if (this.componentData.trackerFlag) clearInterval(this.componentData.trackerFlag);
     if (!this.indexDBData.autoTrack) return;
-    this.componentData.trackerFlag = setInterval(() => this.trackerHandle(), tools.getRandomNumber(60 * 1000, 120 * 1000, parseInt));
+    this.componentData.trackerFlag = setInterval(() => this.trackerHandle("slient"), tools.getRandomNumber(60 * 1000, 120 * 1000, parseInt));
   }
-  async trackerHandle() {
+  async trackerHandle(mode = "common") {
     let realm = await tools.getRealm();
     let netData = await tools.getNetData(this.componentData.baseURL);
     if (!netData) return;
@@ -88,7 +88,7 @@ class bondTracker extends BaseComponent {
     }).map(bond => {
       return `${bond.seller.company}发售了${bond.amount}只利率为${bond.interest}的股票,其信用评级为:${bond.seller.rating}`;
     });
-    if (msgList.length == 0) return tools.msg_send("债券市场追踪器","未找到符合要求的债券.");
+    if (msgList.length == 0 && mode != "slient") return tools.msg_send("债券市场追踪器", "未找到符合要求的债券.");
     for (let i = 0; i < msgList.length; i++) {
       tools.msg_send("债券市场追踪器", msgList[i]);
     }
