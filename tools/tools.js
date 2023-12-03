@@ -164,6 +164,12 @@ class tools {
   static getRandomNumber(min = 0, max = 1, parseFunc = parseFloat) {
     return parseFunc(Math.random() * (max - min)) + min;
   }
+  static checkAllZero(arrayInput) {
+    for (let i = 0; i < arrayInput.length; i++) {
+      if (arrayInput[i] != 0.0) return false;
+    }
+    return true;
+  }
   static itemName2Index(name) {
     for (const key in langData) {
       if (!Object.hasOwnProperty.call(langData, key)) continue;

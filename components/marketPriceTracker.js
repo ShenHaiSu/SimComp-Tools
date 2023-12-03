@@ -189,6 +189,9 @@ class marketPriceTracker extends BaseComponent {
     if (!netData) return;
     let itemMP = tools.mpFormat(netData);
     indexDBData.basisCPT.resourcePool[item.realm][item.id] = itemMP;
+    // 检查是否全都是0
+    if (tools.checkAllZero(itemMP)) return;
+    // 检查通知
     item.price.forEach((price, index) => {
       if (!price || itemMP[index] > price) return;
       let msgBody = `服务器${item.realm == 0 ? "R1" : "R2"} ID:${item.id} 物品名:${tools.itemIndex2Name(item.id)} `;
