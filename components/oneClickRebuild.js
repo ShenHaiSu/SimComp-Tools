@@ -153,6 +153,9 @@ class oneClickRebuild extends BaseComponent {
       await tools.dely(1500);
       document.querySelector(`button.btn.btn-primary`).click();
       await tools.dely(1500);
+    } catch (error) {
+      console.error(error);
+      window.alert("一键重建功能出现错误,请打开开发者工具(F12)找到最近的error信息发送给开发者.");
     } finally {
       if (mode == "one") {
         tools.setWindowMask(false);

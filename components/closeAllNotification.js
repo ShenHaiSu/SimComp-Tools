@@ -10,22 +10,21 @@ class closeAllNotification extends BaseComponent {
     this.enable = true;
     this.canDisable = true;
   }
-  componentData = {
-    isClose: false, // 已关闭标记
-    timerFlag: undefined, // 定时器标记
-  }
   startupFuncList = [
     this.startupCloseNotification
   ]
-  startupCloseNotification() {
-    this.componentData.timerFlag = setInterval(() => {
-      let targetNode = document.querySelector("div.container > div.chat-notifications");
-      if (!targetNode) return;
-      Object.assign(targetNode.style, { display: "none" });
-      this.componentData.isClose = true;
-      clearInterval(this.componentData.timerFlag);
-      tools.log("已关闭弹窗元素的显示.")
-    }, 2000);
+  debounceFuncList = [{
+    bounce: 20,
+    func: this.startupCloseNotification
+  }]
+  async startupCloseNotification() {
+    let targetNode = document.querySelector("div.container > div.chat-notifications");
+    if (!targetNode) {
+      await tools.dely(2000);
+      return this.startupCloseNotification();
+    }
+    Object.assign(targetNode.style, { display: "none" });
+    tools.log("已关闭弹窗元素的显示.");
   }
 }
 new closeAllNotification();

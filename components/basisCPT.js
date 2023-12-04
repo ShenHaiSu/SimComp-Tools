@@ -21,22 +21,22 @@ class basisCPT extends BaseComponent {
   ]
   netFuncList = [
     {    // 用户信息拦截
-      urlMatch: (url) => { return Boolean(url.match(/companies\/me\/$/)) },
+      urlMatch: url => /companies\/me\/$/.test(url),
       func: this.userInfo
     }, { // 建筑数据拦截
-      urlMatch: (url) => { return Boolean(url.match(/me\/buildings\/$/)) },
+      urlMatch: url => /me\/buildings\/$/.test(url),
       func: this.buildingInfo
     }, { // 仓库数据拦截
-      urlMatch: (url) => { return Boolean(url.match(/v2\/resources\/$/)) },
+      urlMatch: url => /v2\/resources\/$/.test(url),
       func: this.warehouseInfo
     }, { // 交易所请求拦截
-      urlMatch: (url) => { return Boolean(url.match(/market\/(all\/)?\d+\/\d+\//)) },
+      urlMatch: url => /market\/(all\/)?\d+\/\d+\//.test(url),
       func: this.marketData
     }, { // 语言包拦截
-      urlMatch: url => { return Boolean(url.match(/lang5\/zh.json$/)) },
+      urlMatch: url => /lang5\/zh.json$/.test(url),
       func: this.langData
     }, { // 高管拦截
-      urlMatch: url => { },
+      urlMatch: url => /me\/executives\/$/.test(url),
       func: this.netExecutives
     }
   ]
@@ -153,12 +153,7 @@ class basisCPT extends BaseComponent {
   // 高管信息网络请求拦截函数
   async netExecutives(url, method, resp) {
     let data = JSON.parse(resp);
-    let realm = this.componentData.realm;
-    while (realm !== 0 && realm !== 1) {
-      await tools.dely(1000);
-      realm = this.componentData.realm;
-    }
-    this.indexDBData.executives[realm] = data;
+    this.indexDBData.executives[await tools.getRealm()] = data;
   }
   // 自启动用户信息获取
   async startupUserInfo() {
