@@ -126,7 +126,7 @@ class globalBlock extends BaseComponent {
     let msgLengthDiff = msgDivList.length == this.componentData.lastMsgList.length;
     let nowTime = new Date().getTime();
     let timePass = (nowTime - this.componentData.lastTimeStamp) < 500;
-    if (msgLengthDiff || timePass) return;
+    if (msgLengthDiff && timePass) return;
     this.componentData.lastTimeStamp = nowTime;
     // 获取消息列表差异
     let diffList = [];
