@@ -10,12 +10,10 @@ class sellProfitDisplay extends BaseComponent {
     this.enable = true;
     this.canDisable = true;
   }
-  commonFuncList = [
-    {
-      match: () => Boolean(location.href.match(/warehouse\/(.+)/) && document.querySelectorAll("form").length > 0),
-      func: this.mainFunc
-    }
-  ]
+  commonFuncList = [{
+    match: () => Boolean(location.href.match(/warehouse\/(.+)/) && document.querySelectorAll("form").length > 0),
+    func: this.mainFunc
+  }]
   componentData = {
     lastPrice: 0, // 最近一次的单价
     lastAmount: 0, // 最近一次的数量
