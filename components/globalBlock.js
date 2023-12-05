@@ -17,6 +17,9 @@ class globalBlock extends BaseComponent {
     match: () => Boolean(location.href.match(/\/messages\/.*\/$/)),
     func: this.chatBlockFunc
   }]
+  startupFuncList = [
+    this.genTempList
+  ]
   indexDBData = {
     blockList: [], // 屏蔽列表 ["asdas"]  需要全小写,空格转-
     maskImgUrl: undefined, // 遮罩img图像地址
@@ -28,6 +31,7 @@ class globalBlock extends BaseComponent {
     lastMarketTag: "", // 最近一个交易所记录
     lastTimeStamp: 0, // 最近一次检查
     iconMaskNode: undefined, // 头像遮罩节点缓存
+    tempBlockList: [], // 匹配用的列表
   }
   cssText = [
     `div#script_globalBlock_main button.script_globalBlock_delete {background-color:rgb(137, 37, 37);}`
@@ -63,6 +67,7 @@ class globalBlock extends BaseComponent {
     this.indexDBData.chatBlockType = Math.floor(valueList[1]);
     valueList = valueList.slice(2);
     this.indexDBData.blockList = valueList;
+    this.genTempList();
     tools.indexDB_updateIndexDBData();
     this.componentData.iconMaskNode = undefined;
     window.alert("已提交更改.");
@@ -82,7 +87,7 @@ class globalBlock extends BaseComponent {
   // 交易所屏蔽
   marketBlockFunc(event) {
     // 屏蔽键盘事件
-    if (event.type == "keydown") return;
+    if (event != undefined && event.type == "keydown") return;
     if (this.indexDBData.blockZone == 2) return;
     // 检查交易所列表以及上次执行时间差
     let infoList = Object.values(document.querySelectorAll("tr>td>div>div>span")).map(node => tools.getParentByIndex(node, 4));
@@ -114,14 +119,14 @@ class globalBlock extends BaseComponent {
   // 聊天室屏蔽
   chatBlockFunc(event) {
     // 屏蔽键盘事件
-    if (event.type == "keydown") return;
+    if (event != undefined && event.type == "keydown") return;
     if (this.indexDBData.blockZone == 1) return;
     // 检查消息长度
     let msgDivList = Object.values(document.querySelectorAll("div>a>div>img.logo")).map(node => tools.getParentByIndex(node, 3));
     let msgLengthDiff = msgDivList.length == this.componentData.lastMsgList.length;
     let nowTime = new Date().getTime();
-    let timePass = (nowTime - this.componentData.lastTimeStamp) < 2000;
-    if (msgLengthDiff && timePass) return;
+    let timePass = (nowTime - this.componentData.lastTimeStamp) < 500;
+    if (msgLengthDiff || timePass) return;
     this.componentData.lastTimeStamp = nowTime;
     // 获取消息列表差异
     let diffList = [];
@@ -133,11 +138,9 @@ class globalBlock extends BaseComponent {
     }
     // 更新缓存并修改样式
     this.componentData.lastMsgList = msgDivList;
-    let tampList = this.indexDBData.blockList.map(item => item.toLowerCase().replace(/ /g, "-"));
     for (let i = 0; i < msgDivList.length; i++) {
-      let companyName = msgDivList[i].childNodes[0].href.match(/\/company\/\d+\/(.+)\/$/)[1];
-      companyName = companyName.toLowerCase().replace(/ /g, "-");
-      if (!tampList.includes(companyName)) continue;
+      let companyName = msgDivList[i].childNodes[0].href.match(/\/company\/\d+\/(.+)\/$/)[1].toLowerCase().replace(/ /g, "-");
+      if (!this.componentData.tempBlockList.includes(companyName)) continue;
       // 判定屏蔽模式
       if (this.indexDBData.chatBlockType == 0) {
         Object.assign(msgDivList[i].style, { display: "none" });
@@ -146,6 +149,11 @@ class globalBlock extends BaseComponent {
         this.chatIconMaskHandle(msgDivList[i]);
       }
     }
+  }
+
+  // 生成匹配用的名单
+  genTempList() {
+    this.componentData.tempBlockList = this.indexDBData.blockList.map(item => item.toLowerCase().replace(/ /g, "-"));
   }
 
   // 聊天室头像屏蔽

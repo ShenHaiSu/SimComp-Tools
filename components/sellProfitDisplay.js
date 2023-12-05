@@ -9,19 +9,22 @@ class sellProfitDisplay extends BaseComponent {
     this.describe = "在仓库发送物品到交易所或者通过合同出售的界面会自动计算收入总量与利润值";
     this.enable = true;
     this.canDisable = true;
-  };
+  }
   commonFuncList = [
     {
       match: () => Boolean(location.href.match(/warehouse\/(.+)/) && document.querySelectorAll("form").length > 0),
       func: this.mainFunc
     }
-  ];
+  ]
+  componentData = {
+    lastPrice: 0, // 最近一次的单价
+    lastAmount: 0, // 最近一次的数量
+  }
 
   mainFunc() {
     // 利润 = 数量 * 单价 - (成本 * 单价 + 运输单位 * 运输单价 + 税费)
-    let formNode = document.querySelector("form");
-    // tools.log("sellProfitDisplay");
     try {
+      let formNode = document.querySelector("form");
       let infoSpan;
       if (formNode.lastChild.querySelector("span")) {
         infoSpan = formNode.lastChild.querySelector("span");
@@ -35,6 +38,8 @@ class sellProfitDisplay extends BaseComponent {
       // 计算利润结果
       let inputList = formNode.querySelectorAll("input");
       let spanList = formNode.querySelector("div.row").nextElementSibling.querySelectorAll("span");
+      // 检查缓存
+      if (parseInt(inputList[0].value) == this.componentData.lastAmount && parseFloat(inputList[1].value) == this.componentData.lastPrice) return;
       let count = parseInt(inputList[0].value);
       let quality = this.get_quality(formNode);
       let name = formNode.previousElementSibling.querySelector("b").innerText;
@@ -43,12 +48,16 @@ class sellProfitDisplay extends BaseComponent {
       let taxFee = parseInt(spanList[1].innerText.split("\n")[0].replaceAll(/(\$)|(,)/g, "")) || 0;
       let TransUnitCount = parseInt(spanList[0].innerText.replaceAll(/(x)|(,)/g, ""));
       let TransUnitPrice = this.get_cost("运输单位", 0) || 0;
+      let transPay = TransUnitCount * TransUnitPrice;
+      if (taxFee == 0) transPay = transPay / 2; // 税收为0 那就是合同模式
       if (sellPrice == 0) return;
       let income = isNaN(parseInt(count * sellPrice)) ? 0 : parseInt(count * sellPrice);
-      let profit = isNaN(parseInt(income - (count * cost + TransUnitCount * TransUnitPrice + taxFee))) ? 0 : parseInt(income - (count * cost + TransUnitCount * TransUnitPrice + taxFee));
-      tools.log(`${count * sellPrice - (count * cost + TransUnitCount * TransUnitPrice + taxFee)} 税费：${taxFee}`);
+      let profit = isNaN(parseInt(income - (count * cost + transPay + taxFee))) ? 0 : parseInt(income - (count * cost + transPay + taxFee));
+      tools.log(`${count * sellPrice - (count * cost + transPay + taxFee)} 税费：${taxFee}`);
       tools.log(`数量：${count}\n售价：${sellPrice}\n成本：${cost}\n运输数量：${TransUnitCount}\n运输单价：${TransUnitPrice}\n利润:${profit}`);
       // if (!cost) return infoSpan.innerText = `物品成本获取失败，请联系开发者补修适配`;
+      this.componentData.lastAmount = count;
+      this.componentData.lastPrice = sellPrice;
       infoSpan.innerText = `收款：$${income - taxFee}，利润：$${profit}`;
     } catch (error) {
       tools.errorLog(error);

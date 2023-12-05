@@ -27,6 +27,7 @@ class tools {
   static publicCSS = ""; // 所有组件使用的css
   static msgBodyNode = undefined; // 网页内消息使用的元素
   static lastMutation = undefined; // 最近一次元素变动记录
+  static lastMutationTime = 0; // 最近一次元素变动的时间
   static windowMask = undefined; // 网页遮罩页面
   static msgShowFlag = {  // SCT底色改变
     timer: undefined,
@@ -577,25 +578,29 @@ class tools {
   }
   static mutationHandle(mutation) {
     try {
-      if (mutation[0].target.className.match("chat-notifications")) return;
-      if (mutation.length == 2 && mutation[0].target == mutation[1].target) return;
-      if (tools.getParentByIndex(mutation[0].target, 5).tagName == "TBODY") return;
-      if (
-        this.lastMutation != undefined &&
-        mutation[0].type == "childList" &&
-        mutation[0].type == this.lastMutation.type &&
-        mutation[0].target == this.lastMutation.target &&
-        mutation[0].addedNodes && this.lastMutation.addedNodes &&
-        mutation[0].addedNodes[0].data == this.lastMutation.addedNodes[0].data
-      ) return;
+      let nowTime = new Date().getTime();
+      if (nowTime - this.lastMutationTime <= 0.5*1000) {
+        if (mutation[0].target.className.match("chat-notifications")) return;
+        if (mutation.length >= 2 && mutation[0].target == mutation[1].target) return;
+        if (this.getParentByIndex(mutation[0].target, 5).tagName == "TBODY") return;
+        // if (this.mutationCheck(mutation)) return;
+      }
+      this.lastMutationTime = nowTime;
       this.log("检测到DOM变动,Mutation: ", mutation[0]);
       this.lastMutation = mutation[0];
       this.eventBus(undefined);
     } catch (error) {
-      tools.log(mutation);
-      tools.errorLog(error);
+      this.log(mutation);
+      this.errorLog(error);
       this.eventBus(undefined);
     }
+  }
+  static mutationCheck(mutation) {
+    return this.lastMutation != undefined &&
+      mutation[0].type == this.lastMutation.type &&
+      mutation[0].target == this.lastMutation.target &&
+      mutation[0].addedNodes && this.lastMutation.addedNodes &&
+      mutation[0].addedNodes[0].data == this.lastMutation.addedNodes[0].data;
   }
 }
 

@@ -49,12 +49,10 @@ class chatroom_mp_display extends BaseComponent {
     tableNode: undefined, // 显示内容主元素
     fadeTimer: undefined, // 自动消失的计时器
   }
-  commonFuncList = [
-    {
-      match: event => Boolean(location.href.match(/messages\/(.+)/)) && event.target.parentElement.querySelectorAll("div").length == 0,
-      func: this.mainFunc
-    }
-  ]
+  commonFuncList = [{
+    match: event => event != undefined && /messages\/(.+)/.test(location.href) && event.target.parentElement.querySelectorAll("div").length == 0,
+    func: this.mainFunc
+  }]
   async mainFunc(event) {
     tools.log(event);
     if (!this.componentData.containerNode) {
@@ -136,15 +134,14 @@ class chatroom_mp_display extends BaseComponent {
   }
   getChatItemList(node) {
     let outputList = [];
-    node.querySelectorAll("span > span[attr-to]").forEach((item) => {
-      try {
-        let result = parseInt(item.getAttribute("attr-to").match(/resource\/\d+/)[0].replace("resource/", ""));
-        if (outputList.includes(result)) return;
-        outputList.push(result);
-      } catch (error) {
-        tools_func.error(error);
-      }
-    });
+    let resList = Object.values(node.querySelectorAll("span > span[attr-to]"));
+    for (let i = 0; i < resList.length; i++) {
+      let resNode = resList[i];
+      let info = resNode.getAttribute("attr-to");
+      if (!/resource\/\d+/.test(info)) continue;
+      let result = Math.floor(info.match(/resource\/(\d+)\//)[1]);
+      if (!outputList.includes(result)) outputList.push(result);
+    }
     return outputList;
   }
   extractQualityList(text) {
