@@ -23,6 +23,9 @@ class BaseComponent {
   // 自启动函数列表
   // [func]
   startupFuncList = [];
+  // 聊天室信息处理函数列表
+  // [func]
+  chatMsgFuncList = [];
   // UI设置界面
   // func
   settingUI = undefined;

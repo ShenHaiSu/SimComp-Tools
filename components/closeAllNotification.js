@@ -14,15 +14,12 @@ class closeAllNotification extends BaseComponent {
     this.startupCloseNotification
   ]
   debounceFuncList = [{
-    bounce: 20,
+    bounce: 50,
     func: this.startupCloseNotification
   }]
   async startupCloseNotification() {
     let targetNode = document.querySelector("div.container > div.chat-notifications");
-    if (!targetNode) {
-      await tools.dely(2000);
-      return this.startupCloseNotification();
-    }
+    if (!targetNode) return;
     Object.assign(targetNode.style, { display: "none" });
     tools.log("已关闭弹窗元素的显示.");
   }

@@ -11,10 +11,15 @@ class profileLocalTimeConvertTo24 extends BaseComponent {
     this.enable = true;
     this.canDisable = true;
   }
+  componentData = {
+    lastText:"", // 最近一次的编辑结果
+  }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/company\/(0|1)\/.*\//)),
     func: this.mainFunc
-  }];
+  }]
+
+
   mainFunc() {
     let elements = document.querySelectorAll("div > table > tbody > tr > td");
     let element;
@@ -24,8 +29,10 @@ class profileLocalTimeConvertTo24 extends BaseComponent {
       element = elements[i + 1];
       break;
     }
-    let result = tools.convert12To24Hr(element.innerText);
-    element.innerText = result ? result : element.innerText;
+    let result = tools.convert12To24Hr(element.innerText) ? tools.convert12To24Hr(element.innerText) : element.innerText;
+    if (result == this.componentData.lastText) return;
+    this.componentData.lastText = result;
+    element.innerText = result;
   }
 }
 new profileLocalTimeConvertTo24();

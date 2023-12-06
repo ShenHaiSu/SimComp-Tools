@@ -29,10 +29,8 @@ class tools {
   static lastMutation = undefined; // 最近一次元素变动记录
   static lastMutationTime = 0; // 最近一次元素变动的时间
   static windowMask = undefined; // 网页遮罩页面
-  static msgShowFlag = {  // SCT底色改变
-    timer: undefined,
-    flag: false,
-  };
+  static msgShowFlag = { timer: undefined, flag: false };// SCT底色改变
+  static mutationUrlTemp = ""; // Mutation监控使用的url缓存
 
   static baseURL = {
     // 用户基础信息 GET
@@ -65,7 +63,7 @@ class tools {
   }
   static CSSMount(mode = "add", cssText = "") {
     if (mode == "add") {
-      this.publicCSS += cssText.replaceAll("}", "}\n");
+      this.publicCSS += cssText + "\n\n";
     } else if (mode == "mount") {
       this.CSSMount("clearRepeat");
       // ##FONTCOLOR##
@@ -228,6 +226,16 @@ class tools {
     let netResp = await this.netRequest(target, method, body, header);
     if (!netResp) return false;
     return await netResp.text();
+  }
+  static arrayCompareByProp(arr, property) {
+    if (arr.length === 0 || arr.length === 1) return true; // 空数组默认为完全相同
+    const firstValue = arr[0][property];
+    return arr.every(item => item[property] === firstValue);
+  }
+  static arrayCompareByFunc(arr, compareFn) {
+    if (arr.length === 0 || arr.length === 1) return true; // 空数组默认为完全相同
+    const firstValue = compareFn(arr[0]);
+    return arr.every(item => compareFn(item) === firstValue);
   }
   static async generateUUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -576,31 +584,85 @@ class tools {
       }
     }
   }
-  static mutationHandle(mutation) {
+  static mutationHandle(mutations) {
     try {
-      let nowTime = new Date().getTime();
-      if (nowTime - this.lastMutationTime <= 0.5*1000) {
-        if (mutation[0].target.className.match("chat-notifications")) return;
-        if (mutation.length >= 2 && mutation[0].target == mutation[1].target) return;
-        if (this.getParentByIndex(mutation[0].target, 5).tagName == "TBODY") return;
-        // if (this.mutationCheck(mutation)) return;
+      let resolveFlag = false;
+      let refMutaion = Array.from(mutations).filter(this.mutationHandle_chatMsgNodeCheck);
+
+      if (/messages\/.+\/$/.test(location.href) && refMutaion.length) {
+        for (let i = 0; i < refMutaion.length; i++) this.chatMsgEventHandle(refMutaion[i]);
+        resolveFlag = true;
       }
-      this.lastMutationTime = nowTime;
-      this.log("检测到DOM变动,Mutation: ", mutation[0]);
-      this.lastMutation = mutation[0];
-      this.eventBus(undefined);
+
+      if (/messages\/$/.test(this.mutationUrlTemp) && /messages\/.+\/$/.test(location.href)) {
+        let tempList = Array.from(mutations).filter(this.mutationHandle_chatMsgNodeCheck2);
+        let nodeList = Array.from(tempList[0].addedNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0].childNodes).map(node => { return { addedNodes: [node] } });
+        for (let i = 0; i < nodeList.length; i++) this.chatMsgEventHandle(nodeList[i]);
+        resolveFlag = true;
+      }
+
+      if (!resolveFlag) {
+        let nowTime = new Date().getTime();
+        if (nowTime - this.lastMutationTime <= 0.5 * 1000) {
+          if (mutations[0].target.className.match("chat-notifications")) return;
+          if (mutations.length >= 2 && mutations[0].target == mutations[1].target) return;
+          if (this.getParentByIndex(mutations[0].target, 5).tagName == "TBODY") return;
+        }
+        // 常规DOM更新处理
+        this.lastMutationTime = nowTime;
+        this.log("检测到DOM变动,Mutation: ", mutations);
+        this.lastMutation = mutations[0];
+        this.eventBus(undefined);
+      }
     } catch (error) {
-      this.log(mutation);
+      this.log(mutations);
       this.errorLog(error);
       this.eventBus(undefined);
+    } finally {
+      this.mutationUrlTemp = location.href;
     }
   }
-  static mutationCheck(mutation) {
-    return this.lastMutation != undefined &&
-      mutation[0].type == this.lastMutation.type &&
-      mutation[0].target == this.lastMutation.target &&
-      mutation[0].addedNodes && this.lastMutation.addedNodes &&
-      mutation[0].addedNodes[0].data == this.lastMutation.addedNodes[0].data;
+  // 聊天信息节点筛审
+  static mutationHandle_chatMsgNodeCheck(muta) {
+    try {
+      let typeCheck = muta.type && muta.type === "childList";
+      let addedNodesCheck = muta.addedNodes && muta.addedNodes.length === 1;
+      let tagNameCheck = muta.addedNodes[0].tagName === "DIV";
+      let firstChild = muta.addedNodes[0].firstElementChild;
+      let firstChildIsAnchorTag = firstChild && firstChild.tagName === "A";
+      let firstChildHasHref = firstChild && firstChild.hasAttribute("href");
+      let hrefCheck = firstChildHasHref && /\/company\/\d+\/.+\/$/.test(firstChild.getAttribute("href"));
+      // console.log("result", typeCheck, addedNodesCheck, tagNameCheck, firstChildIsAnchorTag, hrefCheck);
+      let result = typeCheck && addedNodesCheck && tagNameCheck && firstChildIsAnchorTag && hrefCheck;
+      return result;
+    } catch {
+      return false;
+    }
+  }
+  static mutationHandle_chatMsgNodeCheck2(mutation) {
+    try {
+      let flag1 = mutation.addedNodes[0].tagName == "DIV";
+      let falg2 = /well-header text-uppercase/.test(mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].className);
+      return flag1 && falg2;
+    } catch {
+      return false;
+    }
+  }
+  // 聊天信息处理事件
+  static chatMsgEventHandle(mutation) {
+    try {
+      for (const key in componentList) {
+        if (!Object.hasOwnProperty.call(componentList, key)) continue;
+        let component = componentList[key]
+        if (!component.enable && component.canDisable) continue;
+        let chatMsgFuncList = component.chatMsgFuncList;
+        for (let i = 0; i < chatMsgFuncList.length; i++) {
+          try { chatMsgFuncList[i].call(component, mutation.addedNodes[0]) } catch (error) { tools.errorLog(error) }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 

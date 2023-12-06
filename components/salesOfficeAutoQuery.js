@@ -10,11 +10,11 @@ class saleOfficeAutoQuery extends BaseComponent {
   }
   componentData = {
     TBuildList: [], // 目标建筑列表 [{id:13,netBack:false}]
-    lastNetTime:0, // 最近一次网络请求的时间戳
+    lastNetTime: 0, // 最近一次网络请求的时间戳
   }
   netFuncList = [{
-    urlMatch:() => true,
-    func:this.freshNetTimeStamp
+    urlMatch: () => true,
+    func: this.freshNetTimeStamp
   }]
 
   frontUI = async () => {
@@ -22,7 +22,6 @@ class saleOfficeAutoQuery extends BaseComponent {
       // 获取比对形成目标建筑列表
       let realm = runtimeData.basisCPT.realm;
       this.componentData.TBuildList = indexDBData.basisCPT.building[realm]
-        // .filter(build => build.kind == "B" && build.busy == undefined && build.salesContract == undefined)
         .filter(build => build.kind == "B" && build.busy == undefined)
         .map(build => { return { id: build.id, netBack: false } });
       // 排查目标列表长度
@@ -68,7 +67,7 @@ class saleOfficeAutoQuery extends BaseComponent {
     if (targetIndex == -1) return;
     this.componentData.TBuildList[targetIndex].netBack = true;
   }
-  freshNetTimeStamp(){
+  freshNetTimeStamp() {
     if (!/\/b\/\d+\//.test(location.href)) return;
     this.componentData.lastNetTime = new Date().getTime();
   }

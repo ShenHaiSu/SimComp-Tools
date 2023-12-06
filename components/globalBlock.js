@@ -12,13 +12,12 @@ class globalBlock extends BaseComponent {
     // 交易所屏蔽
     match: () => Boolean(location.href.match(/market\/resource\/\d+\/$/)),
     func: this.marketBlockFunc,
-  }, {
-    // 聊天室屏蔽
-    match: () => Boolean(location.href.match(/\/messages\/.*\/$/)),
-    func: this.chatBlockFunc
   }]
   startupFuncList = [
     this.genTempList
+  ]
+  chatMsgFuncList = [
+    this.chatBlockFunc
   ]
   indexDBData = {
     blockList: [], // 屏蔽列表 ["asdas"]  需要全小写,空格转-
@@ -117,37 +116,14 @@ class globalBlock extends BaseComponent {
   }
 
   // 聊天室屏蔽
-  chatBlockFunc(event) {
-    // 屏蔽键盘事件
-    if (event != undefined && event.type == "keydown") return;
-    if (this.indexDBData.blockZone == 1) return;
-    // 检查消息长度
-    let msgDivList = Object.values(document.querySelectorAll("div>a>div>img.logo")).map(node => tools.getParentByIndex(node, 3));
-    let msgLengthDiff = msgDivList.length == this.componentData.lastMsgList.length;
-    let nowTime = new Date().getTime();
-    let timePass = (nowTime - this.componentData.lastTimeStamp) < 500;
-    if (msgLengthDiff && timePass) return;
-    this.componentData.lastTimeStamp = nowTime;
-    // 获取消息列表差异
-    let diffList = [];
-    for (let i = 0; i < msgDivList.length; i++) {
-      if (this.componentData.lastMsgList[i] == undefined || this.componentData.lastMsgList[i] != msgDivList[i]) {
-        diffList.push(msgDivList[i]);
-        continue;
-      }
-    }
-    // 更新缓存并修改样式
-    this.componentData.lastMsgList = msgDivList;
-    for (let i = 0; i < msgDivList.length; i++) {
-      let companyName = msgDivList[i].childNodes[0].href.match(/\/company\/\d+\/(.+)\/$/)[1].toLowerCase().replace(/ /g, "-");
-      if (!this.componentData.tempBlockList.includes(companyName)) continue;
-      // 判定屏蔽模式
-      if (this.indexDBData.chatBlockType == 0) {
-        Object.assign(msgDivList[i].style, { display: "none" });
-      } else {
-        if (msgDivList[i].querySelector("div#script_globalBlock_mask")) continue;
-        this.chatIconMaskHandle(msgDivList[i]);
-      }
+  chatBlockFunc(mainNode) {
+    let companyName = mainNode.childNodes[0].href.match(/\/company\/\d+\/(.+)\/$/)[1].toLowerCase().replace(/ /g, "-");
+    if (!this.componentData.tempBlockList.includes(companyName)) return;
+    if (mainNode.querySelector("div#script_globalBlock_mask")) return;
+    if (this.indexDBData.chatBlockType == 0) {
+      Object.assign(mainNode.style, { display: "none" });
+    } else {
+      this.chatIconMaskHandle(mainNode);
     }
   }
 
