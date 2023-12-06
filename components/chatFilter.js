@@ -12,13 +12,6 @@ class chatFilter extends BaseComponent {
     hide_item: ["fuck", "妈的", "媽的", "shit"], // 隐藏 列表
     hightLight_item: [], // 高亮 列表
   }
-  componentData = {
-    hideReg: /^[^]$/, // 过滤正则
-    highLightReg: /^[^]$/, // 高亮正则
-  }
-  startupFuncList = [
-    this.genTempList
-  ]
   chatMsgFuncList = [
     this.mainCheck
   ]
@@ -31,11 +24,11 @@ class chatFilter extends BaseComponent {
     let mainNode = document.createElement("div");
     let htmlText = `<div class="header">聊天信息过滤/高亮设置</div><div class="container"><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>高亮的内容</td><td>删除</td></tr></thead><tbody>`;
     for (let i = 0; i < this.indexDBData.hightLight_item.length; i++) {
-      htmlText += `<tr><td><input class="form-control" value="${new RegExp(this.indexDBData.hightLight_item[i]).source}"></td><td><button class="btn script_chatFilter_delete">删除</button></td></tr>`;
+      htmlText += `<tr><td><input class="form-control" value="${this.indexDBData.hightLight_item[i]}"></td><td><button class="btn script_chatFilter_delete">删除</button></td></tr>`;
     }
     htmlText += `</tbody></table><button class="btn" style="width: 100%;" id="script_chatFilter_add">添加</button><table><thead><tr><td>过滤/屏蔽的内容</td><td>删除</td></tr></thead><tbody>`;
     for (let i = 0; i < this.indexDBData.hide_item.length; i++) {
-      htmlText += `<tr><td><input class="form-control" value="${new RegExp(this.indexDBData.hide_item[i]).source}"></td><td><button class="btn script_chatFilter_delete">删除</button></td></tr>`;
+      htmlText += `<tr><td><input class="form-control" value="${this.indexDBData.hide_item[i]}"></td><td><button class="btn script_chatFilter_delete">删除</button></td></tr>`;
     }
     htmlText += `</tbody></table><button class="btn" style="width: 100%;" id="script_chatFilter_add">添加</button></div>`;
     mainNode.id = "script_chatFiletr_setting";
@@ -61,7 +54,6 @@ class chatFilter extends BaseComponent {
     // 保存并刷新
     this.indexDBData.hightLight_item = highLightList;
     this.indexDBData.hide_item = hideList;
-    this.genTempList();
     tools.indexDB_updateIndexDBData();
     window.alert("已提交更改.");
   }
@@ -77,30 +69,20 @@ class chatFilter extends BaseComponent {
     tools.getParentByIndex(event.target, 2).remove();
   }
 
-
   // 功能处理主函数
   mainCheck(mainNode) {
     let targetNodeList = mainNode.childNodes[2].childNodes;
     for (let i = 0; i < targetNodeList.length; i++) {
       let singleNode = targetNodeList[i];
       let text = this.formatMsgText(singleNode);
-      if (this.checkSubString(this.componentData.hideReg, this.indexDBData.hide_item, text) && !/script_chatFilter_hideClass/.test(singleNode.childNodes[0].className)) {
+      if (this.checkSubString(this.indexDBData.hide_item, text) && !/script_chatFilter_hideClass/.test(singleNode.childNodes[0].className)) {
         // 屏蔽做法
         singleNode.childNodes[0].className += ` script_chatFilter_hideClass`;
-      } else if (this.checkSubString(this.componentData.highLightReg, this.indexDBData.hightLight_item, text) && !/script_chatFilter_hightLightClass/.test(singleNode.childNodes[0].className)) {
+      } else if (this.checkSubString(this.indexDBData.hightLight_item, text) && !/script_chatFilter_hightLightClass/.test(singleNode.childNodes[0].className)) {
         // 高亮做法
         singleNode.childNodes[0].className += ` script_chatFilter_hightLightClass`;
       }
     }
-  }
-  // 生成缓存计算
-  genTempList() {
-    this.componentData.hideReg = this.indexDBData.hide_item.length != 0 ?
-      new RegExp(this.indexDBData.hide_item.join("|")) :
-      /^[^]$/;
-    this.componentData.highLightReg = this.indexDBData.hightLight_item.length != 0 ?
-      new RegExp(this.indexDBData.hightLight_item.join("|")) :
-      /^[^]$/;
   }
   // 格式化信息文本
   formatMsgText(node) {
@@ -140,37 +122,11 @@ class chatFilter extends BaseComponent {
     return "";
   }
   // 检查文本包含
-  checkSubString(reg, arr, longString) {
-    if (longString.length < 200) {
-      return reg.test(longString);
-    } else {
-      for (let i = 0; i < arr.length; i++) {
-        if (longString.indexOf(arr[i]) !== -1) return true;
-      }
-      return false;
+  checkSubString(arr, longString) {
+    for (let i = 0; i < arr.length; i++) {
+      if (longString.indexOf(arr[i]) !== -1) return true;
     }
-  }
-  // 检查文本是否符合过滤要求
-  checkIfHide(text) {
-    // // 正则检测
-    // if (this.indexDBData.hide_reg.test(text)) return true;
-    // // 物品检测
-    // if (this.checkSubString(this.indexDBData.hide_item,text)) return true;
-    try {
-      return this.indexDBData.hide_reg.test(text) || this.checkSubString(this.indexDBData.hide_item, text);
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  }
-  // 检查文本是否符合高亮要求
-  checkIfHighLight(text) {
-    try {
-      return this.indexDBData.hightLight_reg.test(text) || this.checkSubString(this.indexDBData.hightLight_item, text);
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
+    return false;
   }
 }
 
