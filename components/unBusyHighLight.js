@@ -13,7 +13,7 @@ class unBusyHighLight extends BaseComponent {
     func: this.mainFunc
   }]
   cssText = [
-    `@keyframes script_fontSizeAnimation{0%{font-size:14px;}50%{font-size:20px;}100%{font-size:14px;}}.script_unBusyHighLight_aTag{animation:script_fontSizeAnimation 1s infinite;}`
+    `.script_unBusyHighLight_aTag span>span{background-color:#ffff00;color:black;}.script_unBusyHighLight_aTag span>small>span{background-color:#ffff00;color:black;}`
   ]
 
   async mainFunc() {
