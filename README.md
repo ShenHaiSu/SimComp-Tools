@@ -13,6 +13,9 @@
   - `yarn run build`
   - 导入油猴插件
 
+# Electron框架客户端
+https://github.com/ShenHaiSu/SimComp-Tools/releases/tag/2.11.231208085516-exe
+
 # 肚子饿饿
 - https://afdian.net/a/SCT-Editor
 
