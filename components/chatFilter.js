@@ -88,7 +88,7 @@ class chatFilter extends BaseComponent {
   formatMsgText(node) {
     try {
       let result = "";
-      let nodeList = Object.values(node.querySelectorAll("div>span"));
+      let nodeList = Object.values(node.childNodes[0].children).filter(node => node.tagName == "SPAN");
       for (let i = 0; i < nodeList.length; i++) {
         let spanNode = nodeList[i];
         result += (nodeList[i].children.length == 0) ? spanNode.innerText : this.getSpanText(spanNode);
