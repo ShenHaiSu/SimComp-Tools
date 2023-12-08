@@ -1,6 +1,11 @@
 # custom
 vuetest/
 *.mjs
+tempFiles/
+# 忽略输出文件夹
+dist/*
+# 强调要上传指定文件
+!dist/build.user.js
 
 # Logs
 logs
@@ -93,7 +98,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
