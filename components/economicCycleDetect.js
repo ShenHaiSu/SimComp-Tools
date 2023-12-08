@@ -30,7 +30,7 @@ class economicCycleDetect extends BaseComponent {
     let mainNode = document.createElement("div");
     mainNode.id = "script_economicCycleDetect_setting";
     mainNode.innerHTML = `<div class=header>周期经济状况检测价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=自启动监控在周五晚上二十三点前后会尝试自动获取信息(可能有延迟导致错误,请注意甄别)>自启动监控<td><input class=form-control type=checkbox ${this.indexDBData.autoStart ? "checked" : ""}></table></div>`;
-    mainNode.querySelector("click", event => this.settingClickHandle(event));
+    mainNode.addEventListener("click", event => this.settingClickHandle(event));
     return mainNode;
   }
   settingClickHandle(event) {

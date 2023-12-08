@@ -11,6 +11,9 @@
 		{
 			"name": "SimComp-APIProxy",
 			"path": "../SimComp-APIProxy"
+		},
+		{
+			"path": "../SimCompsTools-Electron"
 		}
 	],
 	"settings": {}
