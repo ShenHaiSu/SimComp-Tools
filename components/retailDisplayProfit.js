@@ -39,11 +39,11 @@ class retailDisplayProfit extends BaseComponent {
   }
   settingSubmitHandle() {
     let valueList = Object.values(document.querySelectorAll("div#script_srtting_retailProfit input")).map(node => parseFloat(node.value));
-    if (valueList.includes(NaN) || valueList.findIndex(rate => rate <= 0) != -1) return window.alert("数据不正确");
+    if (valueList.includes(NaN) || valueList.findIndex(rate => rate <= 0) != -1) return tools.alert("数据不正确");
     this.indexDBData.minRate = valueList[0];
     this.indexDBData.maxRate = valueList[1];
     tools.indexDB_updateIndexDBData();
-    window.alert("已提交更改");
+    tools.alert("已提交更改");
   }
   async mainFunc() {
     // 初始化

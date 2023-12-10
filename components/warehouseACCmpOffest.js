@@ -38,11 +38,11 @@ class warehouseACCmpOffest extends BaseComponent {
       return node.value;
     });
     // 信息检查
-    if (valueList[0] < 0 || valueList[0] >= 100) return window.alert("你要不要看看你填的啥?");
+    if (valueList[0] < 0 || valueList[0] >= 100) return tools.alert("你要不要看看你填的啥?");
     this.indexDBData.mp_offest = valueList[0];
     this.indexDBData.percentSign = valueList[1];
     tools.indexDB_updateIndexDBData();
-    window.alert("已提交更改");
+    tools.alert("已提交更改");
   }
   async mainFunc() {
     // 检查配置

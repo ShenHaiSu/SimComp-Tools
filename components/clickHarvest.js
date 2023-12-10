@@ -107,7 +107,7 @@ class clickHarvest extends BaseComponent {
     this.indexDBData.nodePosition = valueList[1];
     tools.indexDB_updateIndexDBData();
     this.clearBtn();
-    window.alert("已提交更新");
+    tools.alert("已提交更新");
     return;
   }
 }

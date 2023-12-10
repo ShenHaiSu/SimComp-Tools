@@ -45,7 +45,7 @@ class economicCycleDetect extends BaseComponent {
     // 重启
     this.startDetect();
     tools.indexDB_updateIndexDBData();
-    window.alert("保存并更新");
+    tools.alert("保存并更新");
   }
 
   async init() {

@@ -45,11 +45,11 @@ class customBackgroundImage extends BaseComponent {
     } else if (url_reg.test(itemValue)) {
       this.indexDBData.cssText = `url(${itemValue})`;
     } else {
-      return window.alert("内容不正确，允许以下类型的内容：\n  #121212\n  rgb(1,1,35)\n  https://image.url");
+      return tools.alert("内容不正确，允许以下类型的内容：\n  #121212\n  rgb(1,1,35)\n  https://image.url");
     }
     tools.indexDB_updateIndexDBData();
     this.mainFunc();
-    window.alert("更改已提交");
+    tools.alert("更改已提交");
   }
   mainFunc() {
     let targetNode = document.querySelector("div#root div#page > div");

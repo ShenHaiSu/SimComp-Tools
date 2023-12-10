@@ -54,9 +54,9 @@ class customExecutivesIcon extends BaseComponent {
     let useDefault = valueList[0];
     valueList = valueList.slice(1);
     for (let i = 0; i < valueList.length; i += 2) {
-      if (valueList[i] == "") return window.alert("高管名称不能使用空内容");
-      if (valueList[i + 1] == "") return window.alert("遮罩url不能使用空内容");
-      if (!/^https:\/\/[^\s/$.?#].[^\s]*$/.test(valueList[i + 1])) return window.alert("遮罩url必须是https协议的合法url");
+      if (valueList[i] == "") return tools.alert("高管名称不能使用空内容");
+      if (valueList[i + 1] == "") return tools.alert("遮罩url不能使用空内容");
+      if (!/^https:\/\/[^\s/$.?#].[^\s]*$/.test(valueList[i + 1])) return tools.alert("遮罩url必须是https协议的合法url");
     }
     // 保存数据
     this.indexDBData.useDefault = useDefault;
@@ -66,7 +66,7 @@ class customExecutivesIcon extends BaseComponent {
     }
     this.indexDBData.executivesIconList = newArray;
     tools.indexDB_updateIndexDBData();
-    window.alert("已提交更改");
+    tools.alert("已提交更改");
   }
   // 添加一个
   addItem(event) {

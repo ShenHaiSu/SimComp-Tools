@@ -77,7 +77,7 @@ class buildingEndMsg extends BaseComponent {
     let valueList = [];
     document.querySelectorAll("#setting-container-6 input").forEach((item) => valueList.push(item.value));
     if (valueList[0] < feature_config.net_gap_ms)
-      return window.alert("功能是通过发送网络请求来检查建筑状态的\n请求间隔时间不要小于'通用网络请求最小间隔'。");
+      return tools.alert("功能是通过发送网络请求来检查建筑状态的\n请求间隔时间不要小于'通用网络请求最小间隔'。");
     if (valueList[1] == "") valueList[1] = "建筑项目完工";
     if (valueList[2] == "") valueList[2] = "您有一个新的建筑完工了，可以续派任务咯~";
     // 保存配置
@@ -88,7 +88,7 @@ class buildingEndMsg extends BaseComponent {
     // 重启功能
     this.mainFunc(undefined, "restart");
     // 交互提醒
-    window.alert("已提交设置并保存。");
+    tools.alert("已提交设置并保存。");
   }
 }
 new buildingEndMsg();

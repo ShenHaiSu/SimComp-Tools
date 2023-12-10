@@ -56,8 +56,8 @@ class bondTracker extends BaseComponent {
     valueList[1] = Math.floor(valueList[1]);
     valueList[2] = Math.floor(valueList[2]);
     valueList[3] = parseFloat(valueList[3]);
-    if (valueList[1] < 0) return window.alert("最低数量不能是负数");
-    if (valueList[3] < 0 || valueList[3] > 2) return window.alert("不会存在超出 0-2 之间的利率");
+    if (valueList[1] < 0) return tools.alert("最低数量不能是负数");
+    if (valueList[3] < 0 || valueList[3] > 2) return tools.alert("不会存在超出 0-2 之间的利率");
     // 保存
     this.indexDBData.autoTrack = valueList[0];
     this.indexDBData.realmData[realm].minAmount = valueList[1];
@@ -66,7 +66,7 @@ class bondTracker extends BaseComponent {
     // 重启动
     this.startTracker();
     // 返回
-    return window.alert("保存并重启更新");
+    return tools.alert("保存并重启更新");
   }
 
   startTracker() {

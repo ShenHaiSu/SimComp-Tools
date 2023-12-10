@@ -47,10 +47,10 @@ class purchaseByMoney extends BaseComponent {
     let maxPrice = 0.0;
     let realm = runtimeData.basisCPT.realm;
     if (quality == "") quality = 0;
-    if (quality < 0 || quality > 12) return window.alert("品质输入有误");
-    if (amount == "" || amount < 0) return window.alert("金额输入有误");
+    if (quality < 0 || quality > 12) return tools.alert("品质输入有误");
+    if (amount == "" || amount < 0) return tools.alert("金额输入有误");
     let market_data = await tools.getNetData(`${tools.baseURL.market}/${realm}/${res_id}/#${tools.generateUUID()}`);
-    if (!market_data) return window.alert("交易行资源请求失败，请重试或检查网络连接。");
+    if (!market_data) return tools.alert("交易行资源请求失败，请重试或检查网络连接。");
     for (let i = 0; i < market_data.length; i++) {
       let element = market_data[i];
       if (element.quality < quality) continue;
@@ -89,7 +89,7 @@ class purchaseByMoney extends BaseComponent {
     }, 1000);
 
     setTimeout(() => {
-      if (failFlag) return window.alert("执行出错.请尝试打开debug模式,重试后截图控制台信息给开发者.");
+      if (failFlag) return tools.alert("执行出错.请尝试打开debug模式,重试后截图控制台信息给开发者.");
       document.querySelector("form button[type=submit]").click();
     }, 1500);
   }

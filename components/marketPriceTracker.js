@@ -72,8 +72,8 @@ class marketPriceTracker extends BaseComponent {
       let realm = Math.floor(valueNodeList[i + 2].value);
       let price = parseFloat(valueNodeList[i + 3].value);
       // 审查
-      if (resid <= 0 || price <= 0) return window.alert("id和价格不能小于等于0");
-      if (tools.itemIndex2Name(resid) == undefined) return window.alert("有存在无法找到物品名的id,请检查是否有id错误.");
+      if (resid <= 0 || price <= 0) return tools.alert("id和价格不能小于等于0");
+      if (tools.itemIndex2Name(resid) == undefined) return tools.alert("有存在无法找到物品名的id,请检查是否有id错误.");
       // 添加
       newArray.push({ id: resid, quality, realm, target_price: price });
     }
@@ -81,7 +81,7 @@ class marketPriceTracker extends BaseComponent {
     // 保存并重载
     await tools.indexDB_updateIndexDBData();
     this.mainFunc(undefined, "restart");
-    window.alert("以保存配置并发起功能重启。");
+    tools.alert("以保存配置并发起功能重启。");
   }
   // 添加一个监控编辑框
   settingAddItem() {
@@ -91,59 +91,6 @@ class marketPriceTracker extends BaseComponent {
   settingDeleteButtonHandle(event) {
     console.log(tools.getParentByIndex(event.target, 2));
     tools.getParentByIndex(event.target, 2).remove();
-  }
-  async showAllConf() {
-    // 罗列
-    let runtimeData = this.indexDBData.trackTargetList;
-    if (runtimeData.length == 0) return window.alert("当前没有正在监控的任何物品。");
-    let outputMsg = `当前已经监控了的资源有：`;
-    runtimeData.forEach((item) => {
-      // {id:123, quality:0 ,realm:0, target_price:0.159, now_price:123}
-      outputMsg += `\n\tID:${item.id} 名称:${tools.itemIndex2Name(item.id) || "内容有误请删除"} `;
-      outputMsg += `品质:${item.quality} 服务器:${item.realm == 0 ? "R1-M服" : "R2-E服"} 目标价格:${item.target_price}`;
-    });
-    window.alert(outputMsg);
-  }
-  async addData() {
-    // 添加
-    // {id:123, quality:0 ,realm:0, target_price:0.159, now_price:123}
-    let valueList = [];
-    let exist = false;
-    document.querySelectorAll("#setting-container-7 td > input, #setting-container-7 td > select").forEach((item) => valueList.push(item.value));
-    valueList = valueList.map((value, index) => (index <= 2 ? Math.floor(value) : value));
-    tools.log(valueList);
-    if (valueList[0] <= 0) return window.alert("资源id不能小于1");
-    if (valueList[1] < 0 || valueList[1] > 12) return window.alert("资源品质不合法，只允许0-12整数");
-    if (valueList[2] < 0 || valueList[2] > 1) return window.alert("服务器标号不能是0或者1以外的内容");
-    if (valueList[3] <= 0) return window.alert("关注一个不可能达到的价格是不可行的");
-    // if (runtime_data.market_price_tracker_list.length >= 10) return window.alert("不允许监听十个以上的物品，防止海量的请求");
-    this.indexDBData.trackTargetList.forEach((item) => {
-      if (item.id == valueList[0] && item.realm == valueList[2] && item.quality == valueList[1]) exist = true;
-    });
-    if (exist) return window.alert("该品质的物品在该服务器已经监控了，不要重复添加。");
-    this.indexDBData.trackTargetList.push({
-      id: valueList[0],
-      quality: valueList[1],
-      realm: valueList[2],
-      target_price: valueList[3],
-    });
-    window.alert(`已将数据提交。请点击保存并重启按钮应用设置。`);
-  }
-  async deleteData() {
-    // 删除
-    let valueList = [];
-    document.querySelectorAll("#setting-container-7 td > input, #setting-container-7 td > select").forEach((item) => valueList.push(item.value));
-    valueList = valueList.map((value, index) => (index <= 2 ? Math.floor(value) : value));
-    tools.log(valueList);
-    if (valueList[0] <= 0) return window.alert("资源id不能小于1");
-    if (valueList[1] < 0 || valueList[1] > 12) return window.alert("资源品质不合法，只允许0-12整数");
-    if (valueList[2] < 0 || valueList[2] > 1) return window.alert("服务器标号不能是0或者1以外的内容");
-    let itemIndex = this.indexDBData.trackTargetList.findIndex((item) => {
-      return item.id == valueList[0] && item.quality == valueList[1] && item.realm == valueList[2];
-    });
-    if (itemIndex == -1) return window.alert("没有找到该监控对象");
-    this.indexDBData.trackTargetList.splice(itemIndex, 1);
-    window.alert("已经删除对该目标的监控，请点击保存并重启按钮应用设置。");
   }
   mainFunc(window, mode = "start") {
     // mode = start clear restart

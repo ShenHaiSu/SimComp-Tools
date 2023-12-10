@@ -34,7 +34,7 @@ class chatroom_mp_display extends BaseComponent {
     let valueList = [];
     document.querySelectorAll("#setting-container-3 input").forEach((item) => valueList.push(item.value));
     if (!(valueList.length == 4 && valueList.every((num) => num >= 0) && valueList[2] <= 12 && valueList[3] <= 100)) {
-      window.alert("数据内容不合规，请检查所有内容不应当小于0。品质在0-12中，折扣在0-100中。");
+      tools.alert("数据内容不合规，请检查所有内容不应当小于0。品质在0-12中，折扣在0-100中。");
       return;
     }
     this.indexDBData.display_ms = Math.floor(valueList[0]);
@@ -42,7 +42,7 @@ class chatroom_mp_display extends BaseComponent {
     this.indexDBData.focus_q = Math.floor(valueList[2]);
     this.indexDBData.focus_offset = Math.floor(valueList[3]);
     await tools.indexDB_updateIndexDBData();
-    window.alert("已提交保存。");
+    tools.alert("已提交保存。");
   }
   componentData = {
     containerNode: undefined, // 价格显示容器元素

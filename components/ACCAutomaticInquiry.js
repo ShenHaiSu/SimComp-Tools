@@ -21,7 +21,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     loadFlag: false, // 加载标记
   };
   frontUI = () => {
-    if (!Boolean(location.href.match("headquarters/warehouse/incoming-contracts"))) return window.alert("请回到待处理入库件页面");
+    if (!Boolean(location.href.match("headquarters/warehouse/incoming-contracts"))) return tools.alert("请回到待处理入库件页面");
     this.mainWork_0();
   }
   settingUI = () => {
@@ -37,12 +37,12 @@ class ACCAutomaticInquiry extends BaseComponent {
   settingSubmit() {
     let valueList = Object.values(document.querySelectorAll("div#script_ACCAutoQuery_setting input, div#script_ACCAutoQuery_setting select")).map(node => node.value);
     // 检查数据
-    if (valueList[0] < 0) return window.alert("精度必须是整数且大于等于0");
+    if (valueList[0] < 0) return tools.alert("精度必须是整数且大于等于0");
     // 更新数据保存
     this.indexDBData.exactDigit = parseFloat(valueList[0]);
     this.indexDBData.workMode = Math.floor(valueList[1]);
     tools.indexDB_updateIndexDBData();
-    window.alert("提交更新");
+    tools.alert("提交更新");
   }
 
   mainFunc() {

@@ -41,7 +41,7 @@ class newTabProfile extends BaseComponent {
     this.indexDBData.activeZone_warehouse = valueList[2];
     this.indexDBData.activeZone_search = valueList[3];
     tools.indexDB_updateIndexDBData();
-    window.alert("保存并记录");
+    tools.alert("保存并记录");
   }
   // 添加root标签事件分发
   mainFunc(window) {

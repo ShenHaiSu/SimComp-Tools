@@ -35,7 +35,7 @@ class festivalEffectSwitch extends BaseComponent {
     let valueList = Object.values(document.body.querySelectorAll(queryString)).map(node => node.type == "checkbox" ? node.checked : node.value);
     this.indexDBData.christmasSnowsFall = valueList[0];
     tools.indexDB_updateIndexDBData();
-    window.alert("更新并保存");
+    tools.alert("更新并保存");
   }
 
   // 圣诞节 地图下雪 

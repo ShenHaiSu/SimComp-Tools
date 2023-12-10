@@ -69,17 +69,17 @@ class easyText extends BaseComponent {
     } else if (url_reg.test(valueList[0])) {
       this.indexDBData.backgroundCSS = `url(${valueList[0]})`;
     } else {
-      return window.alert("内容不正确，允许以下类型的内容：\n  #121212\n  rgb(1,1,35)\n  https://image.url");
+      return tools.alert("内容不正确，允许以下类型的内容：\n  #121212\n  rgb(1,1,35)\n  https://image.url");
     }
 
-    if (valueList[2] < 0 || valueList[3] < 0) return window.alert("宽高不能这么设置");
+    if (valueList[2] < 0 || valueList[3] < 0) return tools.alert("宽高不能这么设置");
     if (this.indexDBData.styleMode != Math.floor(valueList[1])) reloadFlag = true;
     this.indexDBData.styleMode = Math.floor(valueList[1]);
     this.indexDBData.nodeWidth = valueList[2];
     this.indexDBData.nodeHeight = valueList[3];
     await tools.indexDB_updateIndexDBData();
     this.componentData.rootNode.style.background = this.indexDBData.backgroundCSS;
-    window.alert("更改已提交");
+    tools.alert("更改已提交");
     if (reloadFlag) location.reload();
   }
   // 构建随手记容器元素

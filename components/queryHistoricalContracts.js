@@ -65,7 +65,7 @@ class queryHistoricalContracts extends BaseComponent {
   // 按钮功能函数
   buttonClickHandle(event) {
     // 检查当前是否能获取到公司名
-    if (!document.querySelector("form>div>b") && !this.componentData.displayFlag) return window.alert("请在合同界面,先选定一个收货方再点击此按钮来查询.(最多查询一周长度)");
+    if (!document.querySelector("form>div>b") && !this.componentData.displayFlag) return tools.alert("请在合同界面,先选定一个收货方再点击此按钮来查询.(最多查询一周长度)");
     // 检查当前显示状态
     let nowItemID = tools.itemName2Index(decodeURI(location.href.match(/headquarters\/warehouse\/(.+)/)[1]));
     let scriptNode = document.querySelector("div#script_hisContracts_mainDiv");
@@ -79,7 +79,7 @@ class queryHistoricalContracts extends BaseComponent {
       return;
     }
     // 检查缓存数据
-    if (this.componentData.hisContaracts[nowItemID] == undefined) return window.alert("请先点击原网页的'获取库存记录变动'按钮");
+    if (this.componentData.hisContaracts[nowItemID] == undefined) return tools.alert("请先点击原网页的'获取库存记录变动'按钮");
     // 创建显示
     if (scriptNode) scriptNode.remove();
     scriptNode = document.createElement("div");

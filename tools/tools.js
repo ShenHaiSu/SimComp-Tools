@@ -528,7 +528,6 @@ class tools {
 
   }
   static fixAlert() {
-    if (this.browserKind != "Electron") return;
     let newNode = document.createElement("div");
     newNode.id = "script_dialog_overlay";
     newNode.style.display = "none";
@@ -537,15 +536,17 @@ class tools {
     this.dialogNode = newNode;
     document.body.appendChild(newNode);
     newNode.addEventListener("click", event => {
-      if (event.target.id == "script_dialog_overlay") return this.dialogNode.style.display = "none";
-      if (event.target.tagName == "BUTTON") return this.dialogNode.style.display = "none";
+      if (event.target.id == "script_dialog_overlay") return this.alertFade();
+      if (event.target.tagName == "BUTTON") return this.alertFade();
     });
-    // let originAlert = window.alert;
-    window.alert = (message) => {
-      this.dialogMain.innerText = message;
-      this.dialogNode.style.display = "";
-    }
-    this.CSSMount("add",`#script_dialog_overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
+    this.CSSMount("add", `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
+  }
+  static alertFade() {
+    Object.assign(this.dialogNode.style, { display: "none" });
+  }
+  static alert(message) {
+    this.dialogMain.innerText = message;
+    Object.assign(this.dialogNode.style, { display: "flex" });
   }
   static eventBus(event) {
     if (!this.scriptLoadAcc) return;

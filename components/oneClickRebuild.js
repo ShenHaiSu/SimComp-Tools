@@ -44,7 +44,7 @@ class oneClickRebuild extends BaseComponent {
   frontUI = async () => {
     if (/b\/\d+\/$/.test(location.href)) {
       let buildingID = parseInt(location.href.match(/b\/(\d+)\/$/)[1]);
-      if (!this.componentData.targetBuildList.includes(tools.getBuildKind(buildingID))) return window.alert("请先进入建筑界面,包括:矿井 采石场 油井");
+      if (!this.componentData.targetBuildList.includes(tools.getBuildKind(buildingID))) return tools.alert("请先进入建筑界面,包括:矿井 采石场 油井");
       this.rebuildHandle(undefined);
       return;
     } else if (/\/landscape\/$/.test(location.href) && window.confirm("现在将会使用插件组件配置来查询所有不符合条件的矿井/采石场/油井,你确定吗?(请仔细检查配置,仔细检查配置,仔细检查配置)")) {
@@ -71,7 +71,7 @@ class oneClickRebuild extends BaseComponent {
   settingSubmit() {
     let valueList = Object.values(document.querySelectorAll("#script_mineRebuild_setting input")).map(node => parseFloat(node.value));
     // 审核
-    if (valueList.filter(value => Boolean(value < 0 || value >= 100)).length != 0) return window.alert("不能低于0或者大于等于100");
+    if (valueList.filter(value => Boolean(value < 0 || value >= 100)).length != 0) return tools.alert("不能低于0或者大于等于100");
     // 更新
     this.indexDBData.minAbundance_14 = valueList[0];
     this.indexDBData.minAbundance_15 = valueList[1];
@@ -84,7 +84,7 @@ class oneClickRebuild extends BaseComponent {
     this.indexDBData.minAbundance_74 = valueList[8];
     // 保存
     tools.indexDB_updateIndexDBData();
-    window.alert("保存并更新");
+    tools.alert("保存并更新");
     // 刷新显示
     if (document.querySelector("button#script_mineRebuild_btn"))
       document.querySelectorAll("button#script_mineRebuild_btn").forEach(btn => btn.remove());
@@ -155,11 +155,11 @@ class oneClickRebuild extends BaseComponent {
       await tools.dely(1500);
     } catch (error) {
       console.error(error);
-      window.alert("一键重建功能出现错误,请打开开发者工具(F12)找到最近的error信息发送给开发者.");
+      tools.alert("一键重建功能出现错误,请打开开发者工具(F12)找到最近的error信息发送给开发者.");
     } finally {
       if (mode == "one") {
         tools.setWindowMask(false);
-        window.alert("一键重建已完成.");
+        tools.alert("一键重建已完成.");
       }
     }
   }
@@ -184,7 +184,7 @@ class oneClickRebuild extends BaseComponent {
       }
     } finally {
       tools.setWindowMask(false);
-      window.alert("一键重建已完成.");
+      tools.alert("一键重建已完成.");
     }
   }
 }

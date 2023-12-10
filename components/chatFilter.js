@@ -49,13 +49,13 @@ class chatFilter extends BaseComponent {
     let highLightList = Object.values(tableList[0].querySelectorAll("input")).map(node => node.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     let hideList = Object.values(tableList[1].querySelectorAll("input")).map(node => node.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     // 检查空内容
-    if (highLightList.filter(value => value == "").length != 0) return window.alert("内容不能为空");
-    if (hideList.filter(value => value == "").length != 0) return window.alert("内容不能为空");
+    if (highLightList.filter(value => value == "").length != 0) return tools.alert("内容不能为空");
+    if (hideList.filter(value => value == "").length != 0) return tools.alert("内容不能为空");
     // 保存并刷新
     this.indexDBData.hightLight_item = highLightList;
     this.indexDBData.hide_item = hideList;
     tools.indexDB_updateIndexDBData();
-    window.alert("已提交更改.");
+    tools.alert("已提交更改.");
   }
   // 添加元素
   settingAddNode(event) {

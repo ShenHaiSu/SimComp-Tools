@@ -25,7 +25,7 @@ class saleOfficeAutoQuery extends BaseComponent {
         .filter(build => build.kind == "B" && build.busy == undefined)
         .map(build => { return { id: build.id, netBack: false } });
       // 排查目标列表长度
-      if (this.componentData.TBuildList.length == 0) return window.alert("未检测到可以询单的建筑.如果确定依然可以询单,请联系开发者.");
+      if (this.componentData.TBuildList.length == 0) return tools.alert("未检测到可以询单的建筑.如果确定依然可以询单,请联系开发者.");
       // 封锁用户操作
       tools.setWindowMask(true);
       // 逐一操作
@@ -33,7 +33,7 @@ class saleOfficeAutoQuery extends BaseComponent {
         let targetBuild = this.componentData.TBuildList[i];
         // 检查并回到地图界面
         if (!/landscape\//.test(location.href)) {
-          if (!document.querySelector("nav>a#menu-map")) return window.alert("请回到地图界面");
+          if (!document.querySelector("nav>a#menu-map")) return tools.alert("请回到地图界面");
           document.querySelector("nav>a#menu-map").click();
         }
         await tools.dely(1000);
@@ -53,7 +53,7 @@ class saleOfficeAutoQuery extends BaseComponent {
         document.querySelector("nav>a#menu-map").click();
       }
       this.componentData.TBuildList = [];
-      window.alert("一键询单已完成.");
+      tools.alert("一键询单已完成.");
     } finally {
       // 解锁用户操作
       tools.setWindowMask(false);

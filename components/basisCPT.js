@@ -75,7 +75,7 @@ class basisCPT extends BaseComponent {
     let loadCount = 0;
     componentList.forEach(CPT => CPT.enable = valueList[loadCount++]);
     tools.indexDB_updateFeatureConf();
-    window.alert("提交设置成功");
+    tools.alert("提交设置成功");
   }
   // 插件基础设置提交按钮
   async BaseSet_button(event) {
@@ -92,13 +92,13 @@ class basisCPT extends BaseComponent {
     feature_config.notificationMode = Math.floor(valueList[3]);
     tools.log(feature_config);
     await tools.indexDB_updateFeatureConf();
-    window.alert("已提交更改");
+    tools.alert("已提交更改");
     location.reload();
   }
   // 重置插件缓存按钮
   async clearIndexdDB(event) {
     await tools.indexDB_deleteAllData();
-    window.alert("清除插件缓存完毕");
+    tools.alert("清除插件缓存完毕");
     location.reload();
   }
   // 用户信息拦截处理
@@ -261,10 +261,10 @@ class basisCPT extends BaseComponent {
     this.componentData.cptSettingShow = true;
   }
   sideBarSub_noFront() {
-    window.alert("该组件没有前台窗口设计");
+    tools.alert("该组件没有前台窗口设计");
   }
   sideBarSub_noSetting() {
-    window.alert("该组件没有可以设置的内容");
+    tools.alert("该组件没有可以设置的内容");
   }
   sideBarSub_cptSearch(event) {
     let value = event.target.value;
@@ -349,11 +349,11 @@ class basisCPT extends BaseComponent {
       }
     });
     // 检测内容
-    if (Math.floor(valueList[cptCount + 1]) <= 3000) return window.alert("插件主动网络请求最小间隔 不允许设置小于三秒");
-    if (!tools.hexArgbCheck(valueList[cptCount + 2])) return window.alert("只支持HEX格式颜色和RGB格式颜色.");
-    if (valueList[cptCount + 3] > 100 || valueList[cptCount + 3] <= 0) return window.alert("网页缩放比例太离谱嗷.\n只允许 (0-100].");
-    if (valueList[cptCount + 4] == -1 && valueList[cptCount + 5] != -1) return window.alert("如果仅设置一个通知模式请使用主要通知模式.");
-    if (valueList[cptCount + 4] == valueList[cptCount + 5] && valueList[cptCount + 4] != -1) return window.alert("没必要都设置一样的.");
+    if (Math.floor(valueList[cptCount + 1]) <= 3000) return tools.alert("插件主动网络请求最小间隔 不允许设置小于三秒");
+    if (!tools.hexArgbCheck(valueList[cptCount + 2])) return tools.alert("只支持HEX格式颜色和RGB格式颜色.");
+    if (valueList[cptCount + 3] > 100 || valueList[cptCount + 3] <= 0) return tools.alert("网页缩放比例太离谱嗷.\n只允许 (0-100].");
+    if (valueList[cptCount + 4] == -1 && valueList[cptCount + 5] != -1) return tools.alert("如果仅设置一个通知模式请使用主要通知模式.");
+    if (valueList[cptCount + 4] == valueList[cptCount + 5] && valueList[cptCount + 4] != -1) return tools.alert("没必要都设置一样的.");
     // 挂载内容
     Object.values(componentList).forEach(component => component.enable = valueList[flagCount++]);
     feature_config.debug = valueList[cptCount + 0];
@@ -367,7 +367,7 @@ class basisCPT extends BaseComponent {
     tools.indexDB_updateFeatureConf();
     tools.indexDB_updateIndexDBData();
     // 反馈并刷新
-    window.alert("已提交更新,即将刷新.");
+    tools.alert("已提交更新,即将刷新.");
     location.reload();
   }
   // 防抖动保存数据库

@@ -69,7 +69,7 @@ class globalBlock extends BaseComponent {
     this.genTempList();
     tools.indexDB_updateIndexDBData();
     this.componentData.iconMaskNode = undefined;
-    window.alert("已提交更改.");
+    tools.alert("已提交更改.");
   }
   // 设置界面添加节点
   settingAddNode(event) {

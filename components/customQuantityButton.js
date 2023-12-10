@@ -43,7 +43,7 @@ class customQuantityButton extends BaseComponent {
     // 清除已有元素并重新挂载
     document.querySelectorAll("button.btn.script_custom_button").forEach(node => node.remove());
     this.mainFunc();
-    window.alert("已提交更改。");
+    tools.alert("已提交更改。");
   }
   mainFunc(event, mode) {
     try {
