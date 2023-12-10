@@ -8,6 +8,10 @@ components.keys().forEach(components);
 
 // 初始化代码
 async function scriptMainInit() {
+  // 标记插件已加载
+  if (window.SCTLoadFlag || document.querySelector("div#script_hover_node")) return;
+  window.SCTLoadFlag = true;
+  scriptEventStart();
   // 获取基础信息
   tools.checkWindowHorV(); // 窗口横纵
   tools.checkBrowser(); // 浏览器类型
@@ -43,33 +47,36 @@ async function scriptMainInit() {
   tools.scriptLoadAcc = true;
 }
 
+
 // 事件监控
-document.addEventListener("click", (event) => tools.eventBus(event));
-document.addEventListener("keydown", (event) => tools.eventBus(event));
-let rootObserveServer = new MutationObserver((mutation) => tools.mutationHandle(mutation));
-rootObserveServer.observe(document.querySelector("div#root"), { childList: true, subtree: true });
-setInterval(tools.intervalEventBus.apply(tools), 100);
-const originalXHR = window.XMLHttpRequest;
-window.XMLHttpRequest = function () {
-  let xhr = new originalXHR();
-  let originalOpen = xhr.open;
-  xhr.open = function (method, url, async) {
-    // tools.log(`XHR request ${method} ${url}`);
-    let originalOnLoad = xhr.onload;
-    xhr.onload = function () {
-      if (xhr.status === 200) {
-        try {
-          // tools.log("XHR拦截器拦截到json响应体：", responseJson);
-          tools.netEventBus(url, method, xhr.responseText);
-        } catch (error) {
-          tools.errorLog(error);
+function scriptEventStart() {
+  document.addEventListener("click", (event) => tools.eventBus(event));
+  document.addEventListener("keydown", (event) => tools.eventBus(event));
+  let rootObserveServer = new MutationObserver((mutation) => tools.mutationHandle(mutation));
+  rootObserveServer.observe(document.querySelector("div#root"), { childList: true, subtree: true });
+  setInterval(tools.intervalEventBus.apply(tools), 100);
+  const originalXHR = window.XMLHttpRequest;
+  window.XMLHttpRequest = function () {
+    let xhr = new originalXHR();
+    let originalOpen = xhr.open;
+    xhr.open = function (method, url, async) {
+      // tools.log(`XHR request ${method} ${url}`);
+      let originalOnLoad = xhr.onload;
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          try {
+            // tools.log("XHR拦截器拦截到json响应体：", responseJson);
+            tools.netEventBus(url, method, xhr.responseText);
+          } catch (error) {
+            tools.errorLog(error);
+          }
         }
-      }
-      if (originalOnLoad) originalOnLoad.apply(this, arguments);
+        if (originalOnLoad) originalOnLoad.apply(this, arguments);
+      };
+      originalOpen.apply(this, arguments);
     };
-    originalOpen.apply(this, arguments);
+    return xhr;
   };
-  return xhr;
-};
+}
 
 scriptMainInit();
