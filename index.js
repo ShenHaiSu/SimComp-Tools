@@ -60,17 +60,10 @@ function scriptEventStart() {
     let xhr = new originalXHR();
     let originalOpen = xhr.open;
     xhr.open = function (method, url, async) {
-      // tools.log(`XHR request ${method} ${url}`);
       let originalOnLoad = xhr.onload;
       xhr.onload = function () {
-        if (xhr.status === 200) {
-          try {
-            // tools.log("XHR拦截器拦截到json响应体：", responseJson);
-            tools.netEventBus(url, method, xhr.responseText);
-          } catch (error) {
-            tools.errorLog(error);
-          }
-        }
+        if (xhr.status !== 200) return;
+        try { tools.netEventBus(url, method, xhr.responseText) } catch (error) { tools.errorLog(error) }
         if (originalOnLoad) originalOnLoad.apply(this, arguments);
       };
       originalOpen.apply(this, arguments);

@@ -22,6 +22,12 @@ function insertTextToFile(filePath, text) {
   fs.writeFileSync(filePath, updatedContent, 'utf-8');
 }
 
+function genFileVersion(_, version = "") {
+  let data = { version: version.split(".") };
+  let fileData = JSON.stringify(data);
+  fs.writeFileSync("./dist/version.json", fileData, "utf-8");
+}
+
 let latestJsFile = getLatestJsFile(distPath);
 
 if (latestJsFile) {
@@ -45,6 +51,7 @@ if (latestJsFile) {
     ``
   ].join("\n");
   insertTextToFile(filePath, customText);
+  genFileVersion(distPath, `${preVersion}.${timeStamp}`);
   console.log(`Custom text added to ${latestJsFile}`);
 } else {
   console.log('No JavaScript files found in the "dist" directory.');

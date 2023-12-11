@@ -494,38 +494,46 @@ class tools {
    * @param {number} channel 通知通道 0原生 1网页内
    */
   static msg_send(title, body = "", channel = undefined) {
-    // 通知模式，0 原生Notification对象 1 网页内信息 -1 是无
-    let actimeChannel = [];
-    if (channel == undefined) {
-      actimeChannel = feature_config.notificationMode;
-    } else if (feature_config.notificationMode.includes(channel)) {
-      actimeChannel.push(channel);
-    }
+    // 通知模式:
+    // -1 是无
+    //  0 原生Notification对象
+    //  1 网页内信息
+    //  2 安卓通知通道 
+    let actimeChannel = channel ? (feature_config.notificationMode.includes(channel) ? [channel] : []) : feature_config.notificationMode;
 
     // 判断是否有通道0
-    if (actimeChannel.includes(0)) new Notification(title, { body });
-    // 判断是否有通道1
-    if (actimeChannel.includes(1)) {
-      let newNode = document.createElement("tr");
-      let time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-      if (body.tagName == undefined) {
-        newNode.innerHTML = `<td>${time}</td><td>${title}\n${body}</td>`;
-      } else {
-        newNode.innerHTML = `<td>${time}</td><td>${title}\n</td>`;
-        newNode.querySelector("td:nth-of-type(2)").appendChild(body);
-      }
-      this.msgBodyNode.appendChild(newNode);
-      // 底色改变通知
-      if (this.msgShowFlag.timer) clearInterval(this.msgShowFlag.timer);
-      this.msgShowFlag.timer = setInterval(() => {
-        Object.assign(document.querySelector("div#script_hover_node>div>span").style, { backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c" });
-        this.msgShowFlag.flag = !this.msgShowFlag.flag;
-      }, 10 * 1000);
-    }
+    try {
+      if (actimeChannel.includes(0) && body.tagName == undefined)
+        new Notification(title, { body });
+    } catch (error) { tools.errorLog("渠道0 原生Notification通知报错", error) }
 
+    // 判断是否有通道1
+    try {
+      if (actimeChannel.includes(1)) {
+        let newNode = document.createElement("tr");
+        let time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+        newNode.innerHTML = `<td>${time}</td><td>${title}\n${body.tagName ? body.outerHTML : body}</td>`;
+        this.msgBodyNode.appendChild(newNode);
+        // 底色改变通知
+        if (this.msgShowFlag.timer) clearInterval(this.msgShowFlag.timer);
+        this.msgShowFlag.timer = setInterval(() => {
+          Object.assign(document.querySelector("div#script_hover_node>div>span").style, { backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c" });
+          this.msgShowFlag.flag = !this.msgShowFlag.flag;
+        }, 10 * 1000);
+      }
+    } catch (error) { tools.errorLog("渠道1 网页内通知通道报错", error) }
+
+    // 判断是否有通道2
+    try {
+      if (actimeChannel.includes(2) && body.tagName == undefined)
+        AndroidInterface.sendNotification(title, body);
+    } catch (error) { tools.errorLog("渠道2 安卓通知通道报错", error) }
   }
   static msg_clear() {
-
+    let itemList = Object.values(this.msgBodyNode.childNodes);
+    for (let i = 0; i < itemList.length; i++) {
+      itemList[i].remove();
+    }
   }
   static fixAlert() {
     let newNode = document.createElement("div");

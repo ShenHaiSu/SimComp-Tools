@@ -6,6 +6,7 @@ tempFiles/
 dist/*
 # 强调要上传指定文件
 !dist/build.user.js
+!dist/version.json
 
 # Logs
 logs

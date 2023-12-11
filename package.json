@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack --config webpack.config.js",
-    "postbuild": "node addComment.js"
+    "postbuild": "node postBuild.js"
   },
   "keywords": [],
   "author": "",
