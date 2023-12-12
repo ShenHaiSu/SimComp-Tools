@@ -9,12 +9,15 @@
 - 从Github最新Release下载build.user.js导入油猴插件
 - 从代码构建 
   - 下载代码
-  - `yran`
+  - `yarn`
   - `yarn run build`
   - 导入油猴插件
 
-# Electron框架客户端
-https://github.com/ShenHaiSu/SimComp-Tools/releases/tag/2.11.231208085516-exe
+# 自带插件的游戏客户端
+https://github.com/ShenHaiSu/SimComp-Tools/releases/tag/2.11.231208085516-app
+- WindowsPC 基于Electron (可以使用原生Notification通知对象拉起系统级通知)
+- Android 基于系统WebView (可以通过安卓通知通道拉起通知)
+- IOS与MacOS客户端开发 无计划
 
 # 肚子饿饿
 - https://afdian.net/a/SCT-Editor

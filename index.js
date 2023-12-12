@@ -11,7 +11,13 @@ async function scriptMainInit() {
   // 标记插件已加载
   if (window.SCTLoadFlag || document.querySelector("div#script_hover_node")) return;
   window.SCTLoadFlag = true;
-  scriptEventStart();
+  try {
+    scriptEventStart();
+  } catch {
+    tools.dely(5000);
+    window.SCTLoadFlag = false;
+    return scriptMainInit();
+  }
   // 获取基础信息
   tools.checkWindowHorV(); // 窗口横纵
   tools.checkBrowser(); // 浏览器类型
