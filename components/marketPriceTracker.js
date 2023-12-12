@@ -19,8 +19,8 @@ class marketPriceTracker extends BaseComponent {
     settingTemplateNode: undefined, // 设置界面模板要素
   };
   cssText = [
-    `#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}#setting-container-7 button.script_mpTracker_delete:hover{color: var(--fontColor);}#setting-container-7 tr>td:nth-of-type(1){min-width:70px;}#setting-container-7 tr>td:nth-of-type(2){min-width:64px;}#setting-container-7 tr>td:nth-of-type(3){min-width:96px;}#setting-container-7 tr>td:nth-of-type(4){min-width:110px;}`,
-    `#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}#setting-container-7 button.script_mpTracker_delete:hover{color:var(--fontColor);}#setting-container-7 tr>td:nth-of-type(1){min-width:50px;}#setting-container-7 tr>td:nth-of-type(2){min-width:64px;}#setting-container-7 tr>td:nth-of-type(3){min-width:96px;}#setting-container-7 tr>td:nth-of-type(4){min-width:80px;}`
+    `#setting-container-7{overflow-y:auto;}#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}#setting-container-7 button.script_mpTracker_delete:hover{color: var(--fontColor);}#setting-container-7 tr>td:nth-of-type(1){min-width:70px;}#setting-container-7 tr>td:nth-of-type(2){min-width:64px;}#setting-container-7 tr>td:nth-of-type(3){min-width:96px;}#setting-container-7 tr>td:nth-of-type(4){min-width:110px;}`,
+    `#setting-container-7{overflow-y:auto;}#setting-container-7 button.script_mpTracker_delete{background-color:rgb(137,37,37);}#setting-container-7 button.script_mpTracker_delete:hover{color:var(--fontColor);}#setting-container-7 tr>td:nth-of-type(1){min-width:50px;}#setting-container-7 tr>td:nth-of-type(2){min-width:64px;}#setting-container-7 tr>td:nth-of-type(3){min-width:96px;}#setting-container-7 tr>td:nth-of-type(4){min-width:80px;}`
   ];
   startupFuncList = [
     this.mainFunc
@@ -28,7 +28,7 @@ class marketPriceTracker extends BaseComponent {
   settingUI = () => {
     // 创建挂载标签
     let newNode = document.createElement("div");
-    newNode.innerHTML = `<div class=header>交易所低价提示设置</div><div class=container><div><div><button class="btn script_opt_submit">保存并重启监控</button></div></div><div><table><thead><tr><td>ID<td>品质<td>服务器<td>价格<td>删除<tbody id=script_itemTargetNode></table><button class="col-sm-12 form-control"id=script_mpTracker_addT>添加</button></div></div>`;
+    newNode.innerHTML = `<div class=header>交易所低价提示设置</div><div class=container><div><div><button class="btn script_opt_submit">保存并重启监控</button></div></div><div><table><thead><tr><td>ID<td>品质<td>服务器<td>价格<td>删除<tbody id=script_itemTargetNode></table></div></div>`;
     newNode.id = `setting-container-7`;
     newNode.className = "col-sm-12 setting-container";
     // 初始化模板对象以及获取挂载目标
@@ -49,6 +49,9 @@ class marketPriceTracker extends BaseComponent {
       itemInfoNode.querySelector("input.script_mpTracker_price").value = item.target_price;
       templateTarget.appendChild(itemInfoNode);
     }
+    let addButtonTr = document.createElement("tr");
+    addButtonTr.innerHTML = `<td colspan="5"><button class="col-sm-12 form-control" id="script_mpTracker_addT">添加</button></td>`;
+    templateTarget.appendChild(addButtonTr);
     // 返回挂载标签
     return newNode;
   }
@@ -57,7 +60,7 @@ class marketPriceTracker extends BaseComponent {
     if (event.target.tagName != "BUTTON") return;
     if (event.target.className.match("script_opt_submit")) return this.settingSubmitHandle();
     if (event.target.className.match("script_mpTracker_delete")) return this.settingDeleteButtonHandle(event);
-    if (event.target.id == "script_mpTracker_addT") return this.settingAddItem();
+    if (event.target.id == "script_mpTracker_addT") return this.settingAddItem(event);
   }
   // 保存并重启监控
   async settingSubmitHandle() {
@@ -84,12 +87,14 @@ class marketPriceTracker extends BaseComponent {
     tools.alert("以保存配置并发起功能重启。");
   }
   // 添加一个监控编辑框
-  settingAddItem() {
-    document.querySelector("tbody#script_itemTargetNode").appendChild(this.componentData.settingTemplateNode.cloneNode(true));
+  settingAddItem(event) {
+    let newNode = this.componentData.settingTemplateNode.cloneNode(true);
+    let targetParent = tools.getParentByIndex(event.target,3);
+    let beforeNode = tools.getParentByIndex(event.target,2);
+    targetParent.insertBefore(newNode,beforeNode);
   }
   // 删除当前监控编辑框
   settingDeleteButtonHandle(event) {
-    console.log(tools.getParentByIndex(event.target, 2));
     tools.getParentByIndex(event.target, 2).remove();
   }
   mainFunc(window, mode = "start") {
