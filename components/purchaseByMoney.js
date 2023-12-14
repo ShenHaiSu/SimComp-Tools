@@ -64,7 +64,7 @@ class purchaseByMoney extends BaseComponent {
       maxPrice = element.price;
       break;
     }
-    let userConfirm = window.confirm(
+    let userConfirm = await tools.confirm(
       `使用金额限定从交易行购买 - \n    最大价格:${maxPrice}, \n    最低质量:${quality}, \n    物品数量:${quantity - 1
       }, \n    物品ID:${res_id}\n是否确定？`
     );

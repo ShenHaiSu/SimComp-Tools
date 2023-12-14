@@ -74,9 +74,9 @@ class sellProfitDisplay extends BaseComponent {
     indexDBData.basisCPT.warehouse[realm].forEach(item => {
       if (item.kind.name != name || item.quality != quality) return;
       let cost = Object.values(item.cost).reduce((acc, cur) => acc + cur, 0);
-      result = (cost / item.amount).toFixed(4);
+      result = (cost / item.amount).toFixed(10);
     });
-    return result;
+    return parseFloat(result);
   }
 }
 new sellProfitDisplay();

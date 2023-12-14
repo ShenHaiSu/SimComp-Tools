@@ -323,8 +323,8 @@ class basisCPT extends BaseComponent {
     selectList[0].value = feature_config.notificationMode[0];
     selectList[1].value = feature_config.notificationMode[1];
     // 绑定按键
-    newNode.querySelector("button#script_reset").addEventListener("click", () => {
-      if (!window.confirm("确定清理?")) return;
+    newNode.querySelector("button#script_reset").addEventListener("click", async () => {
+      if (!await tools.confirm("确定清理?")) return;
       tools.indexDB_deleteAllData();
       location.reload();
     });

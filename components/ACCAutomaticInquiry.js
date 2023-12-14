@@ -71,18 +71,20 @@ class ACCAutomaticInquiry extends BaseComponent {
       let market_price = await tools.getMarketPrice(nodeInfo[0], nodeInfo[3], realm);
       let market_price_offset = 0;
       try {
-        market_price_offset = ((nodeInfo[4] / market_price - 1) * 100).toFixed(this.indexDBData.exactDigit);
+        market_price_offset = parseFloat(((nodeInfo[4] / market_price - 1) * 100).toFixed(this.indexDBData.exactDigit));
         market_price_offset = market_price_offset > 0 ? `+${market_price_offset}` : market_price_offset.toString();
       } catch {
-        market_price_offset = "";
+        market_price_offset = "ERROR";
       }
       tools.log(market_price);
       if (!market_price) {
         market_price = "无";
         market_price_offset = 0;
+      } else {
+        market_price = tools.numberAddCommas(market_price);
       }
       let newNode = document.createElement("b");
-      newNode.innerText = ` MP:$${market_price} MP${market_price_offset}`;
+      newNode.innerText = ` MP:$${market_price} MP${market_price_offset}%`;
       newNode.className = "script_automatic_inquiry_b";
       node.children[2].appendChild(newNode);
     }

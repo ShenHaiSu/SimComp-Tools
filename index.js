@@ -36,8 +36,9 @@ async function scriptMainInit() {
   await tools.indexDB_loadFeatureConf();
   await tools.indexDB_loadIndexDBData();
   await tools.indexDB_loadLangData();
-  // 构建alert拦截函数
+  // 构建消息提示强显示
   tools.fixAlert();
+  tools.buildConfirm();
   // 挂载css
   tools.CSSMount("mount");
   // 执行缩放比例

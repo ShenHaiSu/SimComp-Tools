@@ -10,12 +10,10 @@ class warehousePriceCount extends BaseComponent {
     this.enable = true;
     this.canDisable = true;
   }
-  commonFuncList = [
-    {
-      match: () => Boolean(location.href.match(/warehouse\/$/)),
-      func: this.mainFunc
-    }
-  ];
+  commonFuncList = [{
+    match: () => Boolean(location.href.match(/warehouse\/$/)),
+    func: this.mainFunc
+  }];
   mainFunc() {
     try {
       let itemNodeList = document.querySelectorAll(".col-lg-10.col-md-9 > div > div > div > div > div");

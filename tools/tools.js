@@ -33,6 +33,11 @@ class tools {
   static mutationUrlTemp = ""; // Mutation监控使用的url缓存
   static dialogNode = undefined; // 消息显示对象
   static dialogMain = undefined; // 消息挂载对象
+  static confirmNode = {
+    mainNode: undefined, // 主节点
+    msgNode: undefined, // 信息挂载节点
+    resolveFunc: null, // 存储间接函数
+  }
 
   static baseURL = {
     // 用户基础信息 GET
@@ -436,7 +441,7 @@ class tools {
    */
   static async indexDB_deleteAllData() {
     let dataNameList = ["feature_conf", "indexDBData", "uuid", "loadCount", "langData"];
-    dataNameList.forEach(async item => await this.indexDB_deleteData("feature_conf"));
+    dataNameList.forEach(async item => await this.indexDB_deleteData(item));
   }
   /**
    * 加载IndexedDB中的语言包文件
@@ -523,6 +528,7 @@ class tools {
       itemList[i].remove();
     }
   }
+  // 构建替代window的alert
   static fixAlert() {
     let newNode = document.createElement("div");
     newNode.id = "script_dialog_overlay";
@@ -537,12 +543,46 @@ class tools {
     });
     this.CSSMount("add", `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
   }
+  // alert的dialog窗口消失
   static alertFade() {
     Object.assign(this.dialogNode.style, { display: "none" });
   }
+  // alert的dialog窗口出现
   static alert(message) {
     this.dialogMain.innerText = message;
     Object.assign(this.dialogNode.style, { display: "flex" });
+  }
+  // 构建替代window的Confirm函数
+  static buildConfirm() {
+    let newNode = document.createElement("div");
+    newNode.id = "script_confirm_overlay";
+    newNode.style.display = "none";
+    newNode.innerHTML = `<div id="script_confirm_main"><h2>请确认</h2><p></p><button>取消</button>\n<button>确认</button></div>`;
+    this.confirmNode.msgNode = newNode.querySelector("p");
+    this.confirmNode.mainNode = newNode;
+    document.body.appendChild(newNode);
+    newNode.addEventListener('click', event => {
+      if (event.target.id == "script_confirm_overlay") this.hideConfirm(false);
+      if (event.target.tagName == "BUTTON" && /取消/.test(event.target.innerText)) this.hideConfirm(false);
+      if (event.target.tagName == "BUTTON" && /确认/.test(event.target.innerText)) this.hideConfirm(true);
+    });
+    this.CSSMount("add", `#script_confirm_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_confirm_overlay>#script_confirm_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_confirm_overlay #script_confirm_main h2{margin-top:0;margin-bottom:20px;}#script_confirm_overlay #script_confirm_main p{margin-bottom:20px;}#script_confirm_overlay #script_confirm_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_confirm_overlay #script_confirm_main button:hover{box-shadow:0 0 5px 5px white;}`);
+  }
+  // Confirm窗口隐藏
+  static hideConfirm(input = false) {
+    this.confirmNode.mainNode.style.display = "none";
+    this.confirmNode.msgNode.innerHTML = "";
+    this.confirmNode.resolveFunc(input);
+  }
+  // Confirm窗口显示
+  static confirm(message = "") {
+    this.confirmNode.mainNode.style.display = "flex";
+    if (message.tagName) {
+      this.confirmNode.msgNode.appendChild(message);
+    } else {
+      this.confirmNode.msgNode.innerText = message;
+    }
+    return new Promise((resolve, reject) => this.confirmNode.resolveFunc = resolve);
   }
   static eventBus(event) {
     if (!this.scriptLoadAcc) return;

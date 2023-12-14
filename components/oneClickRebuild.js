@@ -47,7 +47,7 @@ class oneClickRebuild extends BaseComponent {
       if (!this.componentData.targetBuildList.includes(tools.getBuildKind(buildingID))) return tools.alert("请先进入建筑界面,包括:矿井 采石场 油井");
       this.rebuildHandle(undefined);
       return;
-    } else if (/\/landscape\/$/.test(location.href) && window.confirm("现在将会使用插件组件配置来查询所有不符合条件的矿井/采石场/油井,你确定吗?(请仔细检查配置,仔细检查配置,仔细检查配置)")) {
+    } else if (/\/landscape\/$/.test(location.href) && await tools.confirm("现在将会使用插件组件配置来查询所有不符合条件的矿井/采石场/油井,你确定吗?\n(请仔细检查配置,仔细检查配置,仔细检查配置)")) {
       return this.oneClickRebuildAll();
     }
   }
@@ -139,7 +139,7 @@ class oneClickRebuild extends BaseComponent {
   // 重建按钮函数
   async rebuildHandle(event, mode = "one") {
     // 再次确认
-    if (mode == "one" && !window.confirm("确认要重建吗?")) return;
+    if (mode == "one" && !await tools.confirm("确认要重建吗?")) return;
     let buildName = document.querySelector("div>span>b").innerText;
     try {
       tools.setWindowMask(true);
