@@ -167,11 +167,8 @@ class tools {
   static getRandomNumber(min = 0, max = 1, parseFunc = parseFloat) {
     return parseFunc(Math.random() * (max - min)) + min;
   }
-  static checkAllZero(arrayInput) {
-    for (let i = 0; i < arrayInput.length; i++) {
-      if (arrayInput[i] != 0.0) return false;
-    }
-    return true;
+  static arrayIsAllZero(arrayInput) {
+    return (arrayInput.filter(value => value != 0 || value != 0.0).length == 0)
   }
   static itemName2Index(name) {
     for (const key in langData) {
@@ -305,25 +302,11 @@ class tools {
     if (indexDBData.basisCPT.building[realm].length == 0) return undefined;
     let building = indexDBData.basisCPT.building[realm].find(building => building.id == id);
     return building == undefined ? undefined : building.kind;
-    // for (let i = 0; i < indexDBData.basisCPT.building[realm].length; i++) {
-    //   let build = indexDBData.basisCPT.building[realm][i];
-    //   if (build.id != id) continue;
-    //   return build.kind;
-    // }
-    // return undefined;
   }
-  static numberAddCommas(input = 0) {
-    let str = parseInt(input).toString();
-    let result = '';
-    let count = 0;
-    for (let i = str.length - 1; i >= 0; i--) {
-      result = str[i] + result;
-      count++;
-      if (count % 3 === 0 && i !== 0) {
-        result = ',' + result;
-      }
-    }
-    return result.replace("-,", "-");
+  static numberAddCommas(number = 0) {
+    let parts = number.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
   }
   /**
    * 更新/创建数据
@@ -491,14 +474,14 @@ class tools {
   /**
    * @param {String} title 信息标题
    * @param {string|Node} body 信息内容,可以是文字或者html节点
-   * @param {number} channel 通知通道 0原生 1网页内
+   * @param {number} channel 通知通道 0原生 1网页内 2安卓通道
    */
   static msg_send(title, body = "", channel = undefined) {
     // 通知模式:
     // -1 是无
     //  0 原生Notification对象
     //  1 网页内信息
-    //  2 安卓通知通道 
+    //  2 安卓通知通道
     let actimeChannel = channel ? (feature_config.notificationMode.includes(channel) ? [channel] : []) : feature_config.notificationMode;
 
     // 判断是否有通道0
@@ -512,7 +495,12 @@ class tools {
       if (actimeChannel.includes(1)) {
         let newNode = document.createElement("tr");
         let time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-        newNode.innerHTML = `<td>${time}</td><td>${title}\n${body.tagName ? body.outerHTML : body}</td>`;
+        if (body.tagName == undefined) {
+          newNode.innerHTML = `<td>${time}</td><td>${title}\n${body}</td>`;
+        } else {
+          newNode.innerHTML = `<td>${time}</td><td>${title}\n</td>`;
+          newNode.querySelector("td:nth-of-type(2)").appendChild(body);
+        }
         this.msgBodyNode.appendChild(newNode);
         // 底色改变通知
         if (this.msgShowFlag.timer) clearInterval(this.msgShowFlag.timer);

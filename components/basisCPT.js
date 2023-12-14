@@ -387,15 +387,14 @@ class basisCPT extends BaseComponent {
     let donationList = document.createElement("a");
     donationList.innerText = "捐赠者名单"
     donationList.addEventListener('click', async (event) => {
-      event.preventDefault();
-      // let list = await tools.getNetData("https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy@main/commonData/donors.json?" + await tools.generateUUID());
-      let list = await tools.getNetData("https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy/commonData/donors.json?" + await tools.generateUUID());
+      let list = await tools.getNetData(`https://cdn.jsdelivr.net/gh/ShenHaiSu/SimComp-APIProxy/commonData/donors.json?${await tools.generateUUID()}`);
       list.sort(() => Math.random() - 0.5);
       let shoMsg = "作为SimCompsTools开发者道洛LTS,我非常感谢每一个用户的支持与帮助,更感谢所有支持者的慷慨捐赠.您的慷慨使我能够继续投入时间和精力来提供更好的功能/修复问题和满足更多用户的需求.非常感谢大家!";
       tools.msg_send("", shoMsg, 1);
       tools.msg_send("", "捐赠者名单(不区分先后):", 1);
       tools.msg_send("", `${list.join(", ")}`, 1);
       tools.msg_send("", `再次由衷的感谢所有支持者和用户!`, 1);
+      event.preventDefault();
     })
     msgBody.appendChild(donationSite);
     msgBody.appendChild(donationList);

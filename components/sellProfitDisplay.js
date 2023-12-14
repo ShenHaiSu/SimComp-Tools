@@ -47,7 +47,6 @@ class sellProfitDisplay extends BaseComponent {
       let TransUnitCount = parseInt(spanList[0].innerText.replaceAll(/(x)|(,)/g, ""));
       let TransUnitPrice = this.get_cost("运输单位", 0) || 0;
       let transPay = TransUnitCount * TransUnitPrice;
-      if (taxFee == 0) transPay = transPay / 2; // 税收为0 那就是合同模式
       if (sellPrice == 0) return;
       let income = isNaN(parseInt(count * sellPrice)) ? 0 : parseInt(count * sellPrice);
       let profit = isNaN(parseInt(income - (count * cost + transPay + taxFee))) ? 0 : parseInt(income - (count * cost + transPay + taxFee));
@@ -56,7 +55,7 @@ class sellProfitDisplay extends BaseComponent {
       // if (!cost) return infoSpan.innerText = `物品成本获取失败，请联系开发者补修适配`;
       this.componentData.lastAmount = count;
       this.componentData.lastPrice = sellPrice;
-      infoSpan.innerText = `收款：$${income - taxFee}，利润：$${profit}`;
+      infoSpan.innerText = `收款：$${tools.numberAddCommas(income - taxFee)}，利润：$${tools.numberAddCommas(profit)}`;
     } catch (error) {
       tools.errorLog(error);
     }

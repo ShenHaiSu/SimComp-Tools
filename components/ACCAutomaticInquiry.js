@@ -14,7 +14,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     func: this.mainFunc
   }];
   indexDBData = {
-    workMode: 0, // 工作模式 0自动询价 1手动询价
+    workMode: 1, // 工作模式 0自动询价 1手动询价
     exactDigit: 0, // 精度 默认0
   }
   componentData = {

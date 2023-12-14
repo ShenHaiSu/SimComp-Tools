@@ -13,6 +13,7 @@ class marketPriceTracker extends BaseComponent {
     max_net_time_gap: 120 * 1000, // 最大查询时间间隔
     min_net_time_gap: 60 * 1000, // 最小查询时间间隔
     trackTargetList: [], // 监控物品列表 [{id:123,quality:0,realm:0,target_price:0.159}]
+    trackerHandleMode: 0, // 追踪器运行模式 0 快速判断模式 1 详细判断模式
   };
   componentData = {
     trackerIntervalList: [], // 价格追踪计时器列表
@@ -28,7 +29,7 @@ class marketPriceTracker extends BaseComponent {
   settingUI = () => {
     // 创建挂载标签
     let newNode = document.createElement("div");
-    newNode.innerHTML = `<div class=header>交易所低价提示设置</div><div class=container><div><div><button class="btn script_opt_submit">保存并重启监控</button></div></div><div><table><thead><tr><td>ID<td>品质<td>服务器<td>价格<td>删除<tbody id=script_itemTargetNode></table></div></div>`;
+    newNode.innerHTML = `<div class=header>交易所低价提示设置</div><div class=container><div><div><button class="btn script_opt_submit">保存并重启监控</button></div></div><div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="默认值 0;快速判断模式性能更好;\n  快速判断模式仅显示当前符合要求的最低价\n  详细判断模式可以统计出符合要求价格的出售公司和总计销售量">判断模式<td><select class=form-control><option value=0>快速判断模式<option value=1>详细判断模式</select></table><table><thead><tr><td>ID<td>品质<td>服务器<td>价格<td>删除<tbody id=script_itemTargetNode></table></div></div>`;
     newNode.id = `setting-container-7`;
     newNode.className = "col-sm-12 setting-container";
     // 初始化模板对象以及获取挂载目标
@@ -39,6 +40,8 @@ class marketPriceTracker extends BaseComponent {
     }
     // 绑定事件分发
     newNode.addEventListener('click', event => this.settingRootClickHandle(event));
+    // 绑定数据
+    newNode.querySelector("td>select").value = this.indexDBData.trackerHandleMode;
     // 克隆并更新数据后挂载
     for (let i = 0; i < this.indexDBData.trackTargetList.length; i++) {
       let item = this.indexDBData.trackTargetList[i];
@@ -65,15 +68,16 @@ class marketPriceTracker extends BaseComponent {
   // 保存并重启监控
   async settingSubmitHandle() {
     // 获取数据
-    let valueNodeList = Object.values(document.querySelectorAll("tbody#script_itemTargetNode>tr>td>input, tbody#script_itemTargetNode>tr>td>select"));
+    let valueNodeList = Object.values(document.querySelectorAll("#setting-container-7 tbody>tr>td>input, #setting-container-7 tbody>tr>td>select")).map(node => node.value);
     // 审查并添加数据
+    let otherSetting = valueNodeList.splice(0, 1); // 弹出前1位的元素
     let newArray = []; // [{id:123,quality:0,realm:0,target_price:0.159}]
     for (let i = 0; i < valueNodeList.length; i += 4) {
       // 格式化
-      let resid = Math.floor(valueNodeList[i].value);
-      let quality = Math.floor(valueNodeList[i + 1].value);
-      let realm = Math.floor(valueNodeList[i + 2].value);
-      let price = parseFloat(valueNodeList[i + 3].value);
+      let resid = Math.floor(valueNodeList[i]);
+      let quality = Math.floor(valueNodeList[i + 1]);
+      let realm = Math.floor(valueNodeList[i + 2]);
+      let price = parseFloat(valueNodeList[i + 3]);
       // 审查
       if (resid <= 0 || price <= 0) return tools.alert("id和价格不能小于等于0");
       if (tools.itemIndex2Name(resid) == undefined) return tools.alert("有存在无法找到物品名的id,请检查是否有id错误.");
@@ -82,6 +86,7 @@ class marketPriceTracker extends BaseComponent {
     }
     this.indexDBData.trackTargetList = newArray;
     // 保存并重载
+    this.indexDBData.trackerHandleMode = Math.floor(otherSetting[0]);
     await tools.indexDB_updateIndexDBData();
     this.mainFunc(undefined, "restart");
     tools.alert("以保存配置并发起功能重启。");
@@ -89,9 +94,9 @@ class marketPriceTracker extends BaseComponent {
   // 添加一个监控编辑框
   settingAddItem(event) {
     let newNode = this.componentData.settingTemplateNode.cloneNode(true);
-    let targetParent = tools.getParentByIndex(event.target,3);
-    let beforeNode = tools.getParentByIndex(event.target,2);
-    targetParent.insertBefore(newNode,beforeNode);
+    let targetParent = tools.getParentByIndex(event.target, 3);
+    let beforeNode = tools.getParentByIndex(event.target, 2);
+    targetParent.insertBefore(newNode, beforeNode);
   }
   // 删除当前监控编辑框
   settingDeleteButtonHandle(event) {
@@ -126,30 +131,72 @@ class marketPriceTracker extends BaseComponent {
       tampTimeGap += this.indexDBData.min_net_time_gap;
       tampTimeGap = Math.floor(tampTimeGap);
       this.componentData.trackerIntervalList.push(setInterval(() => this.intervalHandle(item), tampTimeGap));
-      tools.log(tampTimeGap);
-      if (feature_config.debug) tools.msg_send("监控物价", `${tools.itemIndex2Name(item.id)}`);
+      if (feature_config.debug) tools.msg_send("监控物价", `${tools.itemIndex2Name(item.id)} 间隔时间${tampTimeGap}ms`);
     });
 
     tools.log("价格追踪已开启");
     if (feature_config.debug) tools.msg_send("交易所低价监控", "价格追踪已开启");
   }
-  async intervalHandle(item) {
-    tools.log(`请求交易所价格`, item);
-    let netData = await tools.getNetData(`${tools.baseURL.market}/${item.realm}/${item.id}/#${await tools.generateUUID()}`);
-    let msgTitle = "交易所低价监控";
 
+  // 函数处理分发
+  modeHandlers = [
+    (item) => this.fastModeRequestHandle(item), // 快速处理模式
+    (item) => this.detailModeRequestHandle(item), // 详细处理模式
+  ]
+  intervalHandle = (item) => this.modeHandlers[this.indexDBData.trackerHandleMode](item)
+
+  // 快速模式处理函数
+  async fastModeRequestHandle(item) {
+    tools.log(`请求交易所价格`, item, tools.itemIndex2Name(item.id));
+    let netData = await tools.getNetData(`${tools.baseURL.market}/${item.realm}/${item.id}/#${await tools.generateUUID()}`);
     if (!netData) return;
+    // itemMP: [1,1,1,1,1,1,1,1,1,1,1,1,1]
     let itemMP = tools.mpFormat(netData);
     indexDBData.basisCPT.resourcePool[item.realm][item.id] = itemMP;
     // 检查是否全都是0
-    if (tools.checkAllZero(itemMP)) return;
+    if (tools.arrayIsAllZero(itemMP)) return;
     // 检查通知
     item.price.forEach((price, index) => {
       if (!price || itemMP[index] > price) return;
       let msgBody = `服务器${item.realm == 0 ? "R1" : "R2"} ID:${item.id} 物品名:${tools.itemIndex2Name(item.id)} `;
       msgBody += `Q${index} 目标价格:${price} 当前价格:${itemMP[index].toFixed(3)}`;
-      tools.msg_send(msgTitle, msgBody);
+      tools.msg_send("交易所低价监控", msgBody);
     });
+  }
+
+  // 详细判断模式
+  async detailModeRequestHandle(item) {
+    // item {id:1, realm:0, price:[0.1,231,12,12,121,21,12]}
+    tools.log(`请求交易所价格`, item, tools.itemIndex2Name(item.id));
+    // 更新缓存数据
+    let netData = await tools.getNetData(`${tools.baseURL.market}/${item.realm}/${item.id}/?${await tools.generateUUID()}`);
+    if (!netData) return;
+    let itemMP = tools.mpFormat(netData);
+    indexDBData.basisCPT.resourcePool[item.realm][item.id] = itemMP;
+    if (tools.arrayIsAllZero(itemMP)) return;
+    let result = []; // [ {price:123, amount:123, seller:[]} ]
+    let tempMap = item.price.map((value, index) => { return { quality: index, price: value } });
+    for (let i = 0; i < netData.length; i++) {
+      let netItem = netData[i];
+      let quality = netData[i].quality;
+      tempMap.filter(value => Boolean(quality >= value.quality && netItem.price <= value.price))
+        .map(value => {
+          if (result[value.quality] == undefined) result[value.quality] = { price: itemMP[quality], amount: 0, seller: [] };
+          result[value.quality].amount += netItem.quantity;
+          result[value.quality].seller.push(netItem.seller.company);
+          return undefined;
+        })
+    }
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] == undefined) continue;
+      let msgBody = item.realm == 0 ? "R1 " : "R2 ";
+      msgBody += `${tools.itemIndex2Name(item.id)} Q${i} `;
+      msgBody += `目标价: $${tools.numberAddCommas(item.price[i])}; 当前价: $${tools.numberAddCommas(result[i].price)}; `;
+      msgBody += `货物量: ${tools.numberAddCommas(result[i].amount)}; `;
+      let sellerMsg = `销售公司: ${result[i].seller.join(", ")}`;
+      tools.msg_send("交易行监控", msgBody);
+      tools.msg_send("交易行监控", sellerMsg, 1);
+    }
   }
 }
 new marketPriceTracker();
