@@ -91,11 +91,11 @@ class customExecutivesIcon extends BaseComponent {
   // 核心检查以及挂载函数
   async mainCheck() {
     // 捕获当前页面所有符合要求的div
-    let targetNodeList = Object.values(document.querySelectorAll("div>img"))
-      .filter(node => node.parentElement.querySelectorAll("img").length == 5)
-      .filter((node, index) => index % 5 == 0)
+    let targetNodeList = Object.values(document.querySelectorAll("div>img[src][alt][class]"))
+      .filter(node => /faces\/model-.+\.png$/.test(node.src))
       .map(node => node.parentElement)
       .filter(node => node.querySelector(".script_executivesIcon_Dmask, .script_executivesIcon_Cmask") == null);
+    targetNodeList = tools.arrayUnique(targetNodeList);
     // 循环操作
     for (let i = 0; i < targetNodeList.length; i++) {
       let targetNode = targetNodeList[i];
@@ -131,7 +131,6 @@ class customExecutivesIcon extends BaseComponent {
       newNode.innerHTML = `<img style="width:100%;" src="${customTarget.icon}" />`
       Object.assign(newNode.style, { position: "absolute", inset: "0px" });
       return newNode;
-      // https://d1fxy698ilbz6u.cloudfront.net/logo/8d62b48a96d0b4ae54c874ebd21cd5b101f0119e.png
     } else {
       return false;
     }

@@ -522,6 +522,20 @@ class tools {
         AndroidInterface.sendNotification(title, body);
     } catch (error) { tools.errorLog("渠道2 安卓通知通道报错", error) }
   }
+  /**
+   * 数组去重
+   * @param {Array} arr 输入数组
+   * @param {String} pro 输入属性 使用属性进行对比
+   */
+  static arrayUnique(arr, pro = undefined) {
+    if (arr.length == 0 || (pro !== undefined && arr[0][pro] == undefined)) return [];
+    let output = [];
+    for (let outIndex = 0; outIndex < arr.length; outIndex++) {
+      let isExist = output.some(item => (pro === undefined ? arr[outIndex] === item : arr[outIndex][pro] === item[pro]));
+      if (!isExist) output.push(arr[outIndex]);
+    }
+    return output;
+  }
   static msg_clear() {
     let itemList = Object.values(this.msgBodyNode.childNodes);
     for (let i = 0; i < itemList.length; i++) {
