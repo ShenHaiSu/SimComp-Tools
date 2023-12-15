@@ -223,13 +223,16 @@ class basisCPT extends BaseComponent {
   sideBarSub_componentNode() {
     let resultNode = document.createElement("div");
     let htmlText = `<div id="scriptCPT_innerHead"><h1 style="margin-left:10px;">组件</h1><div style="padding:0 10px;"><input type="text" id="script_cptSearch_input" class="form-control" placeholder="搜索组件名..."></div></div><div id="scriptCPT_mainBody"><table><thead><tr><td>前台功能</td><td>设置</td></tr></thead><tbody>`;
-    Object.values(componentList).forEach(component => {
+    for (const key in componentList) {
+      if (!Object.hasOwnProperty.call(componentList, key)) continue;
+      let component = componentList[key];
+      if (component.enable == false && component.canDisable) continue;
       let name = component.constructor.name;
       let frontName = component.name;
       let frontExist = Boolean(component.frontUI) ? "funcExist" : "";
       let settingExist = Boolean(component.settingUI) ? "funcExist" : "";
       htmlText += `<tr id="${name}" class="script_cpt_node"><td><button class="btn CPTOptionLeft ${frontExist}">${frontName}</button></td><td><button class="btn CPTOptionRight ${settingExist}">设置</button></td></tr>`
-    });
+    }
     htmlText += `</tbody></table></div>`;
     resultNode.innerHTML = htmlText;
     // 挂载交互
@@ -328,9 +331,7 @@ class basisCPT extends BaseComponent {
       tools.indexDB_deleteAllData();
       location.reload();
     });
-    newNode.querySelector("button.script_opt_submit").addEventListener('click', event => {
-      this.uisettingSub();
-    });
+    newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.uisettingSub());
     return newNode;
   }
   uisettingSub() {

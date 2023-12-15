@@ -1,4 +1,4 @@
-let componentList = {}; // 子组件列表
+let componentList = {}; // 子组件列表 {name:{cpt}}
 let runtimeData = {};
 let indexDBData = {};
 let feature_config = {
@@ -597,6 +597,32 @@ class tools {
       this.confirmNode.msgNode.innerText = message;
     }
     return new Promise((resolve, reject) => this.confirmNode.resolveFunc = resolve);
+  }
+  // 组件依赖检查
+  static async dependenceCheck() {
+    let componentArray = Object.values(componentList).filter(component => component.enable || !component.canDisable);
+    let urlDepLoad = []; // ["name"]
+    for (let i = 0; i < componentArray.length; i++) {
+      let component = componentArray[i];
+      let name = component.constructor.name;
+      // [{name:"asd",url:"asd"}]
+      let innerDep = component.dependence.cpt || [];
+      let outterDep = component.dependence.url || [];
+      // 排除无依赖的组件
+      if (innerDep.length == 0 && outterDep.length == 0) continue;
+      // 检查内部组件依赖
+      if (innerDep.some(dep => componentArray.findIndex(cpt => cpt.constructor.name == dep) == -1))
+        return console.log(`${name} ${component.name} 组件的依赖未被开启`);
+      // 检查并挂载外部依赖
+      outterDep
+        .filter(dep => !urlDepLoad.includes(dep.name))
+        .forEach(dep => {
+          urlDepLoad.push(dep.name);
+          let newNode = document.createElement("script");
+          newNode.src = dep.url;
+          document.head.appendChild(newNode);
+        })
+    }
   }
   static eventBus(event) {
     if (!this.scriptLoadAcc) return;

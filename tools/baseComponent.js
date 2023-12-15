@@ -38,6 +38,13 @@ class BaseComponent {
   // css追加
   // ["", ""]
   cssText;
+  // 依赖前置库
+  // [{name:"asd",url:"asd"}]
+  dependence = {
+    cpt: [], // 内部依赖
+    url: [], // 外部库依赖
+  }
+
   constructor() {
     componentList[this.constructor.name] = this;
   }

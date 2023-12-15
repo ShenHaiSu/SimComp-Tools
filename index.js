@@ -36,6 +36,8 @@ async function scriptMainInit() {
   await tools.indexDB_loadFeatureConf();
   await tools.indexDB_loadIndexDBData();
   await tools.indexDB_loadLangData();
+  // 组建依赖检查
+  await tools.dependenceCheck();
   // 构建消息提示强显示
   tools.fixAlert();
   tools.buildConfirm();
