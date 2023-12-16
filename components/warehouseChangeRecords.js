@@ -132,7 +132,7 @@ class warehouseChangeRecords extends BaseComponent {
         }
         // 根据索引写入数据
         let index = dataSeries.findIndex(e => e.name == item.name);
-        dataSeries[index].data[i] = item[mode];
+        dataSeries[index].data[i] = (dataSeries[index].data[i] ?? 0) + item[mode];
       }
     }
     // 去除空内容
