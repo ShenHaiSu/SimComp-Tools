@@ -758,12 +758,49 @@ class tools {
         if (!component.enable && component.canDisable) continue;
         let chatMsgFuncList = component.chatMsgFuncList;
         for (let i = 0; i < chatMsgFuncList.length; i++) {
-          try { chatMsgFuncList[i].call(component, mutation.addedNodes[0]) } catch (error) { tools.errorLog(error) }
+          let textList = Object.values(mutation.addedNodes[0].childNodes[2].childNodes).map(node => this.formatMsgText(node));
+          try { chatMsgFuncList[i].call(component, mutation.addedNodes[0], textList) } catch (error) { tools.errorLog(error) }
         }
       }
     } catch (error) {
       console.error(error);
     }
+  }
+  // chat - 格式化信息文本
+  static formatMsgText(node) {
+    try {
+      let result = "";
+      let nodeList = Object.values(node.childNodes[0].children).filter(node => node.tagName == "SPAN");
+      for (let i = 0; i < nodeList.length; i++) {
+        let spanNode = nodeList[i];
+        result += (nodeList[i].children.length == 0) ? spanNode.innerText : this.getSpanText(spanNode);
+      }
+      return result;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  // chat - 单span节点处理
+  static getSpanText(node) {
+    let tempArray = Array.from(node.children);
+    let length = tempArray.length;
+    if (length == 1 && tempArray[0].tagName == "SPAN" && tempArray[0].children.length == 1 && tempArray[0].children[0].tagName == "IMG") {
+      // 游戏图标适配
+      return tempArray[0].children[0].alt;
+    } else if (length == 1 && tempArray[0].tagName == "IMG" && tempArray[0].className == "emoji") {
+      // emoji适配
+      return tempArray[0].alt;
+    } else if (length == 1 && tempArray[0].tagName == "A" && /^@/.test(tempArray[0].innerText)) {
+      // AT别的公司
+      return tempArray[0].innerText;
+    } else if (length == 1 && tempArray[0].tagName == "A" && !/^@/.test(tempArray[0].innerText)) {
+      // 普通跳转链接
+      return tempArray[0].href;
+    } else if (length > 1 && tools.arrayCompareByProp(tempArray, "className")) {
+      // 多emoji适配
+      return tempArray.map(node => node.alt).join("");
+    }
+    return "";
   }
 }
 

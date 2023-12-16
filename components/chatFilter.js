@@ -70,11 +70,11 @@ class chatFilter extends BaseComponent {
   }
 
   // 功能处理主函数
-  mainCheck(mainNode) {
+  mainCheck(mainNode, textList) {
     let targetNodeList = mainNode.childNodes[2].childNodes;
     for (let i = 0; i < targetNodeList.length; i++) {
-      let singleNode = targetNodeList[i];
-      let text = this.formatMsgText(singleNode);
+      let singleNode = targetNodeList[i]
+      let text = textList[i];
       if (this.checkSubString(this.indexDBData.hide_item, text) && !/script_chatFilter_hideClass/.test(singleNode.childNodes[0].className)) {
         // 屏蔽做法
         singleNode.childNodes[0].className += ` script_chatFilter_hideClass`;
@@ -84,50 +84,8 @@ class chatFilter extends BaseComponent {
       }
     }
   }
-  // 格式化信息文本
-  formatMsgText(node) {
-    try {
-      let result = "";
-      let nodeList = Object.values(node.childNodes[0].children).filter(node => node.tagName == "SPAN");
-      for (let i = 0; i < nodeList.length; i++) {
-        let spanNode = nodeList[i];
-        result += (nodeList[i].children.length == 0) ? spanNode.innerText : this.getSpanText(spanNode);
-      }
-      return result;
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  // 单span节点处理
-  getSpanText(node) {
-    // console.log(node);
-    let tempArray = Array.from(node.children);
-    let length = tempArray.length;
-    if (length == 1 && tempArray[0].tagName == "SPAN" && tempArray[0].children.length == 1 && tempArray[0].children[0].tagName == "IMG") {
-      // 游戏图标适配
-      return tempArray[0].children[0].alt;
-    } else if (length == 1 && tempArray[0].tagName == "IMG" && tempArray[0].className == "emoji") {
-      // emoji适配
-      return tempArray[0].alt;
-    } else if (length == 1 && tempArray[0].tagName == "A" && /^@/.test(tempArray[0].innerText)) {
-      // AT别的公司
-      return tempArray[0].innerText;
-    } else if (length == 1 && tempArray[0].tagName == "A" && !/^@/.test(tempArray[0].innerText)) {
-      // 普通跳转链接
-      return tempArray[0].href;
-    } else if (length > 1 && tools.arrayCompareByProp(tempArray, "className")) {
-      // 多emoji适配
-      return tempArray.map(node => node.alt).join("");
-    }
-    return "";
-  }
   // 检查文本包含
-  checkSubString(arr, longString) {
-    for (let i = 0; i < arr.length; i++) {
-      if (longString.indexOf(arr[i]) !== -1) return true;
-    }
-    return false;
-  }
+  checkSubString = (arr, longString) => arr.some(value => longString.indexOf(value) != -1)
 }
 
 new chatFilter();
