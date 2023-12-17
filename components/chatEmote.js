@@ -21,22 +21,22 @@ class chatEmote extends BaseComponent {
     newNode.id = "script_chatEmote_setting";
     newNode.innerHTML = htmlText;
     newNode.querySelector("textarea").value = `/${this.indexDBData.reg.source}/${this.indexDBData.reg.flags}`;
-    newNode.addEventListener('click',event => this.settingClick(event));
+    newNode.addEventListener('click', event => this.settingClick(event));
     return newNode;
   }
   settingClick(event) {
     if (/script_opt_submit/.test(event.target.className)) return this.settingSubmit();
   }
-  settingSubmit(){
+  settingSubmit() {
     let valueList = Object.values(document.querySelectorAll("#script_chatEmote_setting textarea")).map(node => node.value);
     // 审查
     if (!valueList[0].startsWith("/")) return tools.alert("请使用JavaScript正则表达式的正确表达");
     if (!/\/[img]*$/.test(valueList[0])) return tools.alert("请使用JavaScript正则表达式的正确结尾");
     // 生成结果
-    let body = valueList[0].replace(/^\//,"").replace(/\/[img]*$/,"");
+    let body = valueList[0].replace(/^\//, "").replace(/\/[img]*$/, "");
     let flag = valueList[0].match(/\/([img])*$/)[1];
     // 保存
-    this.indexDBData.reg = new RegExp(body,flag);
+    this.indexDBData.reg = new RegExp(body, flag);
     tools.indexDB_updateIndexDBData();
     tools.alert("保存");
   }
