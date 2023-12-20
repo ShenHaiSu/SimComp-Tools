@@ -758,8 +758,10 @@ class tools {
         if (!component.enable && component.canDisable) continue;
         let chatMsgFuncList = component.chatMsgFuncList;
         for (let i = 0; i < chatMsgFuncList.length; i++) {
-          let textList = Object.values(mutation.addedNodes[0].childNodes[2].childNodes).map(node => this.formatMsgText(node));
-          try { chatMsgFuncList[i].call(component, mutation.addedNodes[0], textList) } catch (error) { tools.errorLog(error) }
+          try {
+            let textList = Object.values(mutation.addedNodes[0].childNodes[2].childNodes).map(node => this.formatMsgText(node));
+            chatMsgFuncList[i].call(component, mutation.addedNodes[0], textList)
+          } catch (error) { tools.errorLog(error) }
         }
       }
     } catch (error) {

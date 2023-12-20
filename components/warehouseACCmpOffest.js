@@ -22,10 +22,11 @@ class warehouseACCmpOffest extends BaseComponent {
   }]
   settingUI = () => {
     let newNode = document.createElement("div");
+    let htmlText = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td>功能</td><td>设置</td></tr></thead><tbody><tr><td title="MarketPrice Offest 偏移量 填写1 就是 mp-1">mp量</td><td><input type='number' class="form-control" value="#####"></td></tr><tr><td title="勾选就是显示百分比符号,仅仅是显示而已,勾选与否都是使用百分比去计算的">是否显示百分号</td><td><input type='checkbox' style='height:20px;' class="form-control" ######></td></tr></tbody></table></div>`;
+    htmlText = htmlText.replace("#####", this.indexDBData.mp_offest);
+    htmlText = htmlText.replace("######", this.indexDBData.percentSign ? "checked" : "");
+    newNode.innerHTML = htmlText;
     newNode.id = "accMPoffsetSetting";
-    newNode.innerHTML = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td>功能</td><td>设置</td></tr></thead><tbody><tr><td title="MarketPrice Offest 偏移量 填写1 就是 mp-1">mp量</td><td><input type='number' class="form-control" value="#####"></td></tr><tr><td title="勾选就是显示百分比符号,仅仅是显示而已,勾选与否都是使用百分比去计算的">是否显示百分号</td><td><input type='checkbox' style='height:20px;' class="form-control" ######></td></tr></tbody></table></div>`;
-    newNode.innerHTML = newNode.innerHTML.replace("#####", this.indexDBData.mp_offest);
-    newNode.innerHTML = newNode.innerHTML.replace("######", this.indexDBData.percentSign ? "checked" : "");
     // 绑定按钮
     newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmit())
     // 返回元素

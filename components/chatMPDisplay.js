@@ -16,6 +16,15 @@ class chatroom_mp_display extends BaseComponent {
     focus_q: 0, // 关注的品质
     focus_offset: 0, // 价格偏移
   }
+  componentData = {
+    containerNode: undefined, // 价格显示容器元素
+    tableNode: undefined, // 显示内容主元素
+    fadeTimer: undefined, // 自动消失的计时器
+  }
+  commonFuncList = [{
+    match: event => event != undefined && /messages\/(.+)/.test(location.href) && event.target.parentElement.querySelectorAll("div").length == 0,
+    func: this.mainFunc
+  }]
   settingUI = () => {
     // 创建并挂载
     let mainSetNode = document.createElement("div");
@@ -44,15 +53,6 @@ class chatroom_mp_display extends BaseComponent {
     await tools.indexDB_updateIndexDBData();
     tools.alert("已提交保存。");
   }
-  componentData = {
-    containerNode: undefined, // 价格显示容器元素
-    tableNode: undefined, // 显示内容主元素
-    fadeTimer: undefined, // 自动消失的计时器
-  }
-  commonFuncList = [{
-    match: event => event != undefined && /messages\/(.+)/.test(location.href) && event.target.parentElement.querySelectorAll("div").length == 0,
-    func: this.mainFunc
-  }]
   async mainFunc(event) {
     tools.log(event);
     if (!this.componentData.containerNode) {
