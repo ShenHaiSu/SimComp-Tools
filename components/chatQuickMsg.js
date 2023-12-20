@@ -11,6 +11,7 @@ class chatQuickMsg extends BaseComponent {
   indexDBData = {
     autoSend: false, // 直接发送?
     quickList: [], // 快捷信息 [{alias:"别名",msg:"信息内容",stamp:1234567}]
+    // 发送间隔默认60s
   }
   componentData = {
     templateNode: undefined, // 模板元素
@@ -117,7 +118,7 @@ class chatQuickMsg extends BaseComponent {
     let htmlText = `<table>`;
     let nowTime = new Date().getTime();
     for (let i = 0; i < this.indexDBData.quickList.length; i++) {
-      if (nowTime - this.indexDBData.quickList[i] <= 1000 * 60) continue;
+      if (nowTime - this.indexDBData.quickList[i].stamp <= 1000 * 60) continue;
       htmlText += `<tr><td><button>${this.indexDBData.quickList[i].alias}</button></td></tr>`;
     }
     this.componentData.menuNode.innerHTML = htmlText;
@@ -146,11 +147,18 @@ class chatQuickMsg extends BaseComponent {
   // 菜单被点击
   async menuClickHandle(event) {
     if (event.target.tagName != "BUTTON") return;
-    let quickMsgObj = this.indexDBData.quickList[this.indexDBData.quickList.findIndex(obj => obj.alias == event.target.innerText)];
+    let objIndex = this.indexDBData.quickList.findIndex(obj => obj.alias == event.target.innerText);
+    let nowtime = new Date().getTime();
+    if (objIndex == -1 || (nowtime - this.indexDBData.quickList[objIndex].stamp < 60 * 1000)) return;
+    this.indexDBData.quickList[objIndex].stamp = nowtime;
     this.componentData.lastTextarea.click();
-    tools.setInput(this.componentData.lastTextarea, quickMsgObj.msg);
+    tools.setInput(this.componentData.lastTextarea, this.indexDBData.quickList[objIndex].msg);
     await tools.dely(200);
     if (this.indexDBData.autoSend) this.msgAutoSend();
+    // 关闭菜单
+    Object.assign(this.componentData.menuNode.style, { display: "none" });
+    this.componentData.isShow = false;
+    clearInterval(this.componentData.fadeTimer);
   }
   // 自动发送信息
   msgAutoSend() {
