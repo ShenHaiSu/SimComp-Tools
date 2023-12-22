@@ -8,6 +8,7 @@ class biggerAmcharts extends BaseComponent {
     this.name = "图表放大";
     this.describe = "在总览页面或者财报页面点一下空白处触发检测就会放大图表\n灵感来源：Sim Companies Visual Improvements\nhttps://greasyfork.org/en/scripts/432355-sim-companies-visual-improvements";
     this.enable = true;
+    this.tagList = ["样式", "图表"];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/headquarters\/(accounting\/|overview\/$)/)),

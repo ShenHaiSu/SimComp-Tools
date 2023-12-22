@@ -7,6 +7,7 @@ class unBusyHighLight extends BaseComponent {
     this.name = "空闲建筑高亮";
     this.describe = "如题";
     this.enable = false; // 默认关闭
+    this.tagList = ['样式', "建筑"];
   }
   commonFuncList = [{
     match: () => Boolean(/landscape\/$/.test(location.href)),
@@ -25,7 +26,8 @@ class unBusyHighLight extends BaseComponent {
       .filter(build => /\/b\/(\d+)\/$/.test(build.href) && unBusyList.includes(build.href.match(/\/b\/(\d+)\/$/)[1]))
       .filter(build => !/script_unBusyHighLight_aTag/.test(build.className));
 
-    for (let i = 0; i < buildingList.length; i++) {``
+    for (let i = 0; i < buildingList.length; i++) {
+      ``
       buildingList[i].className += ` script_unBusyHighLight_aTag`;
     }
   }

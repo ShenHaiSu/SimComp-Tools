@@ -7,6 +7,7 @@ class chatBiggerTextarea extends BaseComponent {
     this.name = "聊天室输入框自动放大";
     this.describe = "在输入的时候自动放大";
     this.enable = false;
+    this.tagList = ['样式','聊天'];
   }
   componentData = {
     lastElement: undefined, // 最新点击输入框的元素

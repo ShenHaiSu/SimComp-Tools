@@ -7,6 +7,7 @@ class globalBlock extends BaseComponent {
     this.name = "全局屏蔽";
     this.describe = "在交易所界面和聊天室界面屏蔽掉指定人的信息";
     this.enable = true;
+    this.tagList = ['样式','聊天','交易所','过滤'];
   }
   commonFuncList = [{
     // 交易所屏蔽

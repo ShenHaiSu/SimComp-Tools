@@ -10,6 +10,7 @@ class profileLocalTimeConvertTo24 extends BaseComponent {
     this.describe = "公司资料页面中的 当地时间 自动从12小时制转换为24小时制";
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ['样式','实用'];
   }
   componentData = {
     lastText:"", // 最近一次的编辑结果

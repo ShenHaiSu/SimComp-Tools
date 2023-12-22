@@ -9,6 +9,7 @@ class closeAllNotification extends BaseComponent {
     this.describe = "关闭所有弹窗,让网页再也没有消息提醒(来自官方的)";
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ['样式'];
   }
   startupFuncList = [
     this.startupCloseNotification

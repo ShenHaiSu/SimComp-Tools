@@ -9,6 +9,7 @@ class profileBigAvatar extends BaseComponent {
     this.describe = "在资料页点击头像会方法";
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ['样式'];
   }
   commonFuncList = [{
     match: event => Boolean(location.href.match(/company\/(0|1)\/.*\//)) && event.target.tagName == "IMG" && event.target.parentElement.tagName == "H1",

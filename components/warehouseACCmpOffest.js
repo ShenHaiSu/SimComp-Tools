@@ -62,7 +62,6 @@ class warehouseACCmpOffest extends BaseComponent {
       let res_id = tools.itemName2Index(res_name);
       let quality = this.getQuality(document.querySelector("form"));
       let market_price = await tools.getMarketPrice(res_id, quality, realm);
-      if (market_price == 0) market_price = 0;
       let displayText = `MP-${this.indexDBData.mp_offest}${this.indexDBData.percentSign ? "%" : ""}：`;
       displayText += `${(market_price * (100 - this.indexDBData.mp_offest) / 100).toFixed(3)}`;
       newNode.innerText = displayText;

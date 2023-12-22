@@ -8,6 +8,7 @@ class easyText extends BaseComponent {
     this.name = "随手笔记";
     this.describe = "前台随手笔记功能";
     this.enable = true;
+    this.tagList = ['实用'];
   }
   componentData = {
     rootNode: undefined, // 根元素对象

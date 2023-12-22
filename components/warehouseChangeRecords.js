@@ -7,6 +7,7 @@ class warehouseChangeRecords extends BaseComponent {
     this.name = "仓库变动统计";
     this.describe = "在仓库界面可以打开显示仓库变动统计";
     this.enable = false;
+    this.tagList = ['统计', '仓库'];
   }
   dependence = {
     cpt: [],

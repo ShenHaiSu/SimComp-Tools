@@ -7,7 +7,8 @@ class newTabProfile extends BaseComponent {
     super();
     this.name = "使用新建标签页打开公司页";
     this.describe = '通过事件委派拦截所有前往a的';
-    this.enable = true;
+    this.enable = false; // 默认关闭
+    this.tagList = ['实用'];
   }
   indexDBData = {
     activeZone_market: true, // 交易所是否激活

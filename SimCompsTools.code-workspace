@@ -5,9 +5,6 @@
 			"path": "."
 		},
 		{
-			"path": "../SimCompsTools-Public"
-		},
-		{
 			"name": "SimCompsToolsV3",
 			"path": "../SimCompsToolsV3"
 		},

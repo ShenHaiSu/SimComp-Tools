@@ -8,6 +8,7 @@ class customQuantityButton extends BaseComponent {
     this.name = "自定义生产数量按钮";
     this.describe = "只想生产24小时？没有问题！只想生产12小时？也没问题！\n只要你想 都能自定义填入！";
     this.enable = true;
+    this.tagList = ['快捷'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/\/b\/\d+\/$/)),

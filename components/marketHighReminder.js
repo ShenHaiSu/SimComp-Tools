@@ -8,6 +8,7 @@ class marketHighReminder extends BaseComponent {
     this.name = "交易行按钮旁高提醒";
     this.describe = "交易行旁按钮高提醒，提示当前是R1还是R2";
     this.enable = true;
+    this.tagList = ['样式',"交易所"];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/market\/resource\/(\d+)\//)),

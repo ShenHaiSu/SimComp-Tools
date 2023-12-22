@@ -9,6 +9,7 @@ class singleBigChat extends BaseComponent {
     this.describe = "让聊天窗页面只有一个大窗口,可以畅爽体验.";
     this.enable = false;
     this.canDisable = true;
+    this.tagList = ['样式'];
   }
   commonFuncList = [
     {

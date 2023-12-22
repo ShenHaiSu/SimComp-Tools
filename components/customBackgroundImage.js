@@ -8,6 +8,7 @@ class customBackgroundImage extends BaseComponent {
     this.name = "自定义背景图片";
     this.describe = "在设置界面输入背景图片网址或者在代码中编辑\n请自己注意图片的可访问性";
     this.enable = true;
+    this.tagList = ['个性化'];
   }
   debounceFuncList = [{
     // [{bounce:20, func}]

@@ -425,6 +425,7 @@ class tools {
    * @returns 
    */
   static async indexDB_updateIndexDBData() {
+    tools.indexDB_updateTabCount();
     return await tools.indexDB_updateData(indexDBData, "indexDBData");
   }
   /**
@@ -440,7 +441,7 @@ class tools {
    * 删除所有的数据库缓存
    */
   static async indexDB_deleteAllData() {
-    let dataNameList = ["feature_conf", "indexDBData", "uuid", "loadCount", "langData"];
+    let dataNameList = ["tapCount", "feature_conf", "indexDBData", "uuid", "loadCount", "langData"];
     dataNameList.forEach(async item => await this.indexDB_deleteData(item));
   }
   /**
@@ -459,6 +460,42 @@ class tools {
   static async indexDB_updateLangData(langData) {
     if (langData.id != "langData") langData.id = "langData";
     await this.indexDB_updateData(langData);
+  }
+  /**
+   * 加载数据库中的点击次数
+   */
+  static async indexDB_loadTapCount() {
+    // 数据库主键为:"tapCount" {id:"tapCount",basisCPT:1234}
+    let dbData = await this.indexDB_getData("tapCount");
+    if (!dbData) {
+      // 新建数据
+      let nowList = this.genComponentTapCount();
+      this.indexDB_updateTabCount(nowList);
+      return;
+    }
+    delete dbData.id
+    // 更新挂载数据
+    for (const key in dbData) {
+      if (!Object.hasOwnProperty.call(dbData, key) || !Object.hasOwnProperty.call(componentList, key)) continue;
+      let component = componentList[key];
+      component.tapCount = dbData[key];
+    }
+  }
+  /**
+   * 更新数据库中的点击次数
+   */
+  static async indexDB_updateTabCount(input = undefined) {
+    let nwoList = input ? input : this.genComponentTapCount();
+    nwoList.id = "tapCount";
+    await this.indexDB_updateData(nwoList);
+  }
+  static genComponentTapCount() {
+    let output = {};
+    for (const key in componentList) {
+      if (!Object.hasOwnProperty.call(componentList, key)) continue;
+      output[key] = componentList[key].tapCount;
+    }
+    return output;
   }
   static async msg_check(payload, update = false) {
     // 原生对象检测

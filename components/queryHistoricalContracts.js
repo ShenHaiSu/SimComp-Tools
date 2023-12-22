@@ -8,6 +8,7 @@ class queryHistoricalContracts extends BaseComponent {
     this.name = "查询历史合同";
     this.describe = "在仓库物资界面,发送合同给目标公司时,可以点击按钮查询曾经相关往来.了解价格.";
     this.enable = true;
+    this.tagList = ['实用', '统计', '样式'];
   }
   componentData = {
     buttonNode: undefined, // 按钮对象

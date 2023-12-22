@@ -8,6 +8,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     this.name = "接受合同の询价";
     this.describe = "在接受合同界面可以自动询价,查询当前物品当前q在交易所的价格并计算出相对mp的正负值";
     this.enable = true;
+    this.tagList = ["询价", "合同"];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match("headquarters/warehouse/incoming-contracts")),

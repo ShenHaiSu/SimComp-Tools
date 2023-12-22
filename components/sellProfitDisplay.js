@@ -9,6 +9,7 @@ class sellProfitDisplay extends BaseComponent {
     this.describe = "在仓库发送物品到交易所或者通过合同出售的界面会自动计算收入总量与利润值";
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ['交易所', '利润'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/warehouse\/(.+)/) && document.querySelectorAll("form").length > 0),

@@ -8,6 +8,7 @@ class purchaseByMoney extends BaseComponent {
     this.name = "交易所金额限购";
     this.describe = "交易行多出一排信息，输入采购目标（最低品质要求，最高金额限制）\n点击按钮会提示计算结果，点击确定会尝试进行采购\n采购金额误差可能有±1%";
     this.enable = true;
+    this.tagList = ['实用','交易所'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/market\/resource\/(\d+)\//)),

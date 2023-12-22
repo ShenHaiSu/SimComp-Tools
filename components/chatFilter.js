@@ -7,6 +7,7 @@ class chatFilter extends BaseComponent {
     this.name = "聊天信息过滤/高亮";
     this.describe = "在聊天界面,隐藏/高亮符合规则的信息";
     this.enable = false;
+    this.tagList = ['聊天','过滤'];
   }
   indexDBData = {
     hide_item: ["fuck", "妈的", "媽的", "shit"], // 隐藏 列表

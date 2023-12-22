@@ -44,7 +44,10 @@ class BaseComponent {
     cpt: [], // 内部依赖
     url: [], // 外部库依赖
   }
-
+  // 点击次数
+  tapCount = 0
+  // tag列表
+  tagList = [] // ["tag1","tag2","tag3"]
   constructor() {
     componentList[this.constructor.name] = this;
   }

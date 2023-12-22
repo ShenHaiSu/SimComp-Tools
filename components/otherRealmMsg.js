@@ -8,6 +8,7 @@ class otherRealmMsg extends BaseComponent {
     this.name = "待处理信息显示";
     this.describe = "用于修复手机上不显示别的服务器的待处理信息量,默认不启动"
     this.enable = false;
+    this.tagList = ['样式','信息'];
   }
   componentData = {
     baseURL: "https://www.simcompanies.com/api/v3/contracts-incoming",

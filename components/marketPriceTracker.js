@@ -8,6 +8,7 @@ class marketPriceTracker extends BaseComponent {
     this.name = "交易行价格监控提示";
     this.describe = "交易行低价会有提示，不错过交易行的精彩价格。";
     this.enable = true;
+    this.tagList = ['追踪','交易所'];
   };
   indexDBData = {
     max_net_time_gap: 120 * 1000, // 最大查询时间间隔

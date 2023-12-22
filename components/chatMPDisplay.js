@@ -9,6 +9,7 @@ class chatroom_mp_display extends BaseComponent {
     this.describe = "在聊天室中,点击带有物资图标的信息文本处可以自动在交易所查价格"
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ['询价','聊天'];
   }
   indexDBData = {
     display_ms: 0, // 固定显示时长 填0会启用下面的属性

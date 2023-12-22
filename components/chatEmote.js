@@ -7,6 +7,7 @@ class chatEmote extends BaseComponent {
     this.name = "聊天室表情包加载";
     this.describe = "捕获聊天信息中的图片url 自动在信息后追加img";
     this.enable = false;
+    this.tagList = ["样式", "聊天"]
   }
   indexDBData = {
     reg: /https:\/\/[^\s]+\.(jpg|jpeg|png|gif)/g, // 使用的正则表达式

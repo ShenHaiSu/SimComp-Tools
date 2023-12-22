@@ -7,6 +7,7 @@ class customExecutivesIcon extends BaseComponent {
     this.name = "自定义高管头像";
     this.describe = "在公司高管页面/被挖角页面/公司主页面/百科页面/科研页面将指定公司高管的头像替换."
     this.enable = true;
+    this.tagList = ['个性化','高管'];
   }
   indexDBData = {
     executivesIconList: [{ name: "testA", icon: "https://null.de" }], // 高管自定义头像列表 {name:"asdasd",icon:"https://ss"}

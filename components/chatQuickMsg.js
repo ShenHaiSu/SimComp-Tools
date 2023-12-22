@@ -7,6 +7,7 @@ class chatQuickMsg extends BaseComponent {
     this.name = "聊天室快捷信息";
     this.describe = "在发送信息的右边新增一个按钮,可以快捷填充信息快捷发送";
     this.enable = false;
+    this.tagList = ['聊天','快捷'];
   }
   indexDBData = {
     autoSend: false, // 直接发送?
@@ -24,7 +25,7 @@ class chatQuickMsg extends BaseComponent {
     match: this.checkMatch,
     func: this.mountFunc
   }]
-  cssText = [`div.script_quickMsg_container{position:absolute;top:0;right:37px;height:55px;width:37px;}div.script_quickMsg_container>a>svg{display:block;width:100%;height:55px;}div.script_chatQuickMsg_menuContainer{position:fixed;background-color:rgba(0,0,0,0.5);color:var(--fontColor);padding:5px;transform:translate(-100%,-100%);border-radius:10px;}div.script_chatQuickMsg_menuContainer>table{text-align:center;height:100%;width:100%;border-collapse:separate;border-spacing:1px;}div.script_chatQuickMsg_menuContainer>table>tbody>tr>td>button{border-radius:5px;height:30px;line-height:30px;padding:0 10px;}div.script_chatQuickMsg_menuContainer>table>tbody>tr>td>button:hover{background-color:rgba(252,252,252,0.85);color:black;cursor:pointer;}`]
+  cssText = [`div.script_quickMsg_container{position:absolute;top:0;right:37px;height:55px;width:37px;}div.script_quickMsg_container>a>svg{display:block;width:100%;height:55px;}div.script_chatQuickMsg_menuContainer{position:fixed;background-color:rgba(0,0,0,0.5);color:var(--fontColor);padding:5px;transform:translate(-100%,-100%);border-radius:10px;}div.script_chatQuickMsg_menuContainer>table{text-align:center;height:100%;width:100%;border-collapse:separate;border-spacing:1px;}div.script_chatQuickMsg_menuContainer>table>tbody>tr>td>button{border-radius:5px;height:30px;line-height:30px;padding:0 10px;background-color:#202020;}div.script_chatQuickMsg_menuContainer>table>tbody>tr>td>button:hover{background-color:rgba(252,252,252,0.85);color:black;cursor:pointer;}`]
 
   settingUI = () => {
     let newNode = document.createElement("div");
@@ -152,7 +153,9 @@ class chatQuickMsg extends BaseComponent {
     if (objIndex == -1 || (nowtime - this.indexDBData.quickList[objIndex].stamp < 60 * 1000)) return;
     this.indexDBData.quickList[objIndex].stamp = nowtime;
     this.componentData.lastTextarea.click();
-    tools.setInput(this.componentData.lastTextarea, this.indexDBData.quickList[objIndex].msg);
+    let nowContent = this.componentData.lastTextarea.value;
+    let newContent = this.indexDBData.quickList[objIndex].msg.replace("\\n", "\n");
+    tools.setInput(this.componentData.lastTextarea, nowContent + newContent);
     await tools.dely(200);
     if (this.indexDBData.autoSend) this.msgAutoSend();
     // 关闭菜单

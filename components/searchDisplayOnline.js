@@ -9,6 +9,7 @@ class searchDisplayOnline extends BaseComponent {
     this.describe = "在标签搜索公司的界面上方增加一个按钮\n点击即可切换仅显示在线玩家";
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ['实用', '过滤'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/\/market\/tag-search\/.+\//)),

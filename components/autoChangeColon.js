@@ -9,6 +9,7 @@ class autoChangeColon extends BaseComponent {
     this.describe = "聊天室输入框自动中英冒号切换";
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ["聊天"];
   }
   commonFuncList = [
     {

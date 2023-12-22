@@ -9,6 +9,7 @@ class retailDisplayProfit extends BaseComponent {
     this.describe = "在零售建筑中尝试上架零售物品的时候，会实时计算零售利润和每小时利润";
     this.enable = true;
     this.canDisable = true;
+    this.tagList = ['零售','利润'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/\/b\/\d+\//)) && document.activeElement.name == "price" && document.activeElement.tagName == "INPUT",

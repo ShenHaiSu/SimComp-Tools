@@ -9,6 +9,7 @@ class mapHideScroll extends BaseComponent {
     this.name = "公司地图界面隐藏滚动条";
     this.describe = "如名";
     this.enable = true;
+    this.tagList = ['样式'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/landscape\/$/)),

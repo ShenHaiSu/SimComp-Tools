@@ -9,6 +9,7 @@ class economicCycleDetect extends BaseComponent {
     this.name = "周期经济状况检测";
     this.describe = "添加前台按钮可以点击之后获取当前最新的经济周期状态,可能会有十几秒的延迟(API的问题);";
     this.enable = true;
+    this.tagList = ['追踪','经济周期'];
   }
   startupFuncList = [
     this.startDetect,

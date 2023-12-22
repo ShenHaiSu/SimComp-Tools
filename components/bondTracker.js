@@ -7,6 +7,7 @@ class bondTracker extends BaseComponent {
     this.name = "债券市场追踪器";
     this.describe = "用于定时查询当前债券市场是否有符合要求的债券可供购买";
     this.enable = true;
+    this.tagList = ["债券", "追踪"];
   }
   indexDBData = {
     realmData: [
