@@ -7,7 +7,7 @@ class globalBlock extends BaseComponent {
     this.name = "全局屏蔽";
     this.describe = "在交易所界面和聊天室界面屏蔽掉指定人的信息";
     this.enable = true;
-    this.tagList = ['样式','聊天','交易所','过滤'];
+    this.tagList = ['样式', '聊天', '交易所', '过滤'];
   }
   commonFuncList = [{
     // 交易所屏蔽
@@ -40,7 +40,7 @@ class globalBlock extends BaseComponent {
   // 设置界面
   settingUI = () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class="header">全局屏蔽设置界面</div><div class="container"><div><div><button class="btn script_opt_submit">保存</button></div></div><div><table><thead><tr><td>功能</td><td>设置</td></tr></thead><tbody><tr><td title="选定在哪些区域启用屏蔽功能">屏蔽范围</td><td><select id="script_blockZone" class="form-control"><option value="0">两者都</option><option value="1">交易所</option><option value="2">聊天室</option></select></td></tr><tr><td title="聊天室遮蔽模式 默认全遮蔽 全遮蔽完全看不到此人发言">聊天室遮蔽模式</td><td><select id="script_chatBlockType" class="form-control"><option value="0">全遮蔽</option><option value="1">仅头像</option></select></td></tr></tbody></table><table><thead><tr><td>屏蔽的公司名</td><td>删除</td></tr></thead><tbody>`;
+    let htmlText = `<div class="header">全局屏蔽设置界面</div><div class="container"><div><div><button class="btn script_opt_submit">保存</button></div></div><div><table><thead><tr><td>功能</td><td>设置</td></tr></thead><tbody><tr><td title="选定在哪些区域启用屏蔽功能">屏蔽范围</td><td><select id="script_blockZone" class="form-control"><option value="0">两者都</option><option value="1">交易所</option><option value="2">聊天室</option></select></td></tr><tr><td title="聊天室遮蔽模式 默认全遮蔽 全遮蔽完全看不到此人发言">聊天室遮蔽模式</td><td><select id="script_chatBlockType" class="form-control"><option value="0">全遮蔽</option><option value="1">仅头像</option></select></td></tr><tr><td>遮罩图片<td><input class="form-control" id=script_imgUrl></tbody></table><table><thead><tr><td>屏蔽的公司名</td><td>删除</td></tr></thead><tbody>`;
     for (let i = 0; i < this.indexDBData.blockList.length; i++) {
       let name = this.indexDBData.blockList[i];
       htmlText += `<tr><td><input class="form-control" value='${name}'></td><td><button class="btn script_globalBlock_delete">删除</button></td></tr>`;
@@ -50,6 +50,7 @@ class globalBlock extends BaseComponent {
     newNode.id = "script_globalBlock_main";
     newNode.querySelector("#script_blockZone").value = this.indexDBData.blockZone;
     newNode.querySelector("#script_chatBlockType").value = this.indexDBData.chatBlockType;
+    newNode.querySelector("#script_imgUrl").value = this.indexDBData.maskImgUrl || "";
     newNode.addEventListener('click', event => this.settingClickHandle(event));
     return newNode;
   }
@@ -62,10 +63,14 @@ class globalBlock extends BaseComponent {
   // 设置提交按钮
   settingSubmit(event) {
     let root = tools.getParentByIndex(event.target, 3);
-    let valueList = Object.values(root.querySelectorAll("select, input")).map(node => node.value).filter(value => value != "");
+    let valueList = Object.values(root.querySelectorAll("select, input")).map(node => node.value);
+    // 审查
+    if (valueList[2] != "" && !/^https:\/\/[^\s/$.?#].[^\s]*$/.test(valueList[2])) return tools.alert("遮罩url必须是https协议的合法url");
+    // 保存
     this.indexDBData.blockZone = Math.floor(valueList[0]);
     this.indexDBData.chatBlockType = Math.floor(valueList[1]);
-    valueList = valueList.slice(2);
+    this.indexDBData.maskImgUrl = valueList[2] == "" ? undefined : valueList[2];
+    valueList = valueList.slice(3);
     this.indexDBData.blockList = valueList;
     this.genTempList();
     tools.indexDB_updateIndexDBData();
@@ -124,7 +129,7 @@ class globalBlock extends BaseComponent {
     if (this.indexDBData.chatBlockType == 0) {
       Object.assign(mainNode.style, { display: "none" });
     } else {
-      this.chatIconMaskHandle(mainNode);
+      setTimeout(() => this.chatIconMaskHandle(mainNode), 20);
     }
   }
 
@@ -138,10 +143,14 @@ class globalBlock extends BaseComponent {
     if (!node) return;
     let targetNode = node.querySelector("a>div>img.logo");
     let maskNode = this.getIconMask().cloneNode(true);
-    maskNode.id = "script_globalBlock_mask";
-    Object.assign(maskNode.style, { width: "100%" });
-    targetNode.style.display = "none";
-    tools.getParentByIndex(targetNode, 1).prepend(maskNode);
+    try {
+      maskNode.id = "script_globalBlock_mask";
+      Object.assign(maskNode.style, { width: "100%" });
+      targetNode.style.display = "none";
+      tools.getParentByIndex(targetNode, 1).prepend(maskNode);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   // 头像屏蔽替换函数
@@ -152,7 +161,7 @@ class globalBlock extends BaseComponent {
         this.componentData.iconMaskNode.innerHTML = `<img style='width:100%' src="${this.indexDBData.maskImgUrl}">`;
       } else {
         this.componentData.iconMaskNode = document.createElement("div");
-        this.componentData.iconMaskNode.innerHTML = `<svg style='width:100%'  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>`;
+        this.componentData.iconMaskNode.innerHTML = `<svg style='width:100%' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>`;
       }
     }
     return this.componentData.iconMaskNode;
