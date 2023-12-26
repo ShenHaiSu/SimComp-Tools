@@ -107,7 +107,7 @@ class chatFilter extends BaseComponent {
   settingAddNode(event) {
     let targetNode = event.target.previousElementSibling.querySelector("tbody");
     let newNode = document.createElement("tr");
-    newNode.innerHTML = `<td><input class="form-control"></td><td><button class="btn script_globalBlock_delete">删除</button></td>`;
+    newNode.innerHTML = `<td><input class="form-control"></td><td><button class="btn script_chatFilter_delete">删除</button></td>`;
     targetNode.appendChild(newNode);
   }
   // 删除元素
