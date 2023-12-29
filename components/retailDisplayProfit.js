@@ -59,7 +59,7 @@ class retailDisplayProfit extends BaseComponent {
     try { baseInfo = this.getInfo(targetNode) } catch (error) { return }
 
     // 异常处理取消计算
-    if (baseInfo.profit <= 0) return; // 利润小于0 不处理
+    // if (baseInfo.profit <= 0) return; // 利润小于0 不处理
     if (quantity == "" || quantity <= 0) return; // 零售数量小于0 不处理
     if (price == "" || price <= 0) return; // 零售单价小于0 不处理
 
@@ -83,6 +83,9 @@ class retailDisplayProfit extends BaseComponent {
     // 填充内容
     let totalProfit = parseFloat((baseInfo.profit * quantity).toFixed(2));
     let hourProfit = parseFloat((totalProfit / baseInfo.duration_hour).toFixed(2));
+    // 审核过滤内容
+    if (isNaN(totalProfit) || isNaN(hourProfit)) return; // 数据错误
+    // 挂载显示
     let htmlText = ``;
     htmlText += `<div>预估数据: </div>`
     htmlText += `<div>总利润：${totalProfit}</div>`;
