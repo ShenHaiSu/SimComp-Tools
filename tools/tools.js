@@ -249,6 +249,31 @@ class tools {
       return v.toString(16);
     });
   }
+  static regStringCheck(input = "") {
+    try {
+      if (input == "" || typeof input !== "string") return false;
+      if (!input.startsWith("/") || !/\/[img]*$/.test(input)) return false;
+      return new RegExp(input.replace(/^\//, "").replace(/\/[img]*$/, ""), input.match(/\/([img])*$/)[1]);
+    } catch (e) {
+      tools.errorLog(e);
+      return false;
+    }
+  }
+  static convertPropertiesToRegex(input) {
+    for (let key in input) {
+      if (!input.hasOwnProperty(key)) continue;
+      if (typeof input[key] === 'object' && input[key] !== null) {
+        this.convertPropertiesToRegex(input[key]); // 递归遍历子对象
+      } else if (typeof input[key] === 'string' && this.regStringCheck(input[key])) {
+        try {
+          input[key] = this.regStringCheck(input[key]); // 将属性值转换为正则表达式
+        } catch (error) {
+          // 属性值不符合正则表达式语法，忽略错误或者进行其他处理
+          console.error(error);
+        }
+      }
+    }
+  }
   static convert12To24Hr(timeString) {
     try {
       let [time, period] = timeString.split(" ");
@@ -258,6 +283,41 @@ class tools {
     } catch {
       return false;
     }
+  }
+  static getBuildKind(id = 0) {
+    if (id == 0) return undefined;
+    let realm = runtimeData.basisCPT.realm;
+    if (indexDBData.basisCPT.building[realm].length == 0) return undefined;
+    let building = indexDBData.basisCPT.building[realm].find(building => building.id == id);
+    return building == undefined ? undefined : building.kind;
+  }
+  static numberAddCommas(number = 0) {
+    let parts = number.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+  }
+  static downloadTextFile(filename, text) {
+    let blob = new Blob([text], { type: 'text/plain' });
+    let url = URL.createObjectURL(blob);
+    let downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = filename;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(url);
+  }
+  static deepCloneObj(input) {
+    if (input === null) return input;
+    if (input === Infinity) return `Infinity`;
+    if (input instanceof RegExp) return `/${input.source}/${input.flags}`;
+    if (typeof input !== 'object') return input;
+    let clone = Array.isArray(input) ? [] : {};
+    for (let key in input) {
+      if (!input.hasOwnProperty(key)) continue;
+      clone[key] = this.deepCloneObj(input[key]);
+    }
+    return clone;
   }
   static async indexDB_openDB() {
     return new Promise((resolve, reject) => {
@@ -300,18 +360,6 @@ class tools {
       request.onsuccess = () => resolve("数据删除成功");
       request.onerror = () => reject("数据删除失败");
     });
-  }
-  static getBuildKind(id = 0) {
-    if (id == 0) return undefined;
-    let realm = runtimeData.basisCPT.realm;
-    if (indexDBData.basisCPT.building[realm].length == 0) return undefined;
-    let building = indexDBData.basisCPT.building[realm].find(building => building.id == id);
-    return building == undefined ? undefined : building.kind;
-  }
-  static numberAddCommas(number = 0) {
-    let parts = number.toString().split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return parts.join('.');
   }
   /**
    * 更新/创建数据
@@ -477,8 +525,7 @@ class tools {
     // 更新挂载数据
     for (const key in dbData) {
       if (!Object.hasOwnProperty.call(dbData, key) || !Object.hasOwnProperty.call(componentList, key)) continue;
-      let component = componentList[key];
-      component.tapCount = dbData[key];
+      componentList[key].tapCount = dbData[key] == Infinity ? Infinity : Number(dbData[key]);
     }
   }
   /**
@@ -488,6 +535,21 @@ class tools {
     let nwoList = input ? input : this.genComponentTapCount();
     nwoList.id = "tapCount";
     await this.indexDB_updateData(nwoList);
+  }
+  static async indexDB_genAllData2String() {
+    let output = { feature_conf: null, indexDBData: null, tapCount: null };
+    output.feature_conf = this.deepCloneObj(feature_config);
+    output.indexDBData = this.deepCloneObj(indexDBData);
+    output.tapCount = this.deepCloneObj(this.genComponentTapCount());
+    return JSON.stringify(output);
+  }
+  static async indexDB_loadUserConf(in_feature_conf, in_indexDBData, in_tapCount) {
+    feature_config = in_feature_conf;
+    await tools.indexDB_updateFeatureConf();
+    this.convertPropertiesToRegex(in_indexDBData);
+    indexDBData = in_indexDBData;
+    await tools.indexDB_updateIndexDBData();
+    await tools.indexDB_updateTabCount(in_tapCount);
   }
   static genComponentTapCount() {
     let output = {};
@@ -580,27 +642,36 @@ class tools {
     }
   }
   // 构建替代window的alert
-  static fixAlert() {
+  static buildAlert() {
     let newNode = document.createElement("div");
     newNode.id = "script_dialog_overlay";
     newNode.style.display = "none";
-    newNode.innerHTML = `<div id="script_dialog_main"><h2>通知</h2><p></p><button>关闭</button></div>`;
-    this.dialogMain = newNode.querySelector("p");
+    newNode.innerHTML = `<div id="script_dialog_main"><h2>通知</h2><div id='script_dialog_container'></div><button sct_id='dialog_close'>关闭</button></div>`;
+    this.dialogMain = newNode.querySelector("#script_dialog_container");
     this.dialogNode = newNode;
     document.body.appendChild(newNode);
     newNode.addEventListener("click", event => {
       if (event.target.id == "script_dialog_overlay") return this.alertFade();
-      if (event.target.tagName == "BUTTON") return this.alertFade();
+      if (event.target.getAttribute("sct_id") == "dialog_close") return this.alertFade();
     });
-    this.CSSMount("add", `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
+    this.CSSMount("add", `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;max-height:80%;overflow-y:auto;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
   }
   // alert的dialog窗口消失
   static alertFade() {
+    this.dialogMain.innerHTML = "";
     Object.assign(this.dialogNode.style, { display: "none" });
   }
   // alert的dialog窗口出现
-  static alert(message) {
-    this.dialogMain.innerText = message;
+  static alert(message, cssNode) {
+    if (typeof message == "string") {
+      this.dialogMain.innerHTML = `<p>${message}</p>`;
+    } else if (message.tagName) {
+      if (cssNode !== undefined) {
+        if (cssNode.sct_id == "") return this.alert("错误,提交了css节点,但是没有节点id.");
+        if (!document.querySelector(`style[sct_id='scriptConfEdit_css']`)) document.head.appendChild(cssNode);
+      }
+      this.dialogMain.appendChild(message);
+    }
     Object.assign(this.dialogNode.style, { display: "flex" });
   }
   // 构建替代window的Confirm函数

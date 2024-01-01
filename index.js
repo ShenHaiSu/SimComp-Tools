@@ -40,7 +40,7 @@ async function scriptMainInit() {
   // 组建依赖检查
   await tools.dependenceCheck();
   // 构建消息提示强显示
-  tools.fixAlert();
+  tools.buildAlert();
   tools.buildConfirm();
   // 挂载css
   tools.CSSMount("mount");

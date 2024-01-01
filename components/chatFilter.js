@@ -92,6 +92,7 @@ class chatFilter extends BaseComponent {
     // 检查空内容
     if (baseConf[1] == "") baseConf[1] = "/(?:)/";
     if (baseConf[2] == "") baseConf[2] = "/(?:)/";
+    if (!tools.regStringCheck(baseConf[1]) || !tools.regStringCheck(baseConf[2])) return tools.alert("正则表达式语法不正确");
     if (highLightList.filter(value => value == "").length != 0) return tools.alert("内容不能为空");
     if (hideList.filter(value => value == "").length != 0) return tools.alert("内容不能为空");
     // 保存并刷新

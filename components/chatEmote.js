@@ -31,8 +31,8 @@ class chatEmote extends BaseComponent {
   settingSubmit() {
     let valueList = Object.values(document.querySelectorAll("#script_chatEmote_setting textarea")).map(node => node.value);
     // 审查
-    if (!valueList[0].startsWith("/")) return tools.alert("请使用JavaScript正则表达式的正确表达");
-    if (!/\/[img]*$/.test(valueList[0])) return tools.alert("请使用JavaScript正则表达式的正确结尾");
+    if (valueList[0] != "" && !tools.regStringCheck(valueList[0])) return tools.alert("请使用JavaScript正则表达式的正确表达");
+    if (valueList[0] == "") valueList[0] = `/https:\\/\\/[^\\s]+\\.(jpg|jpeg|png|gif)/g`
     // 生成结果
     let body = valueList[0].replace(/^\//, "").replace(/\/[img]*$/, "");
     let flag = valueList[0].match(/\/([img])*$/)[1];

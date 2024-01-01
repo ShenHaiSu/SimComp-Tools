@@ -351,7 +351,7 @@ class basisCPT extends BaseComponent {
   // 基础组件设置界面
   uisetting() {
     // 组件开关和基础插件的所有设置
-    console.log(feature_config);
+    tools.log(feature_config);
     let newNode = document.createElement("div");
     newNode.id = "script_setting_basisCPT";
     newNode.className = "col-sm-12 setting-container";
@@ -365,7 +365,7 @@ class basisCPT extends BaseComponent {
       let canDisable = component.canDisable;
       htmlText += `<tr><td><span title='${describe}'>${name}</span></td><td><input class='form-control' type="checkbox" ${enable ? "checked" : ""} ${canDisable ? "" : "disabled"}></td></tr>`;
     }
-    htmlText += `</table></div><div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=打开debug模式会有大量信息输出,可能会影响到性能,如非必要不要打开.>DEBUG模式<td><input class='form-control' type='checkbox' #####><tr><td title="只有插件主动发起的请求会被此项目限制\n官方文档说明低于5分钟就不安全了,用户请酌情设置. \n默认[10000ms]=10s">插件主动网络请求最小间隔<td><input type=number class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 #ffffff">插件通用文字配色<td><input class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 100 ">网页缩放比例<td><input type=number class=form-control value=#####><tr><td title="首要通知模式,默认是 网页内通知">主要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="次要通知模式,默认是 无">次要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="默认不勾选,勾选后SCT悬浮窗使用横向布局">悬浮窗横向排列</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divHorizontal ? "checked" : ""} ></td></tr><tr><td title="默认不勾选,勾选后SCT悬浮窗会固定在右下角不受hover影响">悬浮窗固定位置</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divFixedDisplay ? "checked" : ""} ></td></tr><tr><td title="无确认,删除插件所有缓存.非必要不用点">清除插件缓存</td><td><button class="btn form-control" id="script_reset">清除</button></td></tr></table></div></div></div>`;
+    htmlText += `</table></div><div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=打开debug模式会有大量信息输出,可能会影响到性能,如非必要不要打开.>DEBUG模式<td><input class='form-control' type='checkbox' #####><tr><td title="只有插件主动发起的请求会被此项目限制\n官方文档说明低于5分钟就不安全了,用户请酌情设置. \n默认[10000ms]=10s">插件主动网络请求最小间隔<td><input type=number class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 #ffffff">插件通用文字配色<td><input class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 100 ">网页缩放比例<td><input type=number class=form-control value=#####><tr><td title="首要通知模式,默认是 网页内通知">主要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="次要通知模式,默认是 无">次要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="默认不勾选,勾选后SCT悬浮窗使用横向布局">悬浮窗横向排列</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divHorizontal ? "checked" : ""} ></td></tr><tr><td title="默认不勾选,勾选后SCT悬浮窗会固定在右下角不受hover影响">悬浮窗固定位置</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divFixedDisplay ? "checked" : ""} ></td></tr><tr><td title="无确认,删除插件所有缓存.非必要不用点">清除插件缓存</td><td><button class="btn form-control" id="script_reset">清除</button></td></tr><tr><td>插件缓存读写</td><td><button class="btn form-control" id="script_confEdit_enter">进入读写操作</button></td></tr></table></div></div></div>`;
     // 修改input已有参数
     htmlText = htmlText.replace("#####", feature_config.debug ? "checked" : "");
     htmlText = htmlText.replace("#####", feature_config.net_gap_ms.toString());
@@ -382,6 +382,7 @@ class basisCPT extends BaseComponent {
       tools.indexDB_deleteAllData();
       location.reload();
     });
+    newNode.querySelector("button#script_confEdit_enter").addEventListener('click', () => this.scriptConfEdit_build());
     newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.uisettingSub());
     return newNode;
   }
@@ -421,6 +422,39 @@ class basisCPT extends BaseComponent {
     // 反馈并刷新
     tools.alert("已提交更新,即将刷新.");
     location.reload();
+  }
+  // 插件缓存读写界面构建
+  async scriptConfEdit_build() {
+    // 关闭设置界面
+    document.querySelector("div#script_cpt_setting_container>#script_setting_head button").click();
+    // 构建节点
+    let newNode = document.createElement("div");
+    let cssNode = document.createElement("style");
+    cssNode.setAttribute("sct_id", "scriptConfEdit_css");
+    cssNode.textContent = `#scriptConfEdit_maim{width:100%;}#scriptConfEdit_maim button{height:100%;}#scriptConfEdit_maim textarea{height:5em;resize:none;width:100%;}#scriptConfEdit_maim table{border-spacing:10px;border-collapse:separate;}`;
+    newNode.id = `scriptConfEdit_maim`;
+    newNode.innerHTML = `<div id=scriptConfEdit_maim><table><tr><td>导出文本<td><textarea>${await tools.indexDB_genAllData2String()}</textarea><tr><td colspan=2><button class="btn form-control"script_id=download>下载json文件</button><tr><td>导入文本<td><textarea placeholder=在这里输入导入配置的文本></textarea><tr><td colspan=2><button class="btn form-control"script_id=submit>点击导入</button></table></div>`
+    // 拉起提示
+    tools.alert(newNode, cssNode);
+    // 添加监听
+    newNode.querySelector("button[script_id='download']").addEventListener('click', e => {
+      let fileContent = tools.getParentByIndex(e.target, 2).previousElementSibling.querySelector("textarea").value;
+      let fileName = `sct_userConf_${new Date().getTime()}.json`
+      tools.downloadTextFile(fileName, fileContent);
+      fileContent = null;
+    });
+    newNode.querySelector("button[script_id='submit']").addEventListener('click', async event => {
+      try {
+        event.target.disabled = true;
+        let { feature_conf, indexDBData, tapCount } = JSON.parse(tools.getParentByIndex(event.target, 2).previousElementSibling.querySelector("textarea").value);
+        await tools.indexDB_loadUserConf(feature_conf, indexDBData, tapCount);
+        location.reload();
+      } catch (e) {
+        return tools.errorLog(e);
+      } finally {
+        event.target.disabled = false;
+      }
+    });
   }
   // 防抖动保存数据库
   async debounceSaveIndexDB() {
