@@ -15,8 +15,8 @@ class chatFilter extends BaseComponent {
     hide_item: ["fuck", "妈的", "媽的", "shit"], // 隐藏 列表
     hightLight_item: [], // 高亮 列表
     // 正则匹配方案
-    hide_reg: new RegExp(), // 过滤 正则
-    highLight_reg: new RegExp(), // 高亮 正则
+    hide_reg: /^$/, // 过滤 正则
+    highLight_reg: /^$/, // 高亮 正则
   }
   chatMsgFuncList = [this.mainCheck]
   cssText = [
@@ -90,8 +90,8 @@ class chatFilter extends BaseComponent {
     let highLightList = Object.values(tableList[1].querySelectorAll("input")).map(node => node.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     let hideList = Object.values(tableList[2].querySelectorAll("input")).map(node => node.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     // 检查空内容
-    if (baseConf[1] == "") baseConf[1] = "/(?:)/";
-    if (baseConf[2] == "") baseConf[2] = "/(?:)/";
+    if (baseConf[1] == "") baseConf[1] = "/^$/";
+    if (baseConf[2] == "") baseConf[2] = "/^$/";
     if (!tools.regStringCheck(baseConf[1]) || !tools.regStringCheck(baseConf[2])) return tools.alert("正则表达式语法不正确");
     if (highLightList.filter(value => value == "").length != 0) return tools.alert("内容不能为空");
     if (hideList.filter(value => value == "").length != 0) return tools.alert("内容不能为空");

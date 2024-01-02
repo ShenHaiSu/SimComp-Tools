@@ -90,6 +90,12 @@ class tools {
       this.publicCSS = newCSSTextList.join("\n");
     }
   }
+  static addCSSNode(node, eleID) {
+    if (eleID) node.setAttribute("sct_id", eleID);
+    let nodeName = node.getAttribute("sct_id");
+    if (!nodeName || document.querySelector(`style[sct_id="${nodeName}"]`)) return;
+    document.head.appendChild(node);
+  }
   static checkWindowHorV() {
     // 0 横屏 1 竖屏  
     this.log(`height:`, window.innerHeight);
@@ -132,13 +138,14 @@ class tools {
     if (input == "" || input == undefined) return false;
     return /^#[0-9a-fA-F]{6}$/.test(input) || /^rgba?\((\s*\d+\s*,){2}\s*\d+(\.\d+)?(\s*,\s*\d+(\.\d+)?)?\s*\)$/.test(input);
   }
-  static setInput(inputNode, value) {
+  static setInput(inputNode, value, count = 3) {
     let lastValue = inputNode.value;
     inputNode.value = value;
     let event = new Event("input", { bubbles: true });
     event.simulated = true; // hack React15
     if (inputNode._valueTracker) inputNode._valueTracker.setValue(lastValue); // hack React16 内部定义了descriptor拦截value，此处重置状态
     inputNode.dispatchEvent(event);
+    if (count >= 0) return this.setInput(inputNode,value,--count);
   }
   static createWindowMask() {
     if (Boolean(tools.windowMask)) return;
@@ -666,10 +673,7 @@ class tools {
     if (typeof message == "string") {
       this.dialogMain.innerHTML = `<p>${message}</p>`;
     } else if (message.tagName) {
-      if (cssNode !== undefined) {
-        if (cssNode.sct_id == "") return this.alert("错误,提交了css节点,但是没有节点id.");
-        if (!document.querySelector(`style[sct_id='scriptConfEdit_css']`)) document.head.appendChild(cssNode);
-      }
+      if (cssNode !== undefined) this.addCSSNode(cssNode);
       this.dialogMain.appendChild(message);
     }
     Object.assign(this.dialogNode.style, { display: "flex" });
