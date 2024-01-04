@@ -27,7 +27,7 @@ async function scriptMainInit() {
     runtimeData[key] = component.componentData;
     indexDBData[key] = component.indexDBData;
     feature_config.componentSwitchList[key] = component.enable;
-    if (component.cssText) tools.CSSMount("add", component.cssText[tools.clientHorV] || component.cssText[0]);
+    if (component.cssText) tools.CSSMount(componentList[key].constructor.name, component.cssText[tools.clientHorV] || component.cssText[0]);
   }
   // 数据库操作
   await tools.indexDB_openDB();
@@ -42,8 +42,6 @@ async function scriptMainInit() {
   // 构建消息提示强显示
   tools.buildAlert();
   tools.buildConfirm();
-  // 挂载css
-  tools.CSSMount("mount");
   // 执行缩放比例
   tools.zoomRateApply();
   // 检查通知模式
@@ -60,7 +58,7 @@ async function scriptMainInit() {
 
 // 事件监控
 function scriptEventStart() {
-  window.addEventListener("beforeunload",() => tools.indexDB_updateIndexDBData());
+  window.addEventListener("beforeunload", () => tools.indexDB_updateIndexDBData());
   document.addEventListener("click", (event) => tools.eventBus(event));
   document.addEventListener("keydown", (event) => tools.eventBus(event));
   let rootObserveServer = new MutationObserver((mutation) => tools.mutationHandle(mutation));

@@ -24,7 +24,6 @@ class tools {
   static dbObj = undefined; // 数据库操作对象
   static dbStoreName = "main"; // 数据库StoreName
   static uuid = undefined; // 用户uuid
-  static publicCSS = ""; // 所有组件使用的css
   static msgBodyNode = undefined; // 网页内消息使用的元素
   static lastMutation = undefined; // 最近一次元素变动记录
   static lastMutationTime = 0; // 最近一次元素变动的时间
@@ -68,33 +67,21 @@ class tools {
   static formatFeatureConfigComponentList() {
     Object.values(componentList).forEach(item => feature_config.componentSwitchList[item.constructor.name] = item.enable);
   }
-  static CSSMount(mode = "add", cssText = "") {
-    if (mode == "add") {
-      this.publicCSS += cssText + "\n\n";
-    } else if (mode == "mount") {
-      this.CSSMount("clearRepeat");
-      // ##FONTCOLOR##
-      tools.log(this.publicCSS);
-      this.publicCSS = this.publicCSS.replaceAll("##FONTCOLOR##", feature_config.fontColor + ";");
-      let styleElement = document.createElement("style");
-      styleElement.setAttribute("type", "text/css");
-      styleElement.textContent = this.publicCSS;
-      document.head.appendChild(styleElement);
-    } else if (mode == "clearRepeat") {
-      let CSSList = this.publicCSS.split("\n");
-      let newCSSTextList = [];
-      for (let i = 0; i < CSSList.length; i++) {
-        if (newCSSTextList.findIndex(j => CSSList[i] == j) != -1) continue;
-        newCSSTextList.push(CSSList[i]);
-      }
-      this.publicCSS = newCSSTextList.join("\n");
-    }
+  static CSSMount(cptName = "", cssText = "") {
+    let newNode = document.createElement("style");
+    newNode.setAttribute("type", "text/css");
+    newNode.setAttribute("sct_id", cptName);
+    newNode.setAttribute("sct_length", cssText.length);
+    newNode.textContent = cssText;
+    document.head.appendChild(newNode);
   }
   static addCSSNode(node, eleID) {
+    if (!eleID && !node.getAttribute("sct_id")) return false;
+    let nodeName = eleID || node.getAttribute("sct_id");
     if (eleID) node.setAttribute("sct_id", eleID);
-    let nodeName = node.getAttribute("sct_id");
-    if (!nodeName || document.querySelector(`style[sct_id="${nodeName}"]`)) return;
+    if (document.querySelector(`style[sct_id="${nodeName}"]`)) return false;
     document.head.appendChild(node);
+    return true;
   }
   static checkWindowHorV() {
     // 0 横屏 1 竖屏  
@@ -145,7 +132,7 @@ class tools {
     event.simulated = true; // hack React15
     if (inputNode._valueTracker) inputNode._valueTracker.setValue(lastValue); // hack React16 内部定义了descriptor拦截value，此处重置状态
     inputNode.dispatchEvent(event);
-    if (count >= 0) return this.setInput(inputNode,value,--count);
+    if (count >= 0) return this.setInput(inputNode, value, --count);
   }
   static createWindowMask() {
     if (Boolean(tools.windowMask)) return;
@@ -171,7 +158,7 @@ class tools {
   static async getRealm() {
     let realm = runtimeData.basisCPT.realm;
     while (realm == undefined) {
-      await tools.dely(1000);
+      await tools.dely(500);
       realm = runtimeData.basisCPT.realm;
     }
     return realm;
@@ -661,7 +648,7 @@ class tools {
       if (event.target.id == "script_dialog_overlay") return this.alertFade();
       if (event.target.getAttribute("sct_id") == "dialog_close") return this.alertFade();
     });
-    this.CSSMount("add", `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;max-height:80%;overflow-y:auto;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
+    this.CSSMount("main_alert", `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;max-height:80%;overflow-y:auto;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
   }
   // alert的dialog窗口消失
   static alertFade() {
@@ -692,7 +679,7 @@ class tools {
       if (event.target.tagName == "BUTTON" && /取消/.test(event.target.innerText)) this.hideConfirm(false);
       if (event.target.tagName == "BUTTON" && /确认/.test(event.target.innerText)) this.hideConfirm(true);
     });
-    this.CSSMount("add", `#script_confirm_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_confirm_overlay>#script_confirm_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_confirm_overlay #script_confirm_main h2{margin-top:0;margin-bottom:20px;}#script_confirm_overlay #script_confirm_main p{margin-bottom:20px;}#script_confirm_overlay #script_confirm_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_confirm_overlay #script_confirm_main button:hover{box-shadow:0 0 5px 5px white;}`);
+    this.CSSMount("main_confirm", `#script_confirm_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_confirm_overlay>#script_confirm_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_confirm_overlay #script_confirm_main h2{margin-top:0;margin-bottom:20px;}#script_confirm_overlay #script_confirm_main p{margin-bottom:20px;}#script_confirm_overlay #script_confirm_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_confirm_overlay #script_confirm_main button:hover{box-shadow:0 0 5px 5px white;}`);
   }
   // Confirm窗口隐藏
   static hideConfirm(input = false) {
