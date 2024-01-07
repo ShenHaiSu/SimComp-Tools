@@ -19,9 +19,6 @@ class newTabProfile extends BaseComponent {
   startupFuncList = [
     this.mainFunc
   ]
-  cssText = [
-    `tbody>tr>td>input[type='checkbox']{height: 20px;}`
-  ]
   settingUI = () => {
     let newNode = document.createElement("div");
     let htmlText = `<div class="header">使用新建标签页打开公司页组件设置</div><div class="container"><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>应用范围</td><td>开关</td></tr></thead><tbody>`;

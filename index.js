@@ -27,7 +27,6 @@ async function scriptMainInit() {
     runtimeData[key] = component.componentData;
     indexDBData[key] = component.indexDBData;
     feature_config.componentSwitchList[key] = component.enable;
-    if (component.cssText) tools.CSSMount(componentList[key].constructor.name, component.cssText[tools.clientHorV] || component.cssText[0]);
   }
   // 数据库操作
   await tools.indexDB_openDB();
@@ -46,10 +45,12 @@ async function scriptMainInit() {
   tools.zoomRateApply();
   // 检查通知模式
   tools.msg_check();
-  // 执行自启动函数
+  // 执行自启动函数 以及 挂载css
   for (const key in componentList) {
     if (!Object.hasOwnProperty.call(componentList, key) || (!componentList[key].enable && componentList[key].canDisable)) continue;
-    await componentList[key].startupFuncList.forEach(async func => await func.call(componentList[key], this));
+    let component = componentList[key];
+    await component.startupFuncList.forEach(async func => await func.call(component, this));
+    if (component.cssText) tools.CSSMount(component.constructor.name, component.cssText[tools.clientHorV] || component.cssText[0]);
   }
   // 更新标记
   tools.scriptLoadAcc = true;
