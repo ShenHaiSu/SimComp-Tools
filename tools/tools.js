@@ -660,7 +660,7 @@ class tools {
     if (typeof message == "string") {
       this.dialogMain.innerHTML = `<p>${message}</p>`;
     } else if (message.tagName) {
-      if (cssNode !== undefined) this.addCSSNode(cssNode);
+      this.dialogMain.appendChild(cssNode);
       this.dialogMain.appendChild(message);
     }
     Object.assign(this.dialogNode.style, { display: "flex" });
