@@ -869,9 +869,14 @@ class tools {
   }
   // chat - 格式化信息文本
   static formatMsgText(node) {
+    // 默认情况下
+    // node.childNodes[0]包裹着span列表
+    // 当在群组聊天时,自己发的消息 这个node.childNodes[0]会指向到一个i标签
     try {
       let result = "";
-      let nodeList = Object.values(node.childNodes[0].children).filter(node => node.tagName == "SPAN");
+      let targetNode = node.childNodes[0];
+      if (targetNode.tagName == "I") targetNode = node.childNodes[1];
+      let nodeList = Object.values(targetNode.children).filter(node => node.tagName == "SPAN");
       for (let i = 0; i < nodeList.length; i++) {
         let spanNode = nodeList[i];
         result += (nodeList[i].children.length == 0) ? spanNode.innerText : this.getSpanText(spanNode);

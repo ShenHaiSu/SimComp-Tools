@@ -48,8 +48,11 @@ class chatHelper extends BaseComponent {
   // 挂载表情包图片预览
   chatEmoteCheck(mainNode, textList) {
     if (mainNode.querySelector("div.script_chatHelper_chatEmote_container")) return;
+    if (mainNode.childNodes[0].tagName == "DIV") return;
+    // console.log(mainNode.childNodes[0]);
     for (let i = 0; i < mainNode.childNodes[2].childNodes.length; i++) {
       let node = mainNode.childNodes[2].childNodes[i].childNodes[0];
+      if (node.tagName == "I") node = mainNode.childNodes[2].childNodes[i].childNodes[1];
       let text = textList[i];
       let urlList = text.match(this.componentData.emoteReg);
       if (urlList === null) continue;
