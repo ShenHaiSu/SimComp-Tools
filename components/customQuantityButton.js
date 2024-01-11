@@ -20,6 +20,7 @@ class customQuantityButton extends BaseComponent {
   componentData = {
     lastURL: "", // 最近的一次url
     onload: false, // 是否正在挂载
+    buttonNode: undefined, // 按钮节点
   }
   cssText = [`button.btn.script_custom_button{margin-right: 3px;}`]
   settingUI = () => {
@@ -54,20 +55,12 @@ class customQuantityButton extends BaseComponent {
       let forceMode = mode == "force";
       if ((urlMatch && nodeMatch && !forceMode) || onload) return;
       this.componentData.onload = true;
+      if (!this.componentData.buttonNode) this.genButtonNode();
       document.querySelectorAll("h3 > svg").forEach((node) => {
-        tools.log(node);
         let targetNode = node.parentElement.parentElement.querySelector("div > button").parentElement;
-        let newNode = document.createElement("button");
-        newNode.className = `btn script_custom_button ${targetNode.querySelector("button").className}`;
-        newNode.innerText = this.indexDBData.buttonText;
-        Object.assign(newNode, { type: "button", role: "button" });
+        let newNode = this.componentData.buttonNode.cloneNode(true);
+        newNode.className += " " + targetNode.querySelector("button").className;
         targetNode.prepend(newNode);
-        newNode.addEventListener("click", (event) => {
-          let target_node = event.target.parentElement.parentElement.querySelector("input");
-          let target_text = event.target.innerText;
-          tools.setInput(target_node, target_text);
-          event.preventDefault();
-        });
       });
       this.componentData.onload = false;
       this.componentData.lastURL = location.href;
@@ -76,6 +69,28 @@ class customQuantityButton extends BaseComponent {
       this.componentData.lastURL = "";
       document.querySelectorAll("button.btn.script_custom_button").forEach(node => node.remove());
     }
+  }
+  // 生成按钮节点到
+  genButtonNode() {
+    let newNode = document.createElement("button");
+    newNode.className = `script_custom_button`;
+    newNode.innerText = this.indexDBData.buttonText;
+    Object.assign(newNode, { type: "button", role: "button" });
+    Object.assign(newNode.style, { textTransform: "none" });
+    newNode.setAttribute("sct_cpt", "customQuantityButton");
+    newNode.setAttribute("sct_id", "script_custom_button");
+    this.componentData.buttonNode = newNode;
+
+    document.body.addEventListener("click", e => {
+      if (e.target.tagName !== "BUTTON") return;
+      if (e.target.getAttribute("sct_cpt") !== "customQuantityButton") return;
+      if (e.target.getAttribute("sct_id") !== "script_custom_button") return;
+      let target_node = e.target.parentElement.parentElement.querySelector("input");
+      let target_text = e.target.innerText;
+      target_node.click();
+      tools.setInput(target_node, target_text);
+      e.preventDefault();
+    })
   }
 }
 new customQuantityButton();

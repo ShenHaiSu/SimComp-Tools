@@ -49,7 +49,6 @@ class chatHelper extends BaseComponent {
   chatEmoteCheck(mainNode, textList) {
     if (mainNode.querySelector("div.script_chatHelper_chatEmote_container")) return;
     if (mainNode.childNodes[0].tagName == "DIV") return;
-    // console.log(mainNode.childNodes[0]);
     for (let i = 0; i < mainNode.childNodes[2].childNodes.length; i++) {
       let node = mainNode.childNodes[2].childNodes[i].childNodes[0];
       if (node.tagName == "I") node = mainNode.childNodes[2].childNodes[i].childNodes[1];
@@ -141,7 +140,6 @@ class chatHelper extends BaseComponent {
     target.appendChild(this.buildEmojiSelectorAllNode());
     target.addEventListener('click', e => {
       if (e.target.innerText.length > 2 || e.target.innerText.length == 0) return;
-      // console.log(e.target.innerText);
       this.textareaAdd(e.target.innerText);
       let index = this.indexDBData.emojiFavList.findIndex(item => item.text == e.target.innerText);
       if (index == -1) {
@@ -299,7 +297,6 @@ class chatHelper extends BaseComponent {
   // 添加收藏表情包
   addCustomEmote(event) {
     let value = event.target.previousElementSibling.value;
-    // console.log(value);
     // 审查
     if (!this.componentData.emoteReg.test(value)) return tools.alert("输入的网址不符合https,或者不符合网络图片后缀名结尾,请修改.");
     if (this.indexDBData.customEmoteList.some(item => item == value)) return tools.alert("这个表情包已有");
@@ -351,7 +348,6 @@ class chatHelper extends BaseComponent {
     if (!this.componentData.lastTextarea) return;
     this.componentData.lastTextarea.click();
     let nowValue = this.componentData.lastTextarea.value;
-    // console.log(`${nowValue}${text}`);
     tools.setInput(this.componentData.lastTextarea, `${nowValue}${text}`);
   }
   closeContainer() {

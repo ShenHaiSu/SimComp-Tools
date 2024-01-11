@@ -9,7 +9,7 @@ class retailDisplayProfit extends BaseComponent {
     this.describe = "在零售建筑中尝试上架零售物品的时候，会实时计算零售利润和每小时利润";
     this.enable = true;
     this.canDisable = true;
-    this.tagList = ['零售','利润'];
+    this.tagList = ['零售', '利润'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/\/b\/\d+\//)) && document.activeElement.name == "price" && document.activeElement.tagName == "INPUT",
@@ -24,9 +24,7 @@ class retailDisplayProfit extends BaseComponent {
     minRate: 0.8, // 遍历价格初始倍率
     maxRate: 1.2, // 遍历价格最大倍率
   }
-  cssText = [
-    `#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%) translateX(-50%);width:270px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}`
-  ];
+  cssText = [`#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%) translateX(-50%);width:270px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}`];
 
   settingUI = () => {
     let newNode = document.createElement("div");
@@ -52,23 +50,16 @@ class retailDisplayProfit extends BaseComponent {
     let activeNodeRect = activeNode.getBoundingClientRect();
     let targetNode = tools.getParentByIndex(activeNode, 5).previousElementSibling.querySelector("div > div > h3").parentElement;
     let quantity = tools.getParentByIndex(activeNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
-    // let quality = this.getQuality(activeNode);
-    // let buildingLevel = parseInt(Object.values(document.querySelectorAll("div>span>b")).filter(node => /\d+级/.test(node.innerText))[0].innerText);
     let price = activeNode.value;
     let baseInfo;
     try { baseInfo = this.getInfo(targetNode) } catch (error) { return }
-
     // 异常处理取消计算
-    // if (baseInfo.profit <= 0) return; // 利润小于0 不处理
     if (quantity == "" || quantity <= 0) return; // 零售数量小于0 不处理
     if (price == "" || price <= 0) return; // 零售单价小于0 不处理
-
     // 清除原有计时器
     if (this.componentData.fadeTimer) clearTimeout(this.componentData.fadeTimer);
-
     // 更新最近input标记
     this.componentData.lastActiveInputNode = document.activeElement;
-
     // 构建元素并挂载
     if (!this.componentData.containerNode) {
       let newNode = document.createElement("div");
@@ -118,7 +109,7 @@ class retailDisplayProfit extends BaseComponent {
   getTimeFormat(targetStamp, durationTime) {
     let nowTime = new Date();
     let [targetHour, targetMinutes] = targetStamp.split(":");
-    let targetTime = new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate(), targetHour, targetMinutes);
+    let targetTime = new Date(nowTime.getFullYear(), nowTime.getMonth(), nowTime.getDate(), targetHour, targetMinutes, nowTime.getSeconds(), nowTime.getMilliseconds());
     let timeDiff = parseFloat(((targetTime.getTime() - nowTime.getTime()) / (1000 * 60 * 60)).toFixed(3));
     let exactOffect = 0;
     // 获取分钟与秒
