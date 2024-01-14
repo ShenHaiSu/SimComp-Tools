@@ -120,16 +120,16 @@ class chatFilter extends BaseComponent {
   mainCheck(mainNode, textList) {
     let targetNodeList = mainNode.childNodes[2].childNodes;
     for (let i = 0; i < targetNodeList.length; i++) {
-      let singleNode = targetNodeList[i]
-      let text = textList[i];
+      let singleNode = targetNodeList[i];
       // 过滤class
-      if (/script_chatFilter_hideClass/.test(singleNode.childNodes[0].className) || /script_chatFilter_hightLightClass/.test(singleNode.childNodes[0].className))
-        continue;
+      if (singleNode.childNodes[0].tagName == "I") continue;
+      if (/script_chatFilter_hideClass/.test(singleNode.childNodes[0].className)) continue;
+      if (/script_chatFilter_hightLightClass/.test(singleNode.childNodes[0].className)) continue;
       // 使用匹配模式
-      if (this.checkSubString(text, this.indexDBData.hide_item, this.indexDBData.hide_reg)) {
+      if (this.checkSubString(textList[i], this.indexDBData.hide_item, this.indexDBData.hide_reg)) {
         // 屏蔽做法
         singleNode.childNodes[0].className += ` script_chatFilter_hideClass`;
-      } else if (this.checkSubString(text, this.indexDBData.hightLight_item, this.indexDBData.highLight_reg)) {
+      } else if (this.checkSubString(textList[i], this.indexDBData.hightLight_item, this.indexDBData.highLight_reg)) {
         // 高亮做法
         singleNode.childNodes[0].className += ` script_chatFilter_hightLightClass`;
       }
