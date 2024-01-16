@@ -43,14 +43,14 @@ class customQuantityButton extends BaseComponent {
     this.indexDBData.buttonText = valueList[0];
     tools.indexDB_updateIndexDBData();
     // 清除已有元素并重新挂载
-    document.querySelectorAll("button.btn.script_custom_button").forEach(node => node.remove());
+    document.querySelectorAll("button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']").forEach(node => node.remove());
     this.mainFunc();
     tools.alert("已提交更改。");
   }
   mainFunc(event, mode) {
     try {
       let urlMatch = this.componentData.lastURL == location.href;
-      let nodeMatch = document.querySelectorAll("button.btn.script_custom_button").length != 0;
+      let nodeMatch = document.querySelectorAll("button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']").length != 0;
       let onload = this.componentData.onload;
       let forceMode = mode == "force";
       if ((urlMatch && nodeMatch && !forceMode) || onload) return;
@@ -60,6 +60,7 @@ class customQuantityButton extends BaseComponent {
         let targetNode = node.parentElement.parentElement.querySelector("div > button").parentElement;
         let newNode = this.componentData.buttonNode.cloneNode(true);
         newNode.className += " " + targetNode.querySelector("button").className;
+        newNode.innerText = this.indexDBData.buttonText;
         targetNode.prepend(newNode);
       });
       this.componentData.onload = false;
@@ -67,14 +68,13 @@ class customQuantityButton extends BaseComponent {
     } catch {
       this.componentData.onload = false;
       this.componentData.lastURL = "";
-      document.querySelectorAll("button.btn.script_custom_button").forEach(node => node.remove());
+      document.querySelectorAll("button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']").forEach(node => node.remove());
     }
   }
   // 生成按钮节点到
   genButtonNode() {
     let newNode = document.createElement("button");
     newNode.className = `script_custom_button`;
-    newNode.innerText = this.indexDBData.buttonText;
     Object.assign(newNode, { type: "button", role: "button" });
     Object.assign(newNode.style, { textTransform: "none" });
     newNode.setAttribute("sct_cpt", "customQuantityButton");

@@ -7,18 +7,16 @@ class clickHarvest extends BaseComponent {
     super()
     this.name = "一键收菜";
     this.describe = "组件包括了一键收菜的功能，在地图主页面点击收取按钮可以完成一键收菜"
-    this.enable = true; 
+    this.enable = true;
     this.tagList = ['快捷'];
   }
-  commonFuncList = [
-    {
-      match: event => Boolean(location.href.match(/landscape\/$/)),
-      func: this.createBtn
-    }, {
-      match: event => !Boolean(location.href.match(/landscape\/$/)),
-      func: this.hideBtn
-    }
-  ];
+  commonFuncList = [{
+    match: event => Boolean(location.href.match(/landscape\/$/)),
+    func: this.createBtn
+  }, {
+    match: event => !Boolean(location.href.match(/landscape\/$/)),
+    func: this.hideBtn
+  }];
   indexDBData = {
     buttonText: "一键收菜",
     nodePosition: 0, // 0 右上角 1 左上角 2 中间悬浮

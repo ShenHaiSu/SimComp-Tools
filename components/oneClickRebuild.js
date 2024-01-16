@@ -54,15 +54,15 @@ class oneClickRebuild extends BaseComponent {
   }
   settingUI = () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class=header>更好的一键重建</div><div class=container><div><div><button class="btn script_opt_submit">保存</button></div></div><table><thead><tr><td>功能<td>设置<tbody><tr><td>矿井-矿物<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>矿井-铝土矿<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>矿井-金矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>矿井-铁矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>采石场-沙子<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>采石场-黏土<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>采石场-石灰石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>油井-原油<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>油井-甲烷<td><input class=form-control max=100 min=0 step=0.1 type=number value=######></table></div>`;
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_14);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_15);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_68);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_42);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_44);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_104);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_105);
-    htmlText = htmlText.replace("######", this.indexDBData.minAbundance_10);
+    let htmlText = `<div class=header>更好的一键重建</div><div class=container><div><div><button class="btn script_opt_submit">保存</button></div></div><table><thead><tr><td>功能<td>设置<tbody><tr><td>矿井-矿物<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>矿井-铝土矿<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>矿井-金矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>矿井-铁矿石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>采石场-沙子<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>采石场-黏土<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>采石场-石灰石<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>油井-原油<td><input class=form-control max=100 min=0 step=0.1 type=number value=######><tr><td>油井-甲烷<td><input class=form-control max=100 min=0 step=0.1 type=number value=######></table></div>`
+      .replace("######", this.indexDBData.minAbundance_14)
+      .replace("######", this.indexDBData.minAbundance_15)
+      .replace("######", this.indexDBData.minAbundance_68)
+      .replace("######", this.indexDBData.minAbundance_42)
+      .replace("######", this.indexDBData.minAbundance_44)
+      .replace("######", this.indexDBData.minAbundance_104)
+      .replace("######", this.indexDBData.minAbundance_105)
+      .replace("######", this.indexDBData.minAbundance_10)
     htmlText = htmlText.replace("######", this.indexDBData.minAbundance_74);
     newNode.innerHTML = htmlText;
     newNode.id = "script_mineRebuild_setting";
