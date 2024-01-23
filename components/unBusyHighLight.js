@@ -9,6 +9,9 @@ class unBusyHighLight extends BaseComponent {
     this.enable = false; // 默认关闭
     this.tagList = ['样式', "建筑"];
   }
+  componentData = {
+    blackList: ["n"], // 屏蔽的建筑类型 n 银行 
+  }
   commonFuncList = [{
     match: () => Boolean(/landscape\/$/.test(location.href)),
     func: this.mainFunc
@@ -20,7 +23,7 @@ class unBusyHighLight extends BaseComponent {
   async mainFunc() {
     let realm = await tools.getRealm();
     let unBusyList = indexDBData.basisCPT.building[realm]
-      .filter(build => build.busy == undefined)
+      .filter(build => build.busy == undefined && !this.componentData.includes(build.kind))
       .map(build => build.id + "");
     let buildingList = Object.values(document.querySelectorAll("div#page>div>div>div>div>a"))
       .filter(build => /\/b\/(\d+)\/$/.test(build.href) && unBusyList.includes(build.href.match(/\/b\/(\d+)\/$/)[1]))
