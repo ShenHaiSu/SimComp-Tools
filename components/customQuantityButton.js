@@ -7,7 +7,7 @@ class customQuantityButton extends BaseComponent {
     super();
     this.name = "自定义生产数量按钮";
     this.describe = "只想生产24小时？没有问题！只想生产12小时？也没问题！\n只要你想 都能自定义填入！";
-    this.enable = true;
+    this.enable = false;
     this.tagList = ['快捷'];
   }
   commonFuncList = [{
@@ -16,13 +16,14 @@ class customQuantityButton extends BaseComponent {
   }]
   indexDBData = {
     buttonText: "12hr", // 按钮文本
+    otherTextList: ["testM"], // 更多按钮列表
   }
   componentData = {
     lastURL: "", // 最近的一次url
     onload: false, // 是否正在挂载
     buttonNode: undefined, // 按钮节点
   }
-  cssText = [`button.btn.script_custom_button{margin-right: 3px;}`]
+  cssText = [`button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']{margin-right:3px;text-transform:none !important;}`]
   settingUI = () => {
     let newNode = document.createElement("div");
     let htmlText = `<div><div class='header'>自定义生产数量按钮</div><div class=container><div><div><button class="btn script_opt_submit">保存</button></div></div><table><tr style=height:60px><td>功能<td>设置<tr><td title=按钮的内容会直接填写在格子中>按钮文本<td><input class='form-control' value=#####></table></div></div>`;
@@ -56,13 +57,7 @@ class customQuantityButton extends BaseComponent {
       if ((urlMatch && nodeMatch && !forceMode) || onload) return;
       this.componentData.onload = true;
       if (!this.componentData.buttonNode) this.genButtonNode();
-      document.querySelectorAll("h3 > svg").forEach((node) => {
-        let targetNode = node.parentElement.parentElement.querySelector("div > button").parentElement;
-        let newNode = this.componentData.buttonNode.cloneNode(true);
-        newNode.className += " " + targetNode.querySelector("button").className;
-        newNode.innerText = this.indexDBData.buttonText;
-        targetNode.prepend(newNode);
-      });
+      document.querySelectorAll("h3 > svg").forEach((node) => this.addButtonNode(node));
       this.componentData.onload = false;
       this.componentData.lastURL = location.href;
     } catch {
@@ -76,7 +71,6 @@ class customQuantityButton extends BaseComponent {
     let newNode = document.createElement("button");
     newNode.className = `script_custom_button`;
     Object.assign(newNode, { type: "button", role: "button" });
-    Object.assign(newNode.style, { textTransform: "none" });
     newNode.setAttribute("sct_cpt", "customQuantityButton");
     newNode.setAttribute("sct_id", "script_custom_button");
     this.componentData.buttonNode = newNode;
@@ -91,6 +85,24 @@ class customQuantityButton extends BaseComponent {
       tools.setInput(target_node, target_text);
       e.preventDefault();
     })
+  }
+  // 添加到DOM位置
+  addButtonNode(node) {
+    // 添加单常规按钮
+    let targetNode = node.parentElement.parentElement.querySelector("div > button").parentElement;
+    let newNode = this.componentData.buttonNode.cloneNode(true);
+    let commonClass = targetNode.querySelector("button").className;
+    newNode.className += ` ${commonClass}`;
+    newNode.innerText = this.indexDBData.buttonText;
+    targetNode.prepend(newNode);
+    // 添加其他额外按钮
+    if (this.indexDBData.otherTextList.length == 0) return;
+    for (let i = 0; i < this.indexDBData.otherTextList.length; i++) {
+      newNode = this.componentData.buttonNode.cloneNode(true);
+      newNode.className += ` ${commonClass}`;
+      newNode.innerText = this.indexDBData.otherTextList[i];
+      targetNode.prepend(newNode);
+    }
   }
 }
 new customQuantityButton();
