@@ -16,7 +16,7 @@ class customQuantityButton extends BaseComponent {
   }]
   indexDBData = {
     buttonText: "12hr", // 按钮文本
-    otherTextList: ["testM"], // 更多按钮列表
+    otherTextList: [], // 更多按钮列表
   }
   componentData = {
     lastURL: "", // 最近的一次url
@@ -26,27 +26,55 @@ class customQuantityButton extends BaseComponent {
   cssText = [`button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']{margin-right:3px;text-transform:none !important;}`]
   settingUI = () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div><div class='header'>自定义生产数量按钮</div><div class=container><div><div><button class="btn script_opt_submit">保存</button></div></div><table><tr style=height:60px><td>功能<td>设置<tr><td title=按钮的内容会直接填写在格子中>按钮文本<td><input class='form-control' value=#####></table></div></div>`;
-    htmlText = htmlText.replace("#####", this.indexDBData.buttonText);
+    let htmlText = `<div class="header">自定义生产数量按钮</div><div class="container"><div><div><button class="btn script_opt_submit">保存</button></div></div><table><thead><tr><td>功能</td><td colspan="2">设置</td></tr></thead><tbody><tr><td title="按钮的内容会直接填写在格子中">按钮文本</td><td colspan="2"><input class="form-control" value="######"></td></tr>`;
+    htmlText = htmlText.replace("######", this.indexDBData.buttonText);
+    for (let i = 0; i < this.indexDBData.otherTextList.length; i++) {
+      let text = this.indexDBData.otherTextList[i];
+      htmlText += `<tr><td><span>额外按钮</span></td><td><input class="form-control" value="${text}"></td><td><button class="btn form-control" sct_cpt="customQuantityButton" sct_id="deleteOne">删除</button></td></tr>`
+    }
+    htmlText += `<tr><td colspan=3><button class="btn form-control"sct_cpt=customQuantityButton sct_id=addNewText>添加</button></tbody></table></div>`;
     newNode.innerHTML = htmlText;
     newNode.id = "setting-container-8";
     newNode.className = "col-sm-12 setting-container";
     // 按键函数挂载
-    newNode.querySelector("button.btn.script_opt_submit").addEventListener("click", () => this.settingSubmitHandle());
+    newNode.addEventListener("click", e => this.settingClickHandle(e));
     // 返回元素
     return newNode;
   }
+  settingClickHandle(event) {
+    if (event.target.className == `btn script_opt_submit`) return this.settingSubmitHandle();
+    if (event.target.getAttribute("sct_id") == "deleteOne") return this.settingDeleteOne(event);
+    if (event.target.getAttribute("sct_id") == "addNewText") return this.settingAddNewText(event);
+  }
+  // 设置数据提交
   settingSubmitHandle() {
     // 数据更新
     let valueList = [];
     document.querySelectorAll("#setting-container-8 input").forEach((item) => valueList.push(item.value));
+    // 审查数据 预处理数据
     if (valueList[0] == "") valueList[0] = "12hr";
+    if (valueList.some(item => !Boolean(item))) return tools.alert("不能为空");
+    // 保存
     this.indexDBData.buttonText = valueList[0];
+    valueList.splice(0,1);
+    this.indexDBData.otherTextList = valueList;
     tools.indexDB_updateIndexDBData();
     // 清除已有元素并重新挂载
     document.querySelectorAll("button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']").forEach(node => node.remove());
     this.mainFunc();
     tools.alert("已提交更改。");
+  }
+  // 删除一个数据
+  settingDeleteOne(event) {
+    tools.getParentByIndex(event.target, 2).remove();
+  }
+  // 添加一个数据
+  settingAddNewText(event) {
+    let targetNode = tools.getParentByIndex(event.target, 3);
+    let beforeNode = tools.getParentByIndex(event.target, 2);
+    let newNode = document.createElement("tr");
+    newNode.innerHTML = `<td><span>额外按钮</span></td><td><input class="form-control"></td><td><button class="btn form-control" sct_cpt="customQuantityButton" sct_id="deleteOne">删除</button></td>`;
+    targetNode.insertBefore(newNode, beforeNode);
   }
   mainFunc(event, mode) {
     try {
