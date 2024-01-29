@@ -7,8 +7,8 @@ class purchaseByMoney extends BaseComponent {
     super();
     this.name = "交易所金额限购";
     this.describe = "交易行多出一排信息，输入采购目标（最低品质要求，最高金额限制）\n点击按钮会提示计算结果，点击确定会尝试进行采购\n采购金额误差可能有±1%";
-    this.enable = true;
-    this.tagList = ['实用','交易所'];
+    this.enable = false;
+    this.tagList = ['实用', '交易所'];
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/market\/resource\/(\d+)\//)),
@@ -16,6 +16,7 @@ class purchaseByMoney extends BaseComponent {
   }];
   componentData = {
     containerNode: undefined, // 按钮元素挂载
+    inProcess: false, // 按钮处理中
   };
   cssText = [`div#script_purchaseByMoney_container{margin:10px;display:flex;justify-content:center;align-items:center;width:auto;height:45px;}div#script_purchaseByMoney_container>input#script_quality_Inp{width:80px;height:34px;}div#script_purchaseByMoney_container>input#script_amount_Inp{margin:10px;width:150px;height:34px;}div#script_purchaseByMoney_container>button#scriptBtn_1{background-color:green;color:var(--fontColor);}`]
   mainFunc() {
@@ -32,7 +33,15 @@ class purchaseByMoney extends BaseComponent {
       tempDiv.innerHTML = htmltext;
       targetNode.appendChild(tempDiv);
       this.componentData.containerNode = tempDiv;
-      document.querySelector("button#scriptBtn_1").addEventListener("click", () => this.purchaseButtonHandle());
+      document.querySelector("button#scriptBtn_1").addEventListener("click", () => {
+        try {
+          if (this.componentData.inProcess) return;
+          this.componentData.inProcess = true;
+          this.purchaseButtonHandle();
+        } finally {
+          this.componentData.inProcess = false;
+        }
+      });
     } else if (this.componentData.containerNode && targetNode.querySelectorAll("div#script_purchaseByMoney_container").length == 0) {
       // 创建过 没挂载
       targetNode.appendChild(this.componentData.containerNode);
@@ -70,29 +79,23 @@ class purchaseByMoney extends BaseComponent {
       }, \n    物品ID:${res_id}\n是否确定？`
     );
     if (!userConfirm) return;
+    // 构建错误标记
     let failFlag = false;
-    setTimeout(() => {
-      try {
+    await tools.dely(500);
+    // 修改品质按钮
+    try {
+      if (document.querySelectorAll("form ul[role='menu'] li > a").length != 0)
         document.querySelectorAll("form ul[role='menu'] li > a")[quality].click();
-      } catch (error) {
-        tools.errorLog(error);
-        failFlag = true;
-      }
-    }, 500);
-
-    setTimeout(() => {
-      try {
-        tools.setInput(document.querySelector("form input[name='quantity']"), quantity - 1);
-      } catch (error) {
-        tools.errorLog(error);
-        failFlag = true;
-      }
-    }, 1000);
-
-    setTimeout(() => {
-      if (failFlag) return tools.alert("执行出错.请尝试打开debug模式,重试后截图控制台信息给开发者.");
-      document.querySelector("form button[type=submit]").click();
-    }, 1500);
+    } catch { failFlag = true }
+    await tools.dely(500);
+    // 修改数量信息
+    try {
+      tools.setInput(document.querySelector("form input[name='quantity']"), quantity - 1);
+    } catch { failFlag = true }
+    // 检查是否报错
+    if (failFlag) return tools.alert("执行出错.请尝试打开debug模式,重试后截图控制台信息给开发者.");
+    await tools.dely(500);
+    document.querySelector("form button[type=submit]").click();
   }
 }
 new purchaseByMoney();
