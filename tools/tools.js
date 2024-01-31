@@ -37,6 +37,7 @@ class tools {
     msgNode: undefined, // 信息挂载节点
     resolveFunc: null, // 存储间接函数
   }
+  static noSaveClose = false; // 不保存数据进行关闭
 
   static baseURL = {
     // 用户基础信息 GET
@@ -484,7 +485,13 @@ class tools {
    */
   static async indexDB_deleteAllData() {
     let dataNameList = ["tapCount", "feature_conf", "indexDBData", "uuid", "loadCount", "langData"];
-    dataNameList.forEach(async item => await this.indexDB_deleteData(item));
+    // dataNameList.forEach(async item => await this.indexDB_deleteData(item));
+    this.noSaveClose = true;
+    for (let i = 0; i < dataNameList.length; i++) {
+      console.log(dataNameList[i]);
+      await this.indexDB_deleteData(dataNameList[i]);
+    }
+    
   }
   /**
    * 加载IndexedDB中的语言包文件

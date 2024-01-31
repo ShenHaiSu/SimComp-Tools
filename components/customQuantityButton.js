@@ -23,7 +23,7 @@ class customQuantityButton extends BaseComponent {
     onload: false, // 是否正在挂载
     buttonNode: undefined, // 按钮节点
   }
-  cssText = [`button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']{margin-right:3px;text-transform:none !important;}`]
+  cssText = [`button[sct_cpt='customQuantityButton'][sct_id='script_custom_button']{margin-right:3px;margin-bottom:3px;text-transform:none !important;}`]
   settingUI = () => {
     let newNode = document.createElement("div");
     let htmlText = `<div class="header">自定义生产数量按钮</div><div class="container"><div><div><button class="btn script_opt_submit">保存</button></div></div><table><thead><tr><td>功能</td><td colspan="2">设置</td></tr></thead><tbody><tr><td title="按钮的内容会直接填写在格子中">按钮文本</td><td colspan="2"><input class="form-control" value="######"></td></tr>`;
@@ -56,7 +56,7 @@ class customQuantityButton extends BaseComponent {
     if (valueList.some(item => !Boolean(item))) return tools.alert("不能为空");
     // 保存
     this.indexDBData.buttonText = valueList[0];
-    valueList.splice(0,1);
+    valueList.splice(0, 1);
     this.indexDBData.otherTextList = valueList;
     tools.indexDB_updateIndexDBData();
     // 清除已有元素并重新挂载
@@ -103,16 +103,7 @@ class customQuantityButton extends BaseComponent {
     newNode.setAttribute("sct_id", "script_custom_button");
     this.componentData.buttonNode = newNode;
 
-    document.body.addEventListener("click", e => {
-      if (e.target.tagName !== "BUTTON") return;
-      if (e.target.getAttribute("sct_cpt") !== "customQuantityButton") return;
-      if (e.target.getAttribute("sct_id") !== "script_custom_button") return;
-      let target_node = e.target.parentElement.parentElement.querySelector("input");
-      let target_text = e.target.innerText;
-      target_node.click();
-      tools.setInput(target_node, target_text);
-      e.preventDefault();
-    })
+    document.body.addEventListener("click", e => this.customBtnClick(e));
   }
   // 添加到DOM位置
   addButtonNode(node) {
@@ -130,6 +121,54 @@ class customQuantityButton extends BaseComponent {
       newNode.className += ` ${commonClass}`;
       newNode.innerText = this.indexDBData.otherTextList[i];
       targetNode.prepend(newNode);
+    }
+  }
+  // 自定义按钮被点击
+  customBtnClick(e) {
+    // 过滤事件
+    if (e.target.tagName !== "BUTTON") return;
+    if (e.target.getAttribute("sct_cpt") !== "customQuantityButton") return;
+    if (e.target.getAttribute("sct_id") !== "script_custom_button") return;
+    // 获取目标元素以及信息
+    let target_node = e.target.parentElement.parentElement.querySelector("input");
+    let target_text = e.target.innerText;
+    // 自定义适配 
+    if (/^\d+(:|：)\d+\s*(am|pm)*/i.test(target_text)) target_text = this.customTimeSetText(target_text);
+    if (/^\d+\.\d+hr$/i.test(target_text)) target_text = this.customTimeDurationText(target_text);
+    tools.log(target_text);
+    // 添加信息
+    target_node.click();
+    tools.setInput(target_node, target_text);
+    e.preventDefault();
+  }
+  // 自定义适配格式化
+  customTimeSetText(text) {
+    try {
+      let targetText = text;
+      let is12H = /am|pm/i.test(text);
+      if (is12H) {
+        let to24Time = tools.convert12To24Hr(text);
+        if (!to24Time) return text;
+        targetText = to24Time;
+      }
+      // console.log(`24小时模式 ${targetText}`);
+      let nowTime = new Date();
+      let [targetH, targetM] = targetText.split(":").map(Number);
+      let distance = (targetH * 60 + targetM) - (nowTime.getHours() * 60 + nowTime.getMinutes());
+      if (distance < 0) distance += 24 * 60;
+      // console.log(distance);
+      return `${distance}m`;
+    } catch {
+      return text;
+    }
+  }
+  // 自定义小时数格式化
+  customTimeDurationText(text) {
+    try {
+      let hourNumber = Number(text.replace(/hr/i, ""));
+      return `${hourNumber * 60}m`;
+    } catch {
+      return text;
     }
   }
 }

@@ -23,7 +23,7 @@ class unBusyHighLight extends BaseComponent {
   async mainFunc() {
     let realm = await tools.getRealm();
     let unBusyList = indexDBData.basisCPT.building[realm]
-      .filter(build => build.busy == undefined && !this.componentData.includes(build.kind))
+      .filter(build => build.busy == undefined && !this.componentData.blackList.includes(build.kind))
       .map(build => build.id + "");
     let buildingList = Object.values(document.querySelectorAll("div#page>div>div>div>div>a"))
       .filter(build => /\/b\/(\d+)\/$/.test(build.href) && unBusyList.includes(build.href.match(/\/b\/(\d+)\/$/)[1]))

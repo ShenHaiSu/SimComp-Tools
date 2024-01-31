@@ -59,7 +59,9 @@ async function scriptMainInit() {
 
 // 事件监控
 function scriptEventStart() {
-  window.addEventListener("beforeunload", () => tools.indexDB_updateIndexDBData());
+  window.addEventListener("beforeunload", () => {
+    if (!tools.noSaveClose) tools.indexDB_updateIndexDBData();
+  });
   document.addEventListener("click", (event) => tools.eventBus(event));
   document.addEventListener("keydown", (event) => tools.eventBus(event));
   let rootObserveServer = new MutationObserver((mutation) => tools.mutationHandle(mutation));
