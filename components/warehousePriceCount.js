@@ -8,7 +8,6 @@ class warehousePriceCount extends BaseComponent {
     this.name = "仓库单物品总价值";
     this.describe = "在仓库界面鼠标移动到物品上悬停,会显示单物品合计总价值.";
     this.enable = true;
-    this.canDisable = true;
     this.tagList = ['统计'];
   }
   commonFuncList = [{

@@ -33,7 +33,7 @@ class otherRealmMsg extends BaseComponent {
         tools.errorLog(error);
         return setTimeout(() => { this.startupMsgCheck(undefined, ++count) }, 5000);
       }
-      tools.msg_send("待处理信息显示", "组件已连续两次次无法捕获官方原有的信息提示,尝试强制添加.", 1);
+      tools.msg_send("待处理信息显示", "组件已连续两次无法捕获官方原有的信息提示,尝试强制添加.", 1);
     }
     // 构建图标
     let containerNode = document.createElement("div");

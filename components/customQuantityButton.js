@@ -132,16 +132,21 @@ class customQuantityButton extends BaseComponent {
     // 获取目标元素以及信息
     let target_node = e.target.parentElement.parentElement.querySelector("input");
     let target_text = e.target.innerText;
-    // 自定义适配 
-    if (/^\d+(:|：)\d+\s*(am|pm)*/i.test(target_text)) target_text = this.customTimeSetText(target_text);
-    if (/^\d+\.\d+hr$/i.test(target_text)) target_text = this.customTimeDurationText(target_text);
+    // 自定义适配
+    if (/^\d+d\s*\d+(:|：)\d+\s*(am|pm)*/i.test(target_text)) {
+      target_text = this.customTimeSetOverDayText(target_text);
+    } else if (/^\d+(:|：)\d+\s*(am|pm)*/i.test(target_text)) {
+      target_text = this.customTimeSetText(target_text);
+    } else if (/^\d+\.\d+hr$/i.test(target_text)) {
+      target_text = this.customTimeDurationText(target_text);
+    }
     tools.log(target_text);
     // 添加信息
     target_node.click();
     tools.setInput(target_node, target_text);
     e.preventDefault();
   }
-  // 自定义适配格式化
+  // 自定义时刻格式化
   customTimeSetText(text) {
     try {
       let targetText = text;
@@ -170,6 +175,21 @@ class customQuantityButton extends BaseComponent {
     } catch {
       return text;
     }
+  }
+  // 跨日期自定义适配格式化
+  customTimeSetOverDayText(text) {
+    try {
+      let dayCount = Math.floor(text.match(/^(\d+d\s*)/i)[0].replace(/\s*/g, "").replace(/d|D/, ""));
+      let textNoDay = text.replace(/^\d+(d|D)\s*/g, "");
+      let result = this.customTimeSetText(textNoDay);
+      if (result == textNoDay) return text;
+      let minCount = Number(result.replace("m", ""));
+      let output = dayCount * 24 * 60 + minCount;
+      return `${output}m`
+    } catch {
+      return text;
+    }
+
   }
 }
 new customQuantityButton();
