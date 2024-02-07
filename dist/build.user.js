@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SimComps - tools
 // @namespace    http://shenhaisu.cc/
-// @version      2.20.240207231023
+// @version      2.21.240207231232
 // @description  给国人使用的SimComps脚本
 // @author       ShenHaiSu
 // @match        http://www.simcompanies.com/*
