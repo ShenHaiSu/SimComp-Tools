@@ -14,7 +14,7 @@ class warehouseItemID extends BaseComponent {
     nodeTemp: undefined, // 节点缓存
   }
   cssText = [
-    `span[sct_cpt='warehouseItemID'][sct_id='item_id']{display:block;position:absolute;text-align:center;font-size:20px;color:#ffffff70;right:2%;bottom:20%;}`
+    `span[sct_cpt='warehouseItemID'][sct_id='item_id']{display:block;position:absolute;text-align:center;font-size:20px;opacity:30%;right:2%;bottom:20%;}div.col-md-6>div>div>span[sct_cpt='warehouseItemID'][sct_id="item_id"]{display:none !important;}`
   ]
   commonFuncList = [{
     match: () => Boolean(location.href.match(/warehouse\/$/)),

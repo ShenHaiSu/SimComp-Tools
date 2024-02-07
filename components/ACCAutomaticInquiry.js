@@ -5,15 +5,11 @@ const { tools, componentList, runtimeData, indexDBData, feature_config } = requi
 class ACCAutomaticInquiry extends BaseComponent {
   constructor() {
     super();
-    this.name = "接受合同の询价";
-    this.describe = "在接受合同界面可以自动询价,查询当前物品当前q在交易所的价格并计算出相对mp的正负值";
-    this.enable = true;
+    this.name = "出入库合同询价";
+    this.describe = "在出入库界面能看到物品价格与当前交易所中同q物品的价格便宜。";
+    this.enable = false;
     this.tagList = ["询价", "合同"];
   }
-  commonFuncList = [{
-    match: () => Boolean(location.href.match("headquarters/warehouse/incoming-contracts")),
-    func: this.mainFunc
-  }];
   indexDBData = {
     workMode: 1, // 工作模式 0自动询价 1手动询价
     exactDigit: 0, // 精度 默认0
@@ -23,11 +19,21 @@ class ACCAutomaticInquiry extends BaseComponent {
   componentData = {
     loadFlag: false, // 加载标记
     customSampleA: undefined, // 自定义参考按钮节点
+    clickQueryTag: undefined, // 手动查询按钮模板标签
+    incomingFuncList: [], // 入库函数列表
+    outgoingFuncList: [], // 出库函数列表
+    realm: -1, // 服务器标号
   };
-  frontUI = () => {
-    if (!Boolean(location.href.match("headquarters/warehouse/incoming-contracts"))) return tools.alert("请回到待处理入库件页面");
-    this.mainWork_0();
-  }
+  commonFuncList = [{
+    // 入库显示构建
+    match: () => /headquarters\/warehouse\/incoming-contracts/.test(location.href),
+    func: this.incomingMain
+  }, {
+    // 出库显示构建
+    match: () => /headquarters\/warehouse\/outgoing-contracts/.test(location.href),
+    func: this.outgoingMain
+  }];
+  // 设置界面构建
   settingUI = async () => {
     let newNode = document.createElement("div");
     let htmlText = `<div class=header>接受合同界面自动询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input class=form-control step=1 type=number value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置</td><td><input type="checkbox" ##### class="form-control"></td></tr></table></div>`
@@ -40,6 +46,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmit());
     return newNode;
   }
+  // 设置界面提交
   settingSubmit() {
     let valueList = Object.values(document.querySelectorAll("div#script_ACCAutoQuery_setting input, div#script_ACCAutoQuery_setting select"))
       .map(node => node.type == "checkbox" ? node.checked : node.value);
@@ -53,49 +60,29 @@ class ACCAutomaticInquiry extends BaseComponent {
     tools.alert("提交更新");
   }
 
-  mainFunc() {
-    switch (this.indexDBData.workMode) {
-      case 0: // 自动查询
-        return this.mainWork_0();
-      case 1: // 手动查询
-        return this.mainWork_1();
-    }
+  // 入库显示构建
+  incomingMain() {
+    return (this.indexDBData.workMode == 0) ? this.incomingQueryAuto() : this.incomingQuery();
   }
   // 自动查询
-  async mainWork_0() {
+  async incomingQueryAuto() {
     // 检测已有挂载
-    if (document.querySelectorAll("b.script_automatic_inquiry_b").length != 0) return;
-    if (document.querySelectorAll("a.script_automatic_inquiry_a").length != 0) return;
+    if (document.querySelectorAll("b[sct_cpt='ACCAutomaticInquiry']").length != 0) return;
     // 检测加载状态
     if (this.componentData.loadFlag) return;
+    if (this.componentData.realm == -1) this.componentData.realm = await tools.getRealm();
+    let realm = this.componentData.realm;
     this.componentData.loadFlag = true;
     let nodeList = Object.values(document.querySelectorAll("a[aria-label='Sign contract']")).map(node => tools.getParentByIndex(node, 3));
-    let realm = await tools.getRealm();
     for (let i = 0; i < nodeList.length; i++) {
       let node = nodeList[i];
-      let nodeInfo = this.queryNodeInfo(node.getAttribute("aria-label"));
       // [resID, name, quantity, quality, unitPrice, totalPrice, from]
-      tools.log(nodeInfo);
-      let market_price = await tools.getMarketPrice(nodeInfo[0], nodeInfo[3], realm);
-      let custom = this.getCustomPrice(realm, nodeInfo[0], nodeInfo[3]);
-      if (custom != 0) market_price = custom;
-      let market_price_offset = 0;
-      try {
-        market_price_offset = parseFloat(((nodeInfo[4] / market_price - 1) * 100).toFixed(this.indexDBData.exactDigit));
-        market_price_offset = market_price_offset > 0 ? `+${market_price_offset}` : market_price_offset.toString();
-      } catch {
-        market_price_offset = "ERROR";
-      }
-      tools.log(market_price);
-      if (!market_price) {
-        market_price = "无";
-        market_price_offset = 0;
-      } else {
-        market_price = tools.numberAddCommas(market_price);
-      }
+      let nodeInfo = this.queryNodeInfo(node.getAttribute("aria-label"));
+      let { market_price, market_price_offset } = await this.getMarketPriceAndOffset(node, realm, nodeInfo);
       let newNode = document.createElement("b");
       newNode.innerText = ` MP:$${market_price} MP${market_price_offset}%`;
-      newNode.className = "script_automatic_inquiry_b";
+      newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
+      newNode.setAttribute("sct_id", "autoNode");
       node.children[2].appendChild(newNode);
       if (this.indexDBData.customSwitch) {
         if (!this.componentData.customSampleA) this.genCustomSampleNode();
@@ -105,18 +92,17 @@ class ACCAutomaticInquiry extends BaseComponent {
     this.componentData.loadFlag = false;
   }
   // 手动查询
-  mainWork_1() {
-    if (document.querySelectorAll("b.script_automatic_inquiry_b").length != 0) return;
-    if (document.querySelectorAll("a.script_automatic_inquiry_a").length != 0) return;
+  incomingQuery() {
+    // 检测已有的挂载
+    if (document.querySelectorAll("[sct_cpt='ACCAutomaticInquiry']").length != 0) return;
+    // 初始化
     try {
       if (this.componentData.loadFlag) return;
       let nodeList = Object.values(document.querySelectorAll("a[aria-label='Sign contract']")).map(node => tools.getParentByIndex(node, 3));
       for (let i = 0; i < nodeList.length; i++) {
         let node = nodeList[i];
-        let newNode = document.createElement("a");
-        newNode.className = "script_automatic_inquiry_a";
-        newNode.innerText = ` 询价`;
-        newNode.addEventListener("click", event => this.cliclQueryHandle(event));
+        if (!this.componentData.clickQueryTag) this.genClickQueryTag();
+        let newNode = this.componentData.clickQueryTag.cloneNode(true);
         node.children[2].appendChild(newNode);
         if (this.indexDBData.customSwitch) {
           if (!this.componentData.customSampleA) this.genCustomSampleNode();
@@ -127,22 +113,68 @@ class ACCAutomaticInquiry extends BaseComponent {
       this.componentData.loadFlag = false;
     }
   }
-  // 手动查询点击
+
+  // 出库显示构建
+  outgoingMain() {
+    return (this.indexDBData.workMode == 0) ? this.outgoingQueryAuto() : this.outgoingQuery();
+  }
+  // 自动查询
+  async outgoingQueryAuto() {
+    try {
+      // 审核过滤
+      if (this.componentData.loadFlag) return;
+      if (document.querySelectorAll("b[sct_cpt='ACCAutomaticInquiry']").length != 0) return;
+      // 初始化
+      this.componentData.loadFlag = true;
+      if (this.componentData.realm == -1) this.componentData.realm = await tools.getRealm();
+      let realm = this.componentData.realm;
+      let nodeList = Object.values(document.querySelectorAll("a[aria-label='Cancel contract']")).map(node => tools.getParentByIndex(node, 3));
+      for (let i = 0; i < nodeList.length; i++) {
+        let targetNode = nodeList[i];
+        // [resID, name, quantity, quality, unitPrice, totalPrice, from]
+        let info = this.queryNodeInfo(targetNode.getAttribute("aria-label"));
+        let { market_price, market_price_offset } = await this.getMarketPriceAndOffset(targetNode, realm, info);
+        let newNode = document.createElement("b");
+        newNode.innerText = ` MP:$${market_price} MP${market_price_offset}%`;
+        newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
+        newNode.setAttribute("sct_id", "autoNode");
+        targetNode.children[2].appendChild(newNode);
+        if (this.indexDBData.customSwitch) {
+          if (!this.componentData.customSampleA) this.genCustomSampleNode();
+          targetNode.children[2].appendChild(this.componentData.customSampleA.cloneNode(true));
+        }
+      }
+      this.componentData.loadFlag = false;
+    } finally {
+      this.componentData.loadFlag = false;
+    }
+  }
+  // 手动查询
+  outgoingQuery() {
+    // 审查
+    if (document.querySelectorAll("[sct_cpt='ACCAutomaticInquiry']").length != 0) return;
+    // 挂载标签
+    let nodeList = Object.values(document.querySelectorAll("a[aria-label='Cancel contract']")).map(node => tools.getParentByIndex(node, 3));
+    for (let i = 0; i < nodeList.length; i++) {
+      let node = nodeList[i];
+      if (!this.componentData.clickQueryTag) this.genClickQueryTag();
+      let newNode = this.componentData.clickQueryTag.cloneNode(true);
+      node.children[2].appendChild(newNode);
+      if (this.indexDBData.customSwitch) {
+        if (!this.componentData.customSampleA) this.genCustomSampleNode();
+        node.children[2].appendChild(this.componentData.customSampleA.cloneNode(true));
+      }
+    }
+  }
+
+  // 手动点击查询函数
   async cliclQueryHandle(event) {
     let targetNode = tools.getParentByIndex(event.target, 2);
     let nodeInfo = this.queryNodeInfo(targetNode.getAttribute("aria-label"));
-    let realm = await tools.getRealm();
-    let market_price = await tools.getMarketPrice(nodeInfo[0], nodeInfo[3], realm);
-    let custom = this.getCustomPrice(realm, nodeInfo[0], nodeInfo[3]);
-    if (custom != 0) market_price = custom;
-    let market_price_offset = 0;
-    try {
-      market_price_offset = ((nodeInfo[4] / market_price - 1) * 100).toFixed(this.indexDBData.exactDigit);
-      market_price_offset = market_price_offset > 0 ? `+${market_price_offset}` : market_price_offset.toString();
-    } catch {
-      market_price_offset = "";
-    }
-    event.target.innerText = ` MP:$${market_price} MP${market_price_offset}`
+    if (this.componentData.realm == -1) this.componentData.realm = await tools.getRealm();
+    let realm = this.componentData.realm;
+    let { market_price, market_price_offset } = await this.getMarketPriceAndOffset(targetNode, realm, nodeInfo);
+    event.target.innerText = ` MP:$${market_price} MP${market_price_offset}%`
   }
 
   queryNodeInfo(input) {
@@ -154,8 +186,42 @@ class ACCAutomaticInquiry extends BaseComponent {
     output = output.concat([matchOut[3], matchOut[1], matchOut[2]]);
     matchOut = input.match(/\$(\d+.\d+|\d+)/g);
     output = output.concat([parseFloat(matchOut[0].replace("$", "")), parseFloat(matchOut[1].replace("$", ""))]);
-    output.push(input.match(/from.+?(.+)/)[1]);
+    if (/from\s.+$/.test(input)) {
+      output.push(input.match(/from\s(.*)$/)[1]);
+    } else if (/to\s.+$/.test(input)) {
+      output.push(input.match(/to\s(.+)$/)[1]);
+    }
     return output;
+  }
+  // 构建手动查询标签
+  genClickQueryTag() {
+    let newNode = document.createElement("a");
+    newNode.innerText = ` 询价`;
+    newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
+    newNode.setAttribute("sct_id", "click2Query");
+    this.componentData.clickQueryTag = newNode;
+
+    document.body.addEventListener("click", e => {
+      if (e.target.tagName != "A") return;
+      if (e.target.getAttribute("sct_cpt") !== "ACCAutomaticInquiry") return;
+      if (e.target.getAttribute("sct_id") !== "click2Query") return;
+      this.cliclQueryHandle(e);
+    })
+  }
+  // 获取当前价格和相对便宜
+  async getMarketPriceAndOffset(node, realm, info) {
+    let market_price = await tools.getMarketPrice(info[0], info[3], realm);
+    let custom = this.getCustomPrice(realm, info[0], info[3]);
+    if (custom != 0) market_price = custom;
+    let market_price_offset = 0;
+    try {
+      market_price_offset = parseFloat(((info[4] / market_price - 1) * 100).toFixed(this.indexDBData.exactDigit));
+      market_price_offset = market_price_offset > 0 ? `+${market_price_offset}` : market_price_offset.toString();
+    } catch {
+      market_price_offset = 0;
+    }
+    market_price = (market_price) ? tools.numberAddCommas(market_price) : "无";
+    return { market_price, market_price_offset };
   }
   // 自定义参考标签生成
   genCustomSampleNode() {

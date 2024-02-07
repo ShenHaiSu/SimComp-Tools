@@ -23,24 +23,28 @@ class retailDisplayProfit extends BaseComponent {
   indexDBData = {
     minRate: 0.8, // 遍历价格初始倍率
     maxRate: 1.2, // 遍历价格最大倍率
+    roughMode: false, // 粗略步长模式
   }
   cssText = [`#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%) translateX(-50%);width:270px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}`];
 
   settingUI = () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class=header>零售利润显示组件设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=遍历价格的初始倍率>初始倍率<td><input class=form-control type=number value=######><tr><td title=遍历价格的最大倍率>最大倍率<td><input class=form-control type=number value=######></table></div>`;
+    let htmlText = `<div class=header>零售利润显示组件设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=遍历价格的初始倍率>初始倍率<td><input class=form-control type=number value=######><tr><td title=遍历价格的最大倍率>最大倍率<td><input class=form-control type=number value=######><tr><td title='打开粗略模式之后，步长大于等于推荐定价的百分之一'>粗略模式<td><input type="checkbox" class=form-control ###### ></table></div>`;
     htmlText = htmlText.replace("######", this.indexDBData.minRate);
     htmlText = htmlText.replace("######", this.indexDBData.maxRate);
+    htmlText = htmlText.replace("######", this.indexDBData.roughMode ? "checked" : "");
     newNode.id = "script_srtting_retailProfit";
     newNode.innerHTML = htmlText;
     newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmitHandle());
     return newNode;
   }
   settingSubmitHandle() {
-    let valueList = Object.values(document.querySelectorAll("div#script_srtting_retailProfit input")).map(node => parseFloat(node.value));
-    if (valueList.includes(NaN) || valueList.findIndex(rate => rate <= 0) != -1) return tools.alert("数据不正确");
+    let valueList = Object.values(document.querySelectorAll("div#script_srtting_retailProfit input"))
+      .map(node => (node.type == "checkbox") ? node.checked : parseFloat(node.value));
+    if (valueList.includes(NaN) || valueList.some(item => (typeof item != "boolean" && item <= 0))) return tools.alert("数据不正确");
     this.indexDBData.minRate = valueList[0];
     this.indexDBData.maxRate = valueList[1];
+    this.indexDBData.roughMode = valueList[2];
     tools.indexDB_updateIndexDBData();
     tools.alert("已提交更改");
   }
@@ -252,9 +256,22 @@ class retailDisplayProfit extends BaseComponent {
   }
   // 获取步长
   getStep(basePrice) {
-    if (basePrice <= 8) return 0.01;
-    if (basePrice <= 500) return 0.1;
-    return 1;
+    let baseStep = 0;
+    let percentStep = basePrice * 0.01;
+
+    if (basePrice <= 8) {
+      baseStep = 0.01
+    } else if (basePrice <= 500) {
+      baseStep = 0.1
+    } else {
+      baseStep = 1;
+    }
+
+    if (this.indexDBData.roughMode) {
+      return (percentStep >= baseStep) ? percentStep : baseStep;
+    } else {
+      return baseStep;
+    }
   }
 }
 new retailDisplayProfit();
