@@ -10,16 +10,14 @@ class customBackgroundImage extends BaseComponent {
     this.enable = true;
     this.tagList = ['个性化'];
   }
-  debounceFuncList = [{
-    // [{bounce:20, func}]
-    bounce: 1,
-    func: this.mainFunc
-  }];
+  componentData = {
+    styleNode: undefined, // 临时style节点
+  }
   startupFuncList = [
     this.mainFunc
   ];
   indexDBData = {
-    cssText: "", // 背景数据存储位置 
+    cssText: "", // 背景数据存储位置
   };
   settingUI = () => {
     // 创建并挂载
@@ -53,14 +51,23 @@ class customBackgroundImage extends BaseComponent {
     tools.alert("更改已提交");
   }
   mainFunc() {
-    let targetNode = document.querySelector("div#root div#page > div");
-    if (!targetNode) return;
-    Object.assign(targetNode.style, {
-      background: this.indexDBData.cssText,
-      backgroundRepeat: "no-repeat",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-    });
+    // 删除已有挂载
+    let nowNode = document.querySelector("style[sct_cpt='customBackgroundImage']");
+    if (nowNode) nowNode.remove();
+
+    // 构建新节点
+    if (this.indexDBData.cssText == "") return;
+    let newNode = document.createElement("style");
+    newNode.setAttribute("sct_cpt", "customBackgroundImage");
+    newNode.setAttribute("type", "text/css");
+    newNode.textContent = `div#root div#page>div {
+  background: ${this.indexDBData.cssText} no-repeat center top !important;
+  background-size: cover !important;
+}`;
+    this.componentData.styleNode = newNode;
+
+    // 挂载节点
+    document.head.appendChild(this.componentData.styleNode);
   }
 }
 new customBackgroundImage();
