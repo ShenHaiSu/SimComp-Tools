@@ -3,7 +3,7 @@ let path = require('path');
 let distPath = path.join(__dirname, 'dist');
 let moment = require("moment");
 
-let preVersion = `2.21`; // 手动定制版本
+let preVersion = `2.23`; // 手动定制版本
 
 function getLatestJsFile(dir) {
   const files = fs.readdirSync(dir);

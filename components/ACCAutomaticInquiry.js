@@ -36,7 +36,7 @@ class ACCAutomaticInquiry extends BaseComponent {
   // 设置界面构建
   settingUI = async () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class=header>接受合同界面自动询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input class=form-control step=1 type=number value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置</td><td><input type="checkbox" ##### class="form-control"></td></tr></table></div>`
+    let htmlText = `<div class=header>出入库合同询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input class=form-control step=1 type=number value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置</td><td><input type="checkbox" ##### class="form-control"></td></tr></table></div>`
     htmlText = htmlText
       .replace("######", this.indexDBData.exactDigit)
       .replace("#####", this.indexDBData.customSwitch ? "checked" : "");
