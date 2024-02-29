@@ -138,6 +138,7 @@ class ACCAutomaticInquiry extends BaseComponent {
         newNode.innerText = ` MP:$${market_price} MP${market_price_offset}%`;
         newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
         newNode.setAttribute("sct_id", "autoNode");
+        if (targetNode.querySelector("b[sct_cpt='ACCAutomaticInquiry']")) break;
         targetNode.children[2].appendChild(newNode);
         if (this.indexDBData.customSwitch) {
           if (!this.componentData.customSampleA) this.genCustomSampleNode();

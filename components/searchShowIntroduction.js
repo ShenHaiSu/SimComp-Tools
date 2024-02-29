@@ -8,6 +8,6 @@ class searchShowIntroduction extends BaseComponent {
     this.describe = "在搜索界面可以将所有人的公司简介显示完整。";
     this.enable = false;
   }
-  cssText = [`div>div.row>div.col-sm-6>div[class]{height:max-content !important;}div>div.row>div.col-sm-6>div[class]>div:last-of-type{height:max-content !important;overflow:visible !important;}`];
+  cssText = [`div#page>div>div.container>div>div.row>div.col-sm-6>div[class]{height:max-content !important;}div#page>div>div.container>div>div.row>div.col-sm-6>div[class]>div:last-of-type{height:max-content !important;overflow:visible !important;}`];
 }
 new searchShowIntroduction();

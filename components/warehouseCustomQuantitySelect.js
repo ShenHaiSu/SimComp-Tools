@@ -79,6 +79,7 @@ class warehouseCustomQuantitySelect extends BaseComponent {
     // 检查缓存节点
     if (!this.componentData.tempNode) this.buildSelectorNode();
     let selectNode = this.componentData.tempNode;
+    selectNode.querySelector("select").value = 0;
 
     // 捕获挂载位置
     let targetNode = document.querySelector("input[name='amount']").parentElement.parentElement;

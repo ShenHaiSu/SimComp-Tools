@@ -6,7 +6,7 @@ class warehouseACCmpOffest extends BaseComponent {
   constructor() {
     super();
     this.name = "仓库出售界面显示mp偏移";
-    this.describe = "在仓库出售表格中,填写单价的下面会自动根据当前";
+    this.describe = "在仓库出售表格中,填写单价的下面会自动根据当前市场最低价以及设置的计算方法来显示";
     this.enable = true;
   }
   indexDBData = {
