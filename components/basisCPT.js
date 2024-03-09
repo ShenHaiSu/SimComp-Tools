@@ -51,7 +51,8 @@ class basisCPT extends BaseComponent {
     this.startupSideBarMain,
     this.startupSettingContainer,
     this.startupExecutives,
-    this.startupForDonation
+    this.startupForDonation,
+    this.startupForLang
   ]
   netFuncList = [
     {    // 用户信息拦截
@@ -66,9 +67,6 @@ class basisCPT extends BaseComponent {
     }, { // 交易所请求拦截
       urlMatch: url => /market\/(all\/)?\d+\/\d+\//.test(url),
       func: this.marketData
-    }, { // 语言包拦截
-      urlMatch: url => /lang5\/zh.json$/.test(url),
-      func: this.langData
     }, { // 高管拦截
       urlMatch: url => /me\/executives\/$/.test(url),
       func: this.netExecutives
@@ -147,17 +145,6 @@ class basisCPT extends BaseComponent {
     if (!this.indexDBData.resourcePool[realm]) this.indexDBData.resourcePool[realm] = [];
     this.indexDBData.resourcePool[realm][res_id] = mpData;
     tools.indexDB_updateIndexDBData();
-  }
-  // 语言包拦截处理
-  langData(url, method, resp) {
-    resp = JSON.parse(resp);
-    for (const key in resp) {
-      if (!Object.hasOwnProperty.call(resp, key) && !Object.hasOwnProperty.call(langData, key)) continue;
-      langData[key] = resp[key];
-    }
-    // 删除旧数据
-    delete this.indexDBData["langData"];
-    tools.indexDB_updateLangData(langData);
   }
   // 高管信息网络请求拦截函数
   async netExecutives(url, method, resp) {
@@ -522,6 +509,13 @@ class basisCPT extends BaseComponent {
     msgBody.appendChild(donationSite);
     msgBody.appendChild(donationList);
     tools.msg_send("肚肚饿饿", msgBody, 1);
+  }
+  // 主动获取语言包文件
+  async startupForLang() {
+    let originName = new URL(document.querySelector("script[type='module']").src).origin;
+    let langData = await tools.getNetData(originName + "\/static\/js\/lang6\/zh.json?" + await tools.generateUUID());
+    if (!langData) return;
+    tools.indexDB_updateLangData(langData);
   }
   // 主动获取高管信息
   async startupExecutives() {
