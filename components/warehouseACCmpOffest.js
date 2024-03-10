@@ -10,72 +10,162 @@ class warehouseACCmpOffest extends BaseComponent {
     this.enable = true;
   }
   indexDBData = {
-    mp_offest: 3, // mp-0 默认是0 就是 市场价-0%
-    percentSign: false, // 是否显示百分比符号 默认false
+    offestList: [["mp+0", "mp*0.97"], ["mp+0", "mp*0.97"]], // 不同分区的偏移列表 内容是字符串 使用mp作为占位符
   }
   componentData = {
     onLoad: false, // 正在加载标记
+    realm: undefined, // 当前服务器标记
+    selectorNode: undefined, // 选择器缓存节点
   }
   commonFuncList = [{
     match: () => Boolean(location.href.match(/warehouse\/(.+)/) && document.querySelectorAll("form").length > 0),
     func: this.mainFunc
   }]
-  settingUI = () => {
+  cssText = [`select[sct_cpt='warehouseACCmpOffest'][sct_id='selectorNode']{width:100%;height:30px;border-radius:5px;margin-top:5px;color:var(--fontColor);}`];
+
+  // 设置界面的构建
+  settingUI = async () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td>功能</td><td>设置</td></tr></thead><tbody><tr><td title="MarketPrice Offest 偏移量 填写1 就是 mp-1">mp量</td><td><input type='number' class="form-control" value="#####"></td></tr><tr><td title="勾选就是显示百分比符号,仅仅是显示而已,勾选与否都是使用百分比去计算的">是否显示百分号</td><td><input type='checkbox' style='height:20px;' class="form-control" ######></td></tr></tbody></table></div>`;
-    htmlText = htmlText.replace("#####", this.indexDBData.mp_offest);
-    htmlText = htmlText.replace("######", this.indexDBData.percentSign ? "checked" : "");
+    let realm = (this.componentData.realm == undefined) ? await tools.getRealm() : this.componentData.realm;
+    this.componentData.realm = realm;
+    let htmlText = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td colspan="2"><span>使用mp作为占位符</span><br><span>允许使用单次 + - * / 运算符</span></td></tr><tr><td>偏移表达</td><td>设置</td></tr></thead><tbody>`;
+    for (let i = 0; i < this.indexDBData.offestList[realm].length; i++) {
+      let offestString = this.indexDBData.offestList[realm][i];
+      htmlText += `<tr><td><input class="form-control" value='${offestString}'></td><td><button class="btn form-control" sct_id="deleteOne">删除</button></td></tr>`;
+    }
+    htmlText += `</tbody></table><button class="btn form-control" sct_id="addOne">添加</button></div>`;
     newNode.innerHTML = htmlText;
     newNode.id = "accMPoffsetSetting";
     // 绑定按钮
-    newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmit())
+    newNode.addEventListener('click', e => this.settingClickHandle(e));
     // 返回元素
     return newNode;
   }
+  // 设置界面点击交互
+  settingClickHandle(e) {
+    if (e.target.tagName != "BUTTON") return;
+    if (/script_opt_submit/.test(e.target.className)) return this.settingSubmit();
+    if (e.target.getAttribute("sct_id") == "deleteOne") return tools.getParentByIndex(e.target, 2).remove();
+    if (e.target.getAttribute("sct_id") == "addOne") return this.settingAddOne(e.target);
+  }
+  // 添加一行
+  settingAddOne(target) {
+    let newTrNode = document.createElement("tr");
+    newTrNode.innerHTML = `<td><input type="text" class="form-control"></td><td><button class="btn form-control" sct_id="deleteOne">删除</button></td>`;
+    target.previousElementSibling.querySelector("tbody").appendChild(newTrNode);
+  }
+  // 设置提交
   settingSubmit() {
-    let valueList = Object.values(document.querySelectorAll("div#accMPoffsetSetting input")).map(node => {
-      if (node.type == "number") return parseFloat(node.value);
-      if (node.type == "checkbox") return node.checked;
-      return node.value;
-    });
+    let realm = this.componentData.realm;
+    // 获取内容
+    let valueList = Object.values(document.querySelectorAll("div#accMPoffsetSetting input"))
+      .map(node => node.value.replace(/\s/g, ""))
+      .filter(value => Boolean(value));
     // 信息检查
-    if (valueList[0] < 0 || valueList[0] >= 100) return tools.alert("你要不要看看你填的啥?");
-    this.indexDBData.mp_offest = valueList[0];
-    this.indexDBData.percentSign = valueList[1];
+    if (valueList.some(value => (value.match(/[+\-*/]/g) || []).length > 1)) {
+      return tools.alert("只允许使用一次运算符，并且使用mp作为占位符，请更正错误内容。");
+    }
+    // 提交更改
+    this.indexDBData.offestList[realm] = valueList;
     tools.indexDB_updateIndexDBData();
     tools.alert("已提交更改");
+    // 刷新显示
+    this.componentData.selectorNode = undefined;
+    try {
+      document.querySelector("select[sct_cpt='warehouseACCmpOffest'][sct_id='selectorNode']").remove();
+    } catch { }
   }
   async mainFunc() {
-    // 检查配置
-    if (this.indexDBData.mp_offest == 0) return;
     // 检查网页标记是否已存在
-    if (document.querySelector("span#script_mpoffest_span")) return;
+    if (document.querySelector("select[sct_cpt='warehouseACCmpOffest'][sct_id='selectorNode']")) return;
     // 检测是否正在等待加载
     if (this.componentData.onLoad) return;
     this.componentData.onLoad = true;
     try {
-      let newNode = document.createElement("span");
-      let realm = runtimeData.basisCPT.realm;
-      newNode.id = "script_mpoffest_span";
-      // let res_name = document.querySelector("form").previousElementSibling.querySelector("b").innerText;
-      let res_name = decodeURI(location.href.match(/\/([^\/]+)$/)[1]);
-      let res_id = tools.itemName2Index(res_name);
+      // 初始化数据以及节点预备
+      if (this.componentData.selectorNode == undefined) await this.buildSelectorNode();
+      let selectorNode = this.componentData.selectorNode;
+      let targetNode = document.querySelector("input[name='price']").parentElement;
+      let realm = (this.componentData.realm == undefined) ? await tools.getRealm() : this.componentData.realm;
+      this.componentData.realm = realm;
+      let res_id = tools.itemName2Index(decodeURI(location.href.match(/\/([^\/]+)$/)[1]));
       let quality = this.getQuality(document.querySelector("form"));
       let market_price = await tools.getMarketPrice(res_id, quality, realm);
-      let displayText = `MP-${this.indexDBData.mp_offest}${this.indexDBData.percentSign ? "%" : ""}：`;
-      displayText += `${(market_price * (100 - this.indexDBData.mp_offest) / 100).toFixed(3)}`;
-      newNode.innerText = displayText;
-      document.querySelector("input[name='price']").parentElement.appendChild(newNode);
+
+      // 重新渲染select内部的数值
+      selectorNode.setAttribute("mp", market_price);
+      selectorNode.value = -1;
+      let optionList = Object.values(selectorNode.querySelectorAll("option"));
+      for (let i = 0; i < optionList.length; i++) {
+        let optionNode = optionList[i];
+        let oriContent = this.indexDBData.offestList[realm][Number(optionNode.value)];
+        let realPrice = this.realPriceCalc(oriContent, market_price);
+        optionNode.innerHTML = `${oriContent}： ${realPrice}`;
+      }
+      // 挂载节点
+      targetNode.appendChild(selectorNode);
     } catch (error) {
       tools.errorLog(error);
     }
     this.componentData.onLoad = false;
   }
+  // 获取品质信息
   getQuality(formNode) {
     let starsCount = formNode.previousElementSibling.querySelectorAll("span > svg").length;
     if (starsCount == 0) return 0;
     let qualityNumber = parseInt(formNode.previousElementSibling.querySelectorAll("span > svg")[0].parentElement.innerText);
     return isNaN(qualityNumber) ? starsCount : qualityNumber;
   }
+  // 构建选择器模板
+  async buildSelectorNode() {
+    let realm = (this.componentData.realm == undefined) ? await tools.getRealm() : this.componentData.realm;
+    this.componentData.realm = realm;
+    let newNode = document.createElement("select");
+    let htmlText = this.indexDBData.offestList[realm].map((value, index) => `<option value='${index}'>${value}</option>`).join("");
+    newNode.innerHTML = htmlText;
+    newNode.addEventListener("change", e => this.selectorChange(e));
+    newNode.setAttribute("sct_cpt", "warehouseACCmpOffest");
+    newNode.setAttribute("sct_id", "selectorNode");
+    this.componentData.selectorNode = newNode;
+  }
+  // 选择器被点击
+  selectorChange(e) {
+    let realm = this.componentData.realm;
+    let index = e.target.selectedIndex;
+    let market_price = Number(e.target.getAttribute("mp"));
+    let realPrice = this.realPriceCalc(this.indexDBData.offestList[realm][index], market_price);
+    let targetNode = e.target.previousElementSibling;
+    tools.log(`index:${index} value:${this.indexDBData.offestList[realm][index]} output:${realPrice}`);
+    tools.setInput(targetNode, realPrice, 3);
+  }
+  // 计算实际价格
+  realPriceCalc(inputString, marketPrice) {
+    inputString = inputString.replace("mp", marketPrice);
+    let [placeholder, operator, value] = inputString.split(/([+\-*/])/);
+    let mp = parseFloat(placeholder.trim());
+    let num = parseFloat(value.trim());
+    let result = 0;
+    if (!isNaN(mp) && !isNaN(num)) {
+      switch (operator) {
+        case '+':
+          result = mp + num;
+          break;
+        case '-':
+          result = mp - num;
+          break;
+        case '*':
+          result = mp * num;
+          break;
+        case '/':
+          result = mp / num;
+          break;
+        default:
+          result = 0;
+          return;
+      }
+    }
+    return Number(result.toFixed(3));
+  }
+
 }
 new warehouseACCmpOffest();
