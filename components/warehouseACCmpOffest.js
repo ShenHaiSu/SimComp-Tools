@@ -21,7 +21,7 @@ class warehouseACCmpOffest extends BaseComponent {
     match: () => Boolean(location.href.match(/warehouse\/(.+)/) && document.querySelectorAll("form").length > 0),
     func: this.mainFunc
   }]
-  cssText = [`select[sct_cpt='warehouseACCmpOffest'][sct_id='selectorNode']{width:100%;height:30px;border-radius:5px;margin-top:5px;color:var(--fontColor);}`];
+  cssText = [`select[sct_cpt='warehouseACCmpOffest'][sct_id='selectorNode']{width:100%;height:30px;background-color:#3c3c3c;border-radius:5px;margin-top:5px;color:var(--fontColor);}`];
 
   // 设置界面的构建
   settingUI = async () => {
@@ -65,15 +65,17 @@ class warehouseACCmpOffest extends BaseComponent {
     if (valueList.some(value => (value.match(/[+\-*/]/g) || []).length > 1)) {
       return tools.alert("只允许使用一次运算符，并且使用mp作为占位符，请更正错误内容。");
     }
+    // 检查数量是否达标
+    if (valueList.length == 1) return tools.alert("不能仅仅设置一个快捷定价。");
+    if (!valueList.some(value => value == "mp+0")) valueList.unshift("mp+0");
     // 提交更改
     this.indexDBData.offestList[realm] = valueList;
     tools.indexDB_updateIndexDBData();
     tools.alert("已提交更改");
     // 刷新显示
     this.componentData.selectorNode = undefined;
-    try {
-      document.querySelector("select[sct_cpt='warehouseACCmpOffest'][sct_id='selectorNode']").remove();
-    } catch { }
+    let mountNode = document.querySelector("select[sct_cpt='warehouseACCmpOffest'][sct_id='selectorNode']");
+    if (mountNode) mountNode.remove();
   }
   async mainFunc() {
     // 检查网页标记是否已存在
@@ -94,7 +96,7 @@ class warehouseACCmpOffest extends BaseComponent {
 
       // 重新渲染select内部的数值
       selectorNode.setAttribute("mp", market_price);
-      selectorNode.value = -1;
+      selectorNode.selectedIndex = 0;
       let optionList = Object.values(selectorNode.querySelectorAll("option"));
       for (let i = 0; i < optionList.length; i++) {
         let optionNode = optionList[i];
@@ -130,13 +132,17 @@ class warehouseACCmpOffest extends BaseComponent {
   }
   // 选择器被点击
   selectorChange(e) {
-    let realm = this.componentData.realm;
-    let index = e.target.selectedIndex;
-    let market_price = Number(e.target.getAttribute("mp"));
-    let realPrice = this.realPriceCalc(this.indexDBData.offestList[realm][index], market_price);
-    let targetNode = e.target.previousElementSibling;
-    tools.log(`index:${index} value:${this.indexDBData.offestList[realm][index]} output:${realPrice}`);
-    tools.setInput(targetNode, realPrice, 3);
+    try {
+      let realm = this.componentData.realm;
+      let index = e.target.selectedIndex;
+      let market_price = Number(e.target.getAttribute("mp"));
+      let realPrice = this.realPriceCalc(this.indexDBData.offestList[realm][index], market_price);
+      let targetNode = e.target.previousElementSibling;
+      tools.log(`index:${index} value:${this.indexDBData.offestList[realm][index]} output:${realPrice}`);
+      tools.setInput(targetNode, realPrice, 3);
+    } catch (e) {
+      tools.errorLog("仓库出售界面显示mp偏移组件报错",e);
+    }
   }
   // 计算实际价格
   realPriceCalc(inputString, marketPrice) {
