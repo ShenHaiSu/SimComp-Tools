@@ -19,7 +19,7 @@ class warehouseCustomQuantitySelect extends BaseComponent {
     match: () => Boolean(location.href.match(/warehouse\/(.+)/) && document.querySelectorAll("form").length > 0),
     func: this.mountSelectFunc
   }]
-  cssText = [`select[sct_cpt='warehouseCustomQuantitySelect'][sct_id='selector']{width:100%;height:30px;background-color:#3c3c3c;border-radius:5px;color:var(--fontColor);}`]
+  cssText = [`select[sct_cpt='warehouseCustomQuantitySelect'][sct_id='selector']{width:100%;height:30px;background-color:#3c3c3c;border-radius:5px;color:var(--fontColor);}div.row>div.col-md-9.col-lg-10>div>div.row>div.col-md-6>div>form>div.row>div.col-xs-6>button{display:none !important;}`]
 
   // 设置界面构建
   settingUI = () => {
