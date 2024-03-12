@@ -15,6 +15,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     exactDigit: 0, // 精度 默认0
     customSamplePrice: [[], []], // 自定义参考价格 {id:123,price:[]}
     customSwitch: false, // 自定义参考价格按钮开关
+    warehouseInfoTag: 0, // 仓库相关物品显示标记 [0:不显示; 1:显示此物品所有数量; 2:显示此物品当前q; 3:显示所有以及当前q]
   }
   componentData = {
     loadFlag: false, // 加载标记
@@ -33,16 +34,19 @@ class ACCAutomaticInquiry extends BaseComponent {
     match: () => /headquarters\/warehouse\/outgoing-contracts/.test(location.href),
     func: this.outgoingMain
   }];
+  cssText = [`div[sct_cpt='ACCAutomaticInquiry'][sct_id],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>b,div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='click2Query'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='customSampleNode'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>span{color:var(--fontColor) !important;}`];
   // 设置界面构建
   settingUI = async () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class=header>出入库合同询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input class=form-control step=1 type=number value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置</td><td><input type="checkbox" ##### class="form-control"></td></tr></table></div>`
+    let htmlText = `<div class=header>出入库合同询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input class=form-control step=1 type=number value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置</td><td><input type="checkbox" ##### class="form-control"></td></tr><tr><td>仓库物品数显示</td><td><select class="form-control"><option value="0">不显示库存量</option><option value="1">显示总量</option><option value="2">显示此Q</option><option value="3">显示总量与此Q</option></select></td></tr></table></div>`
     htmlText = htmlText
       .replace("######", this.indexDBData.exactDigit)
       .replace("#####", this.indexDBData.customSwitch ? "checked" : "");
     newNode.id = "script_ACCAutoQuery_setting";
     newNode.innerHTML = htmlText;
-    newNode.querySelector("select").value = this.indexDBData.workMode;
+    let selectList = newNode.querySelectorAll("select");
+    selectList[0].value = this.indexDBData.workMode;
+    selectList[1].value = this.indexDBData.warehouseInfoTag;
     newNode.querySelector("button.script_opt_submit").addEventListener('click', () => this.settingSubmit());
     return newNode;
   }
@@ -56,6 +60,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     this.indexDBData.exactDigit = parseFloat(valueList[0]);
     this.indexDBData.workMode = Math.floor(valueList[1]);
     this.indexDBData.customSwitch = valueList[2];
+    this.indexDBData.warehouseInfoTag = Math.floor(valueList[3]);
     tools.indexDB_updateIndexDBData();
     tools.alert("提交更新");
   }
@@ -80,7 +85,7 @@ class ACCAutomaticInquiry extends BaseComponent {
       let nodeInfo = this.queryNodeInfo(node.getAttribute("aria-label"));
       let { market_price, market_price_offset } = await this.getMarketPriceAndOffset(node, realm, nodeInfo);
       let newNode = document.createElement("b");
-      newNode.innerText = ` MP:$${market_price} MP${market_price_offset}%`;
+      newNode.innerHTML = ` MP:$${market_price} MP${market_price_offset}%`;
       newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
       newNode.setAttribute("sct_id", "autoNode");
       node.children[2].appendChild(newNode);
@@ -134,15 +139,21 @@ class ACCAutomaticInquiry extends BaseComponent {
         // [resID, name, quantity, quality, unitPrice, totalPrice, from]
         let info = this.queryNodeInfo(targetNode.getAttribute("aria-label"));
         let { market_price, market_price_offset } = await this.getMarketPriceAndOffset(targetNode, realm, info);
-        let newNode = document.createElement("b");
-        newNode.innerText = ` MP:$${market_price} MP${market_price_offset}%`;
+        let newNode = document.createElement("div");
+        newNode.innerHTML = `<b> MP:$${market_price} MP${market_price_offset}%</b>`;
         newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
         newNode.setAttribute("sct_id", "autoNode");
-        if (targetNode.querySelector("b[sct_cpt='ACCAutomaticInquiry']")) break;
+        if (targetNode.querySelector("div[sct_cpt='ACCAutomaticInquiry']")) break;
         targetNode.children[2].appendChild(newNode);
+        // 检测并挂载自定义参考节点
         if (this.indexDBData.customSwitch) {
           if (!this.componentData.customSampleA) this.genCustomSampleNode();
-          targetNode.children[2].appendChild(this.componentData.customSampleA.cloneNode(true));
+          newNode.appendChild(this.componentData.customSampleA.cloneNode(true));
+        }
+        // 检测并挂载仓库相关物品数节点
+        if (this.indexDBData.warehouseInfoTag != 0) {
+          let newHtmlText = this.getWarehouseInfo(this.indexDBData.warehouseInfoTag, info[0], Number(info[3]), realm);
+          newNode.innerHTML += `<br/> <span>${newHtmlText}</span>`;
         }
       }
       this.componentData.loadFlag = false;
@@ -161,21 +172,34 @@ class ACCAutomaticInquiry extends BaseComponent {
       if (!this.componentData.clickQueryTag) this.genClickQueryTag();
       let newNode = this.componentData.clickQueryTag.cloneNode(true);
       node.children[2].appendChild(newNode);
+      // 挂载自定义参考节点
       if (this.indexDBData.customSwitch) {
         if (!this.componentData.customSampleA) this.genCustomSampleNode();
-        node.children[2].appendChild(this.componentData.customSampleA.cloneNode(true));
+        newNode.appendChild(this.componentData.customSampleA.cloneNode(true));
       }
     }
   }
 
   // 手动点击查询函数
   async cliclQueryHandle(event) {
-    let targetNode = tools.getParentByIndex(event.target, 2);
+    let targetNode = tools.getParentByIndex(event.target, 3);
     let nodeInfo = this.queryNodeInfo(targetNode.getAttribute("aria-label"));
     if (this.componentData.realm == -1) this.componentData.realm = await tools.getRealm();
     let realm = this.componentData.realm;
     let { market_price, market_price_offset } = await this.getMarketPriceAndOffset(targetNode, realm, nodeInfo);
-    event.target.innerText = ` MP:$${market_price} MP${market_price_offset}%`
+    event.target.innerText = ` MP:$${market_price} MP${market_price_offset}%`;
+
+    // 挂载仓库信息节点
+    if (this.indexDBData.warehouseInfoTag != 0) {
+      let newHtmlText = this.getWarehouseInfo(this.indexDBData.warehouseInfoTag, nodeInfo[0], Number(nodeInfo[3]), realm);
+      let targetNode = tools.getParentByIndex(event.target, 1);
+      let existNode = targetNode.querySelector("span");
+      if (existNode) {
+        existNode.innerHTML = `<span>${newHtmlText}</span>`;
+      } else {
+        targetNode.innerHTML += `<br/> <span>${newHtmlText}</span>`;
+      }
+    }
   }
 
   queryNodeInfo(input) {
@@ -196,17 +220,17 @@ class ACCAutomaticInquiry extends BaseComponent {
   }
   // 构建手动查询标签
   genClickQueryTag() {
-    let newNode = document.createElement("a");
-    newNode.innerText = ` 询价`;
+    let newNode = document.createElement("div");
+    newNode.innerHTML = `<a sct_id='click2Query'> 询价</a>&nbsp;`;
     newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
     newNode.setAttribute("sct_id", "click2Query");
     this.componentData.clickQueryTag = newNode;
 
     document.body.addEventListener("click", e => {
       if (e.target.tagName != "A") return;
-      if (e.target.getAttribute("sct_cpt") !== "ACCAutomaticInquiry") return;
-      if (e.target.getAttribute("sct_id") !== "click2Query") return;
-      this.cliclQueryHandle(e);
+      if (!e.target.parentElement) return;
+      if (e.target.parentElement.getAttribute("sct_cpt") !== "ACCAutomaticInquiry") return;
+      if (e.target.getAttribute("sct_id") == "click2Query") return this.cliclQueryHandle(e);
     })
   }
   // 获取当前价格和相对便宜
@@ -233,9 +257,8 @@ class ACCAutomaticInquiry extends BaseComponent {
     newNode.style.opacity = "0.2";
     document.addEventListener('click', e => {
       if (e.target.tagName !== "A") return;
-      if (e.target.getAttribute("sct_cpt") !== "ACCAutomaticInquiry") return;
-      if (e.target.getAttribute("sct_id") !== "customSampleNode") return;
-      this.showEditCustom(this.queryNodeInfo(tools.getParentByIndex(e.target, 2).getAttribute("aria-label")));
+      if (e.target.getAttribute("sct_cpt") == "ACCAutomaticInquiry" && e.target.getAttribute("sct_id") == "customSampleNode")
+        this.showEditCustom(this.queryNodeInfo(tools.getParentByIndex(e.target, 3).getAttribute("aria-label")));
     });
     this.componentData.customSampleA = newNode;
   }
@@ -286,6 +309,35 @@ class ACCAutomaticInquiry extends BaseComponent {
     this.indexDBData.customSamplePrice[realm][index].price[input[3]] = price;
     tools.indexDB_updateIndexDBData();
     document.querySelector(`[sct_id="dialog_close"]`).click();
+  }
+  // 生成库存相关信息
+  getWarehouseInfo(mode, resID, quality, realm) {
+    let outputString = "";
+    let target, list;
+    switch (mode) {
+      case 1: // 显示所有
+        target = indexDBData.basisCPT.warehouse[realm].find(item => item.kind.db_letter == resID);
+        target = (target) ? target.amount : 0;
+        if (!target) return "T:0;";
+        outputString = `T:${tools.numberAddCommas(target)}`;
+        break;
+      case 2: // 显示当前Q
+        target = indexDBData.basisCPT.warehouse[realm].find(item => item.quality == quality && item.kind.db_letter == resID);
+        target = (target) ? target.amount : 0;
+        if (!target) return "Q:0;";
+        outputString = `Q:${tools.numberAddCommas(target)}`;
+        break;
+      case 3: // 显示所有以及当前Q
+        list = indexDBData.basisCPT.warehouse[realm].filter(item => item.kind.db_letter == resID);
+        target = indexDBData.basisCPT.warehouse[realm].find(item => item.quality == quality && item.kind.db_letter == resID);
+        target = (target) ? target.amount : 0;
+        list = (list.length == 1) ? list[0].amount : list.reduce((a, b) => (a.amount || 0) + (b.amount || 0));
+        outputString = `T:${tools.numberAddCommas(list)}; Q:${tools.numberAddCommas(target)}`;
+        break;
+      default:
+        return "ERROR";
+    }
+    return outputString;
   }
 }
 new ACCAutomaticInquiry();
