@@ -153,23 +153,27 @@ class basisCPT extends BaseComponent {
   }
   // 公司备注网络请求拦截函数
   async netNoteRegist(url, method, resp) {
-    let realm = await tools.getRealm();
-    if (/me\/note\/$/.test(url)) {
-      // 给别人写的笔记
-      let data = JSON.parse(resp);
-      tools.log(`R${realm + 1} 给别人的笔记: `, data);
-      this.indexDBData.notes[realm].out = data;
-    } else if (/me\/my-note\/$/.test(url)) {
-      // 给自己写的笔记
-      let data = window.decodeURI(resp.replace(/(^")|("$)/g, "").replace(/\\u[\dA-F]{4}/gi, match => String.fromCharCode(parseInt(match.substr(2), 16))));
-      this.indexDBData.notes[realm].in = data;
-      tools.log(`R${realm + 1} 私人笔记: ${data}`);
-    } else if (/me\/note\/(\d+)\/$/.test(url)) {
-      // 对外笔记变更
-      let data = JSON.parse(resp);
-      let id = Number(url.match(/me\/note\/(\d+)\/$/)[1]);
-      let targetIndex = this.indexDBData.notes[realm].out.findIndex(item => item.about.id == id);
-      this.indexDBData.notes[realm].out[targetIndex].note = data.note;
+    try {
+      let realm = await tools.getRealm();
+      if (/me\/note\/$/.test(url)) {
+        // 给别人写的笔记
+        let data = JSON.parse(resp);
+        tools.log(`R${realm + 1} 给别人的笔记: `, data);
+        this.indexDBData.notes[realm].out = data;
+      } else if (/me\/my-note\/$/.test(url)) {
+        // 给自己写的笔记
+        let data = window.decodeURI(resp.replace(/(^")|("$)/g, "").replace(/\\u[\dA-F]{4}/gi, match => String.fromCharCode(parseInt(match.substr(2), 16))));
+        this.indexDBData.notes[realm].in = data;
+        tools.log(`R${realm + 1} 私人笔记: ${data}`);
+      } else if (/me\/note\/(\d+)\/$/.test(url)) {
+        // 对外笔记变更
+        let data = JSON.parse(resp);
+        let id = Number(url.match(/me\/note\/(\d+)\/$/)[1]);
+        let targetIndex = this.indexDBData.notes[realm].out.findIndex(item => item.about.id == id);
+        this.indexDBData.notes[realm].out[targetIndex].note = data.note;
+      }
+    } catch (e) {
+      tools.errorLog(e);
     }
   }
   // 自启动挂载css

@@ -327,7 +327,9 @@ class ACCAutomaticInquiry extends BaseComponent {
     let target, list;
     switch (mode) {
       case 1: // 显示所有
-        target = indexDBData.basisCPT.warehouse[realm].find(item => item.kind.db_letter == resID);
+        target = indexDBData.basisCPT.warehouse[realm]
+          .filter(item => item.kind.db_letter == resID)
+          .reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0);
         target = (target) ? target.amount : 0;
         if (!target) return "T:0;";
         outputString = `T:${tools.numberAddCommas(target)}`;
@@ -339,10 +341,11 @@ class ACCAutomaticInquiry extends BaseComponent {
         outputString = `Q:${tools.numberAddCommas(target)}`;
         break;
       case 3: // 显示所有以及当前Q
-        list = indexDBData.basisCPT.warehouse[realm].filter(item => item.kind.db_letter == resID);
+        list = indexDBData.basisCPT.warehouse[realm]
+          .filter(item => item.kind.db_letter == resID)
+          .reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0);
         target = indexDBData.basisCPT.warehouse[realm].find(item => item.quality == quality && item.kind.db_letter == resID);
         target = (target) ? target.amount : 0;
-        list = (list.length == 1) ? list[0].amount : list.reduce((a, b) => (a.amount || 0) + (b.amount || 0));
         outputString = `T:${tools.numberAddCommas(list)}; Q:${tools.numberAddCommas(target)}`;
         break;
       default:
