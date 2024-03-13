@@ -16,6 +16,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     customSamplePrice: [[], []], // 自定义参考价格 {id:123,price:[]}
     customSwitch: false, // 自定义参考价格按钮开关
     warehouseInfoTag: 0, // 仓库相关物品显示标记 [0:不显示; 1:显示此物品所有数量; 2:显示此物品当前q; 3:显示所有以及当前q]
+    warehouseInfoWarp: false, // 仓库资料换行
   }
   componentData = {
     loadFlag: false, // 加载标记
@@ -38,10 +39,11 @@ class ACCAutomaticInquiry extends BaseComponent {
   // 设置界面构建
   settingUI = async () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class=header>出入库合同询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tbody><tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input class=form-control step=1 type=number value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置</td><td><input type="checkbox" ##### class="form-control"></td></tr><tr><td>仓库物品数显示</td><td><select class="form-control"><option value="0">不显示库存量</option><option value="1">显示总量</option><option value="2">显示此Q</option><option value="3">显示总量与此Q</option></select></td></tr></table></div>`
+    let htmlText = `<div class=header>出入库合同询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input type=number class=form-control step=1 value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置<td><input type=checkbox ##### class=form-control><tr><td>仓库物品数显示<td><select class=form-control><option value=0>不显示库存量<option value=1>显示总量<option value=2>显示此Q<option value=3>显示总量与此Q</select><tr><td>仓库信息换行<td><input class='form-control' type=checkbox #####></table></div>`
     htmlText = htmlText
       .replace("######", this.indexDBData.exactDigit)
-      .replace("#####", this.indexDBData.customSwitch ? "checked" : "");
+      .replace("#####", this.indexDBData.customSwitch ? "checked" : "")
+      .replace("#####", this.indexDBData.warehouseInfoWarp ? "checked" : "");
     newNode.id = "script_ACCAutoQuery_setting";
     newNode.innerHTML = htmlText;
     let selectList = newNode.querySelectorAll("select");
@@ -61,6 +63,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     this.indexDBData.workMode = Math.floor(valueList[1]);
     this.indexDBData.customSwitch = valueList[2];
     this.indexDBData.warehouseInfoTag = Math.floor(valueList[3]);
+    this.indexDBData.warehouseInfoWarp = valueList[4];
     tools.indexDB_updateIndexDBData();
     tools.alert("提交更新");
   }
@@ -96,9 +99,9 @@ class ACCAutomaticInquiry extends BaseComponent {
       }
       // 挂载库存节点
       if (this.indexDBData.warehouseInfoTag != 0) {
-        let spanNode = document.createElement("span");
-        spanNode.innerText = this.getWarehouseInfo(this.indexDBData.warehouseInfoTag, nodeInfo[0], nodeInfo[3], realm);
-        newNode.appendChild(spanNode);
+        let newHtml = this.indexDBData.warehouseInfoWarp ? "<br>" : "";
+        newHtml += `<span> ${this.getWarehouseInfo(this.indexDBData.warehouseInfoTag, nodeInfo[0], nodeInfo[3], realm)}</span>`;
+        newNode.innerHTML += newHtml;
       }
     }
     this.componentData.loadFlag = false;
@@ -161,7 +164,7 @@ class ACCAutomaticInquiry extends BaseComponent {
         // 检测并挂载仓库相关物品数节点
         if (this.indexDBData.warehouseInfoTag != 0) {
           let newHtmlText = this.getWarehouseInfo(this.indexDBData.warehouseInfoTag, info[0], Number(info[3]), realm);
-          newNode.innerHTML += `<br/> <span>${newHtmlText}</span>`;
+          newNode.innerHTML += `${this.indexDBData.warehouseInfoWarp ? "<br>" : ""} <span> ${newHtmlText}</span>`;
         }
       }
       this.componentData.loadFlag = false;
@@ -205,7 +208,7 @@ class ACCAutomaticInquiry extends BaseComponent {
       if (existNode) {
         existNode.innerHTML = `<span>${newHtmlText}</span>`;
       } else {
-        targetNode.innerHTML += `<br/> <span>${newHtmlText}</span>`;
+        targetNode.innerHTML += `${this.indexDBData.warehouseInfoWarp ? "<br>" : ""} <span> ${newHtmlText}</span>`;
       }
     }
   }
