@@ -34,7 +34,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     match: () => /headquarters\/warehouse\/outgoing-contracts/.test(location.href),
     func: this.outgoingMain
   }];
-  cssText = [`div[sct_cpt='ACCAutomaticInquiry'][sct_id],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>b,div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='click2Query'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='customSampleNode'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>span{color:var(--fontColor) !important;}`];
+  cssText = [`div[sct_cpt='ACCAutomaticInquiry'][sct_id],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>b,div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='click2Query'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='customSampleNode'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>span{color:var(--fontColor) !important;}div[sct_cpt='ACCAutomaticInquiry'][sct_id]{transition:ease-in-out 0.2s;padding:2px 5px;background-color:#000000a0;border-radius:5px;}`];
   // 设置界面构建
   settingUI = async () => {
     let newNode = document.createElement("div");
@@ -72,7 +72,7 @@ class ACCAutomaticInquiry extends BaseComponent {
   // 自动查询
   async incomingQueryAuto() {
     // 检测已有挂载
-    if (document.querySelectorAll("b[sct_cpt='ACCAutomaticInquiry']").length != 0) return;
+    if (document.querySelectorAll("div[sct_cpt='ACCAutomaticInquiry']").length != 0) return;
     // 检测加载状态
     if (this.componentData.loadFlag) return;
     if (this.componentData.realm == -1) this.componentData.realm = await tools.getRealm();
@@ -84,14 +84,21 @@ class ACCAutomaticInquiry extends BaseComponent {
       // [resID, name, quantity, quality, unitPrice, totalPrice, from]
       let nodeInfo = this.queryNodeInfo(node.getAttribute("aria-label"));
       let { market_price, market_price_offset } = await this.getMarketPriceAndOffset(node, realm, nodeInfo);
-      let newNode = document.createElement("b");
-      newNode.innerHTML = ` MP:$${market_price} MP${market_price_offset}%`;
+      let newNode = document.createElement("div");
+      newNode.innerHTML = ` <b> MP:$${market_price} MP${market_price_offset}%</b>`;
       newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
       newNode.setAttribute("sct_id", "autoNode");
       node.children[2].appendChild(newNode);
+      // 挂载自定义参考节点
       if (this.indexDBData.customSwitch) {
         if (!this.componentData.customSampleA) this.genCustomSampleNode();
-        node.children[2].appendChild(this.componentData.customSampleA.cloneNode(true));
+        newNode.appendChild(this.componentData.customSampleA.cloneNode(true));
+      }
+      // 挂载库存节点
+      if (this.indexDBData.warehouseInfoTag != 0) {
+        let spanNode = document.createElement("span");
+        spanNode.innerText = this.getWarehouseInfo(this.indexDBData.warehouseInfoTag, nodeInfo[0], nodeInfo[3], realm);
+        newNode.appendChild(spanNode);
       }
     }
     this.componentData.loadFlag = false;
@@ -109,9 +116,10 @@ class ACCAutomaticInquiry extends BaseComponent {
         if (!this.componentData.clickQueryTag) this.genClickQueryTag();
         let newNode = this.componentData.clickQueryTag.cloneNode(true);
         node.children[2].appendChild(newNode);
+        // 挂载自定义参考节点
         if (this.indexDBData.customSwitch) {
           if (!this.componentData.customSampleA) this.genCustomSampleNode();
-          node.children[2].appendChild(this.componentData.customSampleA.cloneNode(true));
+          newNode.appendChild(this.componentData.customSampleA.cloneNode(true));
         }
       }
     } finally {
@@ -254,7 +262,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     newNode.innerText = " 自定义参考";
     newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
     newNode.setAttribute("sct_id", "customSampleNode");
-    newNode.style.opacity = "0.2";
+    newNode.style.opacity = "0.7";
     document.addEventListener('click', e => {
       if (e.target.tagName !== "A") return;
       if (e.target.getAttribute("sct_cpt") == "ACCAutomaticInquiry" && e.target.getAttribute("sct_id") == "customSampleNode")
