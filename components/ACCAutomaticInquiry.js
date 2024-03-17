@@ -17,6 +17,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     customSwitch: false, // 自定义参考价格按钮开关
     warehouseInfoTag: 0, // 仓库相关物品显示标记 [0:不显示; 1:显示此物品所有数量; 2:显示此物品当前q; 3:显示所有以及当前q]
     warehouseInfoWarp: false, // 仓库资料换行
+    nodeWarp: false, // 节点换行
   }
   componentData = {
     loadFlag: false, // 加载标记
@@ -35,15 +36,16 @@ class ACCAutomaticInquiry extends BaseComponent {
     match: () => /headquarters\/warehouse\/outgoing-contracts/.test(location.href),
     func: this.outgoingMain
   }];
-  cssText = [`div[sct_cpt='ACCAutomaticInquiry'][sct_id],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>b,div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='click2Query'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='customSampleNode'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>span{color:var(--fontColor) !important;}div[sct_cpt='ACCAutomaticInquiry'][sct_id]{transition:ease-in-out 0.2s;padding:2px 5px;background-color:#000000a0;border-radius:5px;}`];
+  cssText = [`div[sct_cpt='ACCAutomaticInquiry'][sct_id],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>b,div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='click2Query'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>a[sct_id='customSampleNode'],div[sct_cpt='ACCAutomaticInquiry'][sct_id]>span{color:var(--fontColor) !important;}div[sct_cpt='ACCAutomaticInquiry'][sct_id]{transition:ease-in-out 0.2s;padding:2px 5px;background-color:#000000a0;border-radius:5px;}div[sct_cpt='ACCAutomaticInquiry'][sct_id].no_warp{display:inline-block !important;}`];
   // 设置界面构建
   settingUI = async () => {
     let newNode = document.createElement("div");
-    let htmlText = `<div class=header>出入库合同询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input type=number class=form-control step=1 value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置<td><input type=checkbox ##### class=form-control><tr><td>仓库物品数显示<td><select class=form-control><option value=0>不显示库存量<option value=1>显示总量<option value=2>显示此Q<option value=3>显示总量与此Q</select><tr><td>仓库信息换行<td><input class='form-control' type=checkbox #####></table></div>`
+    let htmlText = `<div class=header>出入库合同询价设置</div><div class=container><div><button class="btn script_opt_submit">保存更改</button></div><table><thead><tr><td>功能<td>设置<tr><td title="在接受合同的界面自动询价比对的时候显示的mp差值精确度 默认0">精确小数点数<td><input type=number class=form-control step=1 value=######><tr><td title="询价组件工作模式 默认自动询价">询价工作模式<td><select class=form-control><option value=0>自动询价<option value=1>手动询价</select><tr><td>自定义参考设置<td><input type=checkbox ##### class=form-control><tr><td>仓库物品数显示<td><select class=form-control><option value=0>不显示库存量<option value=1>显示总量<option value=2>显示此Q<option value=3>显示总量与此Q</select><tr><td>仓库信息换行<td><input class='form-control' type=checkbox #####><tr><td>mp信息换行<td><input class='form-control' type=checkbox #####></table></div>`
     htmlText = htmlText
       .replace("######", this.indexDBData.exactDigit)
       .replace("#####", this.indexDBData.customSwitch ? "checked" : "")
-      .replace("#####", this.indexDBData.warehouseInfoWarp ? "checked" : "");
+      .replace("#####", this.indexDBData.warehouseInfoWarp ? "checked" : "")
+      .replace("#####", this.indexDBData.nodeWarp ? "checked" : "");
     newNode.id = "script_ACCAutoQuery_setting";
     newNode.innerHTML = htmlText;
     let selectList = newNode.querySelectorAll("select");
@@ -64,8 +66,13 @@ class ACCAutomaticInquiry extends BaseComponent {
     this.indexDBData.customSwitch = valueList[2];
     this.indexDBData.warehouseInfoTag = Math.floor(valueList[3]);
     this.indexDBData.warehouseInfoWarp = valueList[4];
+    this.indexDBData.nodeWarp = valueList[5];
+    // 更新存储
     tools.indexDB_updateIndexDBData();
     tools.alert("提交更新");
+    // 删除所有显示
+    this.componentData.clickQueryTag = undefined;
+    document.querySelectorAll("div[sct_cpt='ACCAutomaticInquiry'][sct_id]").forEach(node => node.remove());
   }
 
   // 入库显示构建
@@ -91,6 +98,7 @@ class ACCAutomaticInquiry extends BaseComponent {
       newNode.innerHTML = ` <b> MP:$${market_price} MP${market_price_offset}%</b>`;
       newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
       newNode.setAttribute("sct_id", "autoNode");
+      newNode.className = this.indexDBData.nodeWarp ? "" : "no_warp";
       node.children[2].appendChild(newNode);
       // 挂载自定义参考节点
       if (this.indexDBData.customSwitch) {
@@ -154,6 +162,7 @@ class ACCAutomaticInquiry extends BaseComponent {
         newNode.innerHTML = `<b> MP:$${market_price} MP${market_price_offset}%</b>`;
         newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
         newNode.setAttribute("sct_id", "autoNode");
+        newNode.className = this.indexDBData.nodeWarp ? "" : "no_warp";
         if (targetNode.querySelector("div[sct_cpt='ACCAutomaticInquiry']")) break;
         targetNode.children[2].appendChild(newNode);
         // 检测并挂载自定义参考节点
@@ -235,6 +244,7 @@ class ACCAutomaticInquiry extends BaseComponent {
     newNode.innerHTML = `<a sct_id='click2Query'> 询价</a>&nbsp;`;
     newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
     newNode.setAttribute("sct_id", "click2Query");
+    newNode.className = this.indexDBData.nodeWarp ? "" : "no_warp";
     this.componentData.clickQueryTag = newNode;
 
     document.body.addEventListener("click", e => {
