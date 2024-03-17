@@ -14,6 +14,7 @@ class inoutboundItemFilter extends BaseComponent {
     loadFlag: false, // 加载标识
     itemNodeList: [], // 出入库节点列表
     lastURL: "", // 上次挂载的url节点
+    eventListener: false, // 事件监听挂载
   }
   commonFuncList = [{// 出入库显示构建
     match: () => /headquarters\/warehouse\/incoming-contracts/.test(location.href) || /headquarters\/warehouse\/outgoing-contracts/.test(location.href),
@@ -53,6 +54,7 @@ class inoutboundItemFilter extends BaseComponent {
   // 主框点击事件
   mainClickHandle(e) {
     // console.log(`点击事件`, e.target);
+    if (!e.target.closest("div[sct_cpt='inoutboundItemFilter']")) return;
     if (e.target.tagName == "BUTTON" && e.target.innerText == "搜索") return this.buttonSearch(tools.getParentByIndex(e.target, 2).querySelector("input"));
     if (e.target.tagName == "SPAN") return this.spanSearch(e.target);
   }
@@ -60,7 +62,14 @@ class inoutboundItemFilter extends BaseComponent {
   // 主框按键事件
   mainKeyDownHandle(e) {
     // console.log(`按键事件`, e.key, e.target);
+    if (!e.target.closest("div[sct_cpt='inoutboundItemFilter']")) return;
     if (e.key == "Enter" && e.target.tagName == "INPUT") return this.buttonSearch(e.target);
+  }
+
+  // select变动事件
+  mainChangeHandle(e) {
+    if (!e.target.closest("div[sct_cpt='inoutboundItemFilter']")) return;
+    if (e.target.tagName == "SELECT" && e.target.hasAttribute("sct_id") && e.target.getAttribute("sct_id") == "qualitySelect") return this.qualityChange(e.target);
   }
 
   // 按钮搜索
@@ -81,6 +90,13 @@ class inoutboundItemFilter extends BaseComponent {
     let targetInput = document.querySelector("div[sct_cpt='inoutboundItemFilter'][sct_id='main']>div[sct_id='searchBar'] input");
     targetInput.value = newValue;
     this.buttonSearch(targetInput);
+  }
+
+  // 品质变动
+  qualityChange(target) {
+    let quality = target.selectedIndex;
+    let resName = tools.getParentByIndex(target, 1).nextElementSibling.firstChild.value;
+    this.mainSearch(resName, quality);
   }
 
   // 实际搜索函数
@@ -107,10 +123,15 @@ class inoutboundItemFilter extends BaseComponent {
       let newMainNode = document.createElement("div");
       newMainNode.setAttribute("sct_cpt", "inoutboundItemFilter");
       newMainNode.setAttribute("sct_id", "main");
-      newMainNode.innerHTML = `<div sct_id=searchBar><table><tr><td><select><option value=0>0<option value=1>1<option value=2>2<option value=3>3<option value=4>4<option value=5>5<option value=6>6<option value=7>7<option value=8>8<option value=9>9<option value=10>10<option value=11>11<option value=12>12</select><td><input placeholder=物品名><td><button class="btn form-control">搜索</button></table></div><div sct_id=nameSearch></div>`;
-      newMainNode.addEventListener("click", e => this.mainClickHandle(e));
-      newMainNode.addEventListener("keydown", e => this.mainKeyDownHandle(e));
+      newMainNode.innerHTML = `<div sct_id=searchBar><table><tr><td><select sct_id='qualitySelect'><option value=0>0<option value=1>1<option value=2>2<option value=3>3<option value=4>4<option value=5>5<option value=6>6<option value=7>7<option value=8>8<option value=9>9<option value=10>10<option value=11>11<option value=12>12</select><td><input placeholder=物品名><td><button class="btn form-control">搜索</button></table></div><div sct_id=nameSearch></div>`;
       this.componentData.mainNode = newMainNode;
+    }
+    // 挂载监听
+    if (!this.componentData.eventListener) {
+      document.body.addEventListener("click", e => this.mainClickHandle(e));
+      document.body.addEventListener("keydown", e => this.mainKeyDownHandle(e));
+      document.body.addEventListener("change", e => this.mainChangeHandle(e));
+      this.componentData.eventListener = true;
     }
     // 从内存读取
     let mainNode = this.componentData.mainNode;
@@ -119,12 +140,15 @@ class inoutboundItemFilter extends BaseComponent {
     this.componentData.itemNodeList = itemNodeList;
     // 读取节点资料并更新选择框
     let htmlText = `<span>清空搜索</span>`
+    let nameList = [];
     for (let i = 0; i < itemNodeList.length; i++) {
       let itemNode = itemNodeList[i];
       // [resID, name, quantity, quality, unitPrice, totalPrice, from/to]
       let nodeInfo = this.queryNodeInfo(itemNode.getAttribute("aria-label"));
-      htmlText += `<span>${nodeInfo[1]}</span>`;
+      if (nameList.includes(nodeInfo[1])) continue;
+      nameList.push(nodeInfo[1]);
     }
+    htmlText += nameList.map(name => `<span>${name}</span>`).join("");
     mainNode.querySelector("div[sct_id='nameSearch']").innerHTML = htmlText;
     // 清空原有的填空与选择
     mainNode.querySelector(`div[sct_id="searchBar"] select`).selectedIndex = 0;
