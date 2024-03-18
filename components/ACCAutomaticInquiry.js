@@ -333,35 +333,29 @@ class ACCAutomaticInquiry extends BaseComponent {
   }
   // 生成库存相关信息
   getWarehouseInfo(mode, resID, quality, realm) {
-    let outputString = "";
-    let target, list;
-    switch (mode) {
-      case 1: // 显示所有
-        target = indexDBData.basisCPT.warehouse[realm]
-          .filter(item => item.kind.db_letter == resID)
-          .reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0);
-        target = (target) ? target.amount : 0;
-        if (!target) return "T:0;";
-        outputString = `T:${tools.numberAddCommas(target)}`;
-        break;
-      case 2: // 显示当前Q
-        target = indexDBData.basisCPT.warehouse[realm].find(item => item.quality == quality && item.kind.db_letter == resID);
-        target = (target) ? target.amount : 0;
-        if (!target) return "Q:0;";
-        outputString = `Q:${tools.numberAddCommas(target)}`;
-        break;
-      case 3: // 显示所有以及当前Q
-        list = indexDBData.basisCPT.warehouse[realm]
-          .filter(item => item.kind.db_letter == resID)
-          .reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0);
-        target = indexDBData.basisCPT.warehouse[realm].find(item => item.quality == quality && item.kind.db_letter == resID);
-        target = (target) ? target.amount : 0;
-        outputString = `T:${tools.numberAddCommas(list)}; Q:${tools.numberAddCommas(target)}`;
-        break;
-      default:
-        return "ERROR";
+    try {
+      let outputString = "";
+      let totalList = indexDBData.basisCPT.warehouse[realm].filter(item => item.kind.db_letter == resID);
+      let qualityItem = totalList.find(item => item.quality == quality) || { amount: 0 };
+      let totalCount = totalList.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0);
+      switch (mode) {
+        case 1: // 显示所有
+          outputString = `T:${tools.numberAddCommas(totalCount)}`;
+          break;
+        case 2: // 显示当前Q
+          outputString = `Q:${tools.numberAddCommas(qualityItem.amount)}`;
+          break;
+        case 3: // 显示所有以及当前Q
+          outputString = `T:${tools.numberAddCommas(totalCount)}; Q:${tools.numberAddCommas(qualityItem.amount)}`;
+          break;
+        default:
+          return "ERROR";
+      }
+      return outputString;
+    } catch (e) {
+      tools.errorLog("出入库合同询价组件发生报错", e);
+      return "Error";
     }
-    return outputString;
   }
 }
 new ACCAutomaticInquiry();

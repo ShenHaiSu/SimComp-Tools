@@ -28,7 +28,7 @@ class warehouseACCmpOffest extends BaseComponent {
     let newNode = document.createElement("div");
     let realm = (this.componentData.realm == undefined) ? await tools.getRealm() : this.componentData.realm;
     this.componentData.realm = realm;
-    let htmlText = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td colspan="2"><span>使用mp作为占位符</span><br><span>允许使用单次 + - * / 运算符</span></td></tr><tr><td>偏移表达</td><td>设置</td></tr></thead><tbody>`;
+    let htmlText = `<div class="header">仓库出售界面显示mp偏移</div><div class="container"><div><button class="btn script_opt_submit">保存</button></div><table><thead><tr><td colspan="2"><span>使用mp作为占位符</span><br><span>允许使用单次 + - * / 运算符</span><br><span>或者使用#来代表归零0； 例如#100 = 100</span></td></tr><tr><td>偏移表达</td><td>设置</td></tr></thead><tbody>`;
     for (let i = 0; i < this.indexDBData.offestList[realm].length; i++) {
       let offestString = this.indexDBData.offestList[realm][i];
       htmlText += `<tr><td><input class="form-control" value='${offestString}'></td><td><button class="btn form-control" sct_id="deleteOne">删除</button></td></tr>`;
@@ -62,7 +62,7 @@ class warehouseACCmpOffest extends BaseComponent {
       .map(node => node.value.replace(/\s/g, ""))
       .filter(value => Boolean(value));
     // 信息检查
-    if (valueList.some(value => (value.match(/[+\-*/]/g) || []).length > 1)) {
+    if (valueList.some(value => (value.match(/[+\-*/#]/g) || []).length > 1)) {
       return tools.alert("只允许使用一次运算符，并且使用mp作为占位符，请更正错误内容。");
     }
     // 检查数量是否达标
@@ -141,34 +141,37 @@ class warehouseACCmpOffest extends BaseComponent {
       tools.log(`index:${index} value:${this.indexDBData.offestList[realm][index]} output:${realPrice}`);
       tools.setInput(targetNode, realPrice, 3);
     } catch (e) {
-      tools.errorLog("仓库出售界面显示mp偏移组件报错",e);
+      tools.errorLog("仓库出售界面显示mp偏移组件报错", e);
     }
   }
   // 计算实际价格
   realPriceCalc(inputString, marketPrice) {
-    inputString = inputString.replace("mp", marketPrice);
-    let [placeholder, operator, value] = inputString.split(/([+\-*/])/);
-    let mp = parseFloat(placeholder.trim());
+    // inputString = inputString.replace("mp", marketPrice);
+    let [placeholder, operator, value] = inputString.split(/([+\-*/#])/);
+    let mp = (placeholder == "") ? 0 : parseFloat(placeholder.replace("mp", marketPrice).trim());
     let num = parseFloat(value.trim());
     let result = 0;
-    if (!isNaN(mp) && !isNaN(num)) {
-      switch (operator) {
-        case '+':
-          result = mp + num;
-          break;
-        case '-':
-          result = mp - num;
-          break;
-        case '*':
-          result = mp * num;
-          break;
-        case '/':
-          result = mp / num;
-          break;
-        default:
-          result = 0;
-          return;
-      }
+    console.log(placeholder, operator, value);
+    if (isNaN(num)) return 0;
+    switch (operator) {
+      case '+':
+        result = mp + num;
+        break;
+      case '-':
+        result = mp - num;
+        break;
+      case '*':
+        result = mp * num;
+        break;
+      case '/':
+        result = mp / num;
+        break;
+      case "#":
+        result = num;
+        break;
+      default:
+        result = 0;
+        return;
     }
     return Number(result.toFixed(3));
   }

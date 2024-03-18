@@ -111,7 +111,7 @@ class inoutboundItemFilter extends BaseComponent {
       if (resName == "") continue;
       // [resID, name, quantity, quality, unitPrice, totalPrice, from/to]
       let nodeInfo = this.queryNodeInfo(itemNode.getAttribute("aria-label"));
-      if (resName == nodeInfo[1] && nodeInfo[3] >= quality) continue;
+      if ((resName.includes(nodeInfo[1]) || nodeInfo[1].includes(resName)) && nodeInfo[3] >= quality) continue;
       itemNode.style.display = "none";
     }
   }
