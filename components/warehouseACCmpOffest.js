@@ -151,7 +151,7 @@ class warehouseACCmpOffest extends BaseComponent {
     let mp = (placeholder == "") ? 0 : parseFloat(placeholder.replace("mp", marketPrice).trim());
     let num = parseFloat(value.trim());
     let result = 0;
-    console.log(placeholder, operator, value);
+    // console.log(placeholder, operator, value);
     if (isNaN(num)) return 0;
     switch (operator) {
       case '+':
