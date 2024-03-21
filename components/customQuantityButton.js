@@ -50,7 +50,7 @@ class customQuantityButton extends BaseComponent {
   settingSubmitHandle() {
     // 数据更新
     let valueList = [];
-    document.querySelectorAll("#setting-container-8 input").forEach((item) => valueList.push(item.value));
+    document.querySelectorAll("#setting-container-8 input").forEach(item => valueList.push(item.value));
     // 审查数据 预处理数据
     if (valueList[0] == "") valueList[0] = "12hr";
     if (valueList.some(item => !Boolean(item))) return tools.alert("不能为空");
