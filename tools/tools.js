@@ -342,7 +342,8 @@ class tools {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (!data.id && !id) return reject("缺少主键");
-      ({ data, id } = this.preprocessDataAndId(data, id))
+      id = data.id || id;
+      data.id = id;
       let request = this.dbObj.transaction([this.dbStoreName], "readwrite").objectStore(this.dbStoreName).add(data);
       request.onsuccess = () => resolve("数据添加成功");
       request.onerror = () => reject("添加数据失败");
@@ -352,8 +353,7 @@ class tools {
   static async indexDB_deleteData(id) {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
-      if (!data.id && !id) return reject("缺少主键");
-      if (id) data = { id, ...data };
+      if (!id) return reject("缺少主键");
       let request = this.dbObj.transaction([this.dbStoreName], "readwrite").objectStore(this.dbStoreName).delete(id);
       request.onsuccess = () => resolve("数据删除成功");
       request.onerror = () => reject("删除数据失败");
@@ -365,11 +365,12 @@ class tools {
       // console.log(data, id);
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (!data.id && !id) return reject("缺少主键");
-      ({ data, id } = this.preprocessDataAndId(data, id))
+      id = data.id || id;
+      data.id = id;
       let objectStore = this.dbObj.transaction([this.dbStoreName], "readwrite").objectStore(this.dbStoreName);
       let getRequest = objectStore.get(id);
       getRequest.onsuccess = () => {
-        let existingData = getRequest.result;
+        let existingData = getRequest.result || {};
         Object.assign(existingData, data);
         let updateRequest = objectStore.put(existingData);
         updateRequest.onsuccess = () => resolve("数据更新成功");
@@ -377,10 +378,6 @@ class tools {
       }
       getRequest.onerror = () => reject("获取数据失败");
     });
-  }
-
-  static preprocessDataAndId(data, id) {
-    return (data && data.id) ? { data: data, id: data.id } : { data: data, id: id };
   }
 
   // static async indexDB_addData(data, id) {
