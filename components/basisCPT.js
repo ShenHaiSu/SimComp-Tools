@@ -209,7 +209,7 @@ class basisCPT extends BaseComponent {
     if (this.indexDBData.SCT_divFixedDisplay) sideBarSmall.className += ` fixedDisplay`;
     // 创建信息窗口
     let msgMainNode = document.createElement('div');
-    msgMainNode.innerHTML = `<div id='scriptMsg_innerHead'><h1>消息</h1></div><div id=scriptMsg_main><table><tbody id=scriptMsg_mainBody><tr><td>时间<td>内容</table></div>`;
+    msgMainNode.innerHTML = `<div id=scriptMsg_innerHead style=padding:10px><h1>消息<span sct_id=msgClear style=font-size:20px> <a>清空</a></span></h1></div><div id=scriptMsg_main><table><tbody id=scriptMsg_mainBody><tr><td>时间<td>内容</table></div>`;
     msgMainNode.id = 'script_msg_node';
     msgMainNode.className = 'script_base_container';
     tools.msgBodyNode = msgMainNode.querySelector("tbody#scriptMsg_mainBody");
@@ -246,6 +246,10 @@ class basisCPT extends BaseComponent {
         Object.assign(document.querySelector("div#script_msg_node").style, { right: "-150%" });
         this.componentData.msgNodeShow = !this.componentData.msgNodeShow;
       }
+    });
+    msgMainNode.addEventListener("click", e => {
+      if (!e.target.closest("span[sct_id='msgClear']")) return;
+      document.querySelector("div#scriptMsg_main tbody#scriptMsg_mainBody").innerHTML = `<tr><td>时间</td><td>内容</td></tr>`;
     });
     // 挂载元素
     document.body.appendChild(sideBarSmall);
