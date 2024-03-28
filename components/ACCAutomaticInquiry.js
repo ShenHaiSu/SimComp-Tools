@@ -99,6 +99,7 @@ class ACCAutomaticInquiry extends BaseComponent {
       newNode.setAttribute("sct_cpt", "ACCAutomaticInquiry");
       newNode.setAttribute("sct_id", "autoNode");
       newNode.className = this.indexDBData.nodeWarp ? "" : "no_warp";
+      if (node.querySelector("div[sct_cpt='ACCAutomaticInquiry']")) break;
       node.children[2].appendChild(newNode);
       // 挂载自定义参考节点
       if (this.indexDBData.customSwitch) {
