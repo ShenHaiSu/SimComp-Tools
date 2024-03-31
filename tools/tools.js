@@ -23,6 +23,7 @@ class tools {
   static dbOpenFlag = false; // 数据库的开启标志
   static dbObj = undefined; // 数据库操作对象
   static dbStoreName = "main"; // 数据库StoreName
+  static dbOpenTime = 0; // 数据库打开时间戳
   static uuid = undefined; // 用户uuid
   static msgBodyNode = undefined; // 网页内消息使用的元素
   static lastMutation = undefined; // 最近一次元素变动记录
@@ -323,6 +324,7 @@ class tools {
       }
       request.onerror = () => reject("数据库的打开失败");
       request.onsuccess = (event) => {
+        this.dbOpenTime = new Date().getTime();
         this.dbObj = event.target.result;
         this.dbOpenFlag = true;
         resolve("数据库连接完毕");
@@ -341,6 +343,8 @@ class tools {
   static async indexDB_addData(data, id) {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
+      if (this.dbOpenTime == 0) return;
+      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return;
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -364,6 +368,8 @@ class tools {
     return new Promise((resolve, reject) => {
       // console.log(data, id);
       if (!this.dbOpenFlag) return reject("数据库未连接");
+      if (this.dbOpenTime == 0) return;
+      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return;
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -379,68 +385,6 @@ class tools {
       getRequest.onerror = () => reject("获取数据失败");
     });
   }
-
-  // static async indexDB_addData(data, id) {
-  //   return new Promise((resolve, reject) => {
-  // if (!this.dbOpenFlag) return reject("数据库未打开");
-  // if (!data.id && !id) return reject("缺少主键");
-  // if (id) data = { id, ...data };
-  //     let request = this.dbObj
-  //       .transaction(this.dbStoreName, "readwrite")
-  //       .objectStore(this.dbStoreName)
-  //       .add(data);
-  //     request.onsuccess = () => resolve("数据添加成功");
-  //     request.onerror = () => reject("数据添加失败");
-  //   })
-  // }
-  // static async indexDB_deleteData(id) {
-  //   return new Promise((resolve, reject) => {
-  //     if (!this.dbOpenFlag) reject("数据库未打开");
-  //     if (!id) reject("缺少id主键");
-  //     let request = this.dbObj
-  //       .transaction(this.dbStoreName, "readwrite")
-  //       .objectStore(this.dbStoreName)
-  //       .delete(id);
-  //     request.onsuccess = () => resolve("数据删除成功");
-  //     request.onerror = () => reject("数据删除失败");
-  //   });
-  // }
-  // /**
-  //  * 更新/创建数据
-  //  * @param {Object} data 数据
-  //  * @param {String} id 主键名
-  //  * @returns 
-  //  */
-  // static async indexDB_updateData(data, id) {
-  //   return new Promise((resolve, reject) => {
-  //     if (!this.dbOpenFlag) return reject("数据库未打开");
-  //     if (!data.id && !id) return reject("缺少主键");
-  //     if (id) data = { id, ...data };
-  //     let request = this.dbObj
-  //       .transaction(this.dbStoreName, "readwrite")
-  //       .objectStore(this.dbStoreName)
-  //       .put(data);
-  //     request.onsuccess = () => resolve("数据添加成功");
-  //     request.onerror = () => reject("数据添加失败");
-  //   })
-  // }
-  // /**
-  //  * 通过主键名获取数据库数据
-  //  * @param {String} id 数据库主键名
-  //  * @returns {Object | null} 数据库数据或者null
-  //  */
-  // static async indexDB_getData(id) {
-  //   return new Promise((resolve, reject) => {
-  //     if (!this.dbOpenFlag) reject("数据库未打开");
-  //     if (!id) reject("缺少id主键");
-  //     let request = this.dbObj
-  //       .transaction(this.dbStoreName, "readonly")
-  //       .objectStore(this.dbStoreName)
-  //       .get(id);
-  //     request.onsuccess = () => resolve(Boolean(request.result) ? request.result : null);
-  //     request.onerror = () => reject("数据查询失败");
-  //   });
-  // }
   /**
    * 更新/创建脚本内存uuid
    * @returns 
