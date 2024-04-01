@@ -344,7 +344,7 @@ class tools {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return;
+      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -369,7 +369,7 @@ class tools {
       // console.log(data, id);
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return;
+      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;

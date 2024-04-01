@@ -18,6 +18,8 @@ async function scriptMainInit() {
     window.SCTLoadFlag = false;
     return scriptMainInit();
   }
+  // 版本显示
+  console.log(sctData.version ? `当前Sim Companies little Tools插件版本：${sctData.version.join(".")}` : "未获取到版本号。");
   // 获取基础信息
   tools.checkWindowHorV(); // 窗口横纵
   tools.checkBrowser(); // 浏览器类型

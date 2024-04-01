@@ -1,26 +1,6 @@
 let fs = require('fs');
 let path = require('path');
 let distPath = path.join(__dirname, 'dist');
-let moment = require("moment");
-let mainVersion = 2;
-
-let nowVersion = [mainVersion];
-
-// 生成版本号
-const genVersion = () => {
-  let cptCount = fs.readdirSync(path.join(__dirname, "components")).length;
-  let oldFile = JSON.parse(fs.readFileSync(path.join(distPath, "version.json")));
-  let offset = -20;
-  let timeVersion = moment().format(`YYMMDDHHmmss`);
-  // nowVersion[1] = cptCount + offset;
-  if (cptCount == oldFile.cptCount) {
-    nowVersion[1] = cptCount + offset;
-  } else {
-    nowVersion[1] = oldFile.version[1] + 1;
-  }
-  nowVersion[2] = Number(timeVersion);
-  return nowVersion;
-}
 
 // 添加前缀
 const addPreText = (nowVersion) => {
@@ -45,21 +25,19 @@ const addPreText = (nowVersion) => {
   fs.writeFileSync(jsFilePath, preText + jsFile, "utf-8");
 }
 
-// 更新版本文件
-const updateVersionFile = (nowVersion) => {
-  let cptCount = fs.readdirSync(path.join(__dirname, "components")).length;
-  let versionFilePath = path.join(distPath, "version.json");
-  fs.writeFileSync(versionFilePath, JSON.stringify({ version: nowVersion, cptCount }));
+// 获取版本号
+const getVersion = () => {
+  let oldFile = JSON.parse(fs.readFileSync(path.join(distPath, "version.json")));
+  return oldFile.version;
 }
 
 
 // 入口函数
 (async function () {
   try {
-    let nowVersion = genVersion();
+    let nowVersion = getVersion();
     addPreText(nowVersion);
-    updateVersionFile(nowVersion);
-    console.log("Add Success.");
+    console.log("Add Success.  " + nowVersion.join("."));
   } catch (e) {
     console.log(e);
     console.log("Add Fail.");
