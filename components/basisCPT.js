@@ -434,7 +434,7 @@ class basisCPT extends BaseComponent {
       }
     });
     // 检测内容
-    if (Math.floor(valueList[cptCount + 1]) <= 3000) return tools.alert("插件主动网络请求最小间隔 不允许设置小于三秒");
+    if (Math.floor(valueList[cptCount + 1]) < 60000) return tools.alert("插件主动网络请求最小间隔 不允许设置小于1分钟");
     if (!tools.hexArgbCheck(valueList[cptCount + 2])) return tools.alert("只支持HEX格式颜色和RGB格式颜色.");
     if (valueList[cptCount + 3] > 100 || valueList[cptCount + 3] <= 0) return tools.alert("网页缩放比例太离谱嗷.\n只允许 (0-100].");
     if (valueList[cptCount + 4] == -1 && valueList[cptCount + 5] != -1) return tools.alert("如果仅设置一个通知模式请使用主要通知模式.");

@@ -50,7 +50,11 @@ class tools {
     // 交易所 /realm/resid
     market: "https://www.simcompanies.com/api/v3/market/all",
     // 高管信息
-    executives: "https://www.simcompanies.com/api/v2/companies/me/executives/"
+    executives: "https://www.simcompanies.com/api/v2/companies/me/executives/",
+    // 自建服务器 国内线
+    sctServerCN:"http://103.40.13.68:45154/",
+    // 自建服务器 海外线
+    sctServerOS:"http://rack1.raincs.cc:45154/"
   }
   static log() {
     if (!feature_config.debug) return;
@@ -106,6 +110,19 @@ class tools {
     // 判断是否为 IE 浏览器
     if (userAgent.includes('Trident') || userAgent.includes('MSIE')) return this.browserKind = "IE";
     return this.browserKind = "Unknown";
+  }
+  /**
+   * 获取运行时的IP国别，以此来确定访问缓存服务器使用的地址
+   */
+  static checkIPArea() {
+
+  }
+  /**
+   * 生成与自建服务器通信使用的token
+   */
+  static genToken(t = "", e = 30) {
+    const n = t + Math.floor(Date.now() / (60 * 60 * 1e3)).toString(); let o = 0; for (let t = 0; t < n.length; t++) { o = (o << 5) - o + n.charCodeAt(t), o &= o } let l = Math.abs(o).toString(36); if (l.length < e) { l += this.genToken(l + t, e - l.length) }
+    return l.slice(0, e)
   }
   static mpFormat(mpData = []) {
     let result = [Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity];
@@ -186,6 +203,7 @@ class tools {
   }
   static async getMarketPrice(resid, quality, realm) {
     let netData = await tools.getNetData(`${tools.baseURL.market}/${realm}/${resid}/`);
+    if (netData.message && netData.message.startsWith("Ratelimited")) netData = false;
     let resultList;
     if (!netData) {
       if (!indexDBData.basisCPT.resourcePool[realm][resid]) return 0;
@@ -344,7 +362,7 @@ class tools {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return resolve("请等待");
+      if ((data.id != "langData" && id != "langData") && (new Date().getTime() - this.dbOpenTime <= 5 * 1000)) return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -354,22 +372,12 @@ class tools {
     });
   }
 
-  static async indexDB_deleteData(id) {
-    return new Promise((resolve, reject) => {
-      if (!this.dbOpenFlag) return reject("数据库未连接");
-      if (!id) return reject("缺少主键");
-      let request = this.dbObj.transaction([this.dbStoreName], "readwrite").objectStore(this.dbStoreName).delete(id);
-      request.onsuccess = () => resolve("数据删除成功");
-      request.onerror = () => reject("删除数据失败");
-    });
-  }
-
   static async indexDB_updateData(data, id) {
     return new Promise((resolve, reject) => {
       // console.log(data, id);
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if (new Date().getTime() - this.dbOpenTime <= 5 * 1000) return resolve("请等待");
+      if ((data.id != "langData" && id != "langData") && (new Date().getTime() - this.dbOpenTime <= 5 * 1000)) return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -382,7 +390,17 @@ class tools {
         updateRequest.onsuccess = () => resolve("数据更新成功");
         updateRequest.onerror = () => reject("更新数据失败");
       }
-      getRequest.onerror = () => reject("获取数据失败");
+      getRequest.onerror = () => this.indexDB_addData(data, id);
+    });
+  }
+
+  static async indexDB_deleteData(id) {
+    return new Promise((resolve, reject) => {
+      if (!this.dbOpenFlag) return reject("数据库未连接");
+      if (!id) return reject("缺少主键");
+      let request = this.dbObj.transaction([this.dbStoreName], "readwrite").objectStore(this.dbStoreName).delete(id);
+      request.onsuccess = () => resolve("数据删除成功");
+      request.onerror = () => reject("删除数据失败");
     });
   }
   /**
