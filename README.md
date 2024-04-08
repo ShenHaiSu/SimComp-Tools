@@ -1,12 +1,14 @@
 # Sim Companies Little Tools
  - 作者：道洛LTS_Kim
- - QQ交流群：926159075 
+ - QQ交流群：926159075
  - 插件显示的所有数据均为参考，请以实际为准。 如有巨大偏差，请联系开发者并尽可能详细描述
  - 插件主要适配：PC浏览器+油猴插件+简中游戏语言.（其他环境不代表不能用，但是不保证正常，偶尔做做适配）
 
 # 使用方法 [选其一即可]
-- https://greasyfork.org/zh-CN/scripts/475328
 - 从Github最新Release下载build.user.js导入油猴插件
+- 从我建好的分发服务器下载更新
+  - 大陆用户：http://103.40.13.68:45154/file/download
+  - 海外用户：http://rack1.raincs.cc:45154/file/download
 - 从代码构建 
   - 下载代码
   - `yarn`
@@ -22,7 +24,7 @@ https://github.com/ShenHaiSu/SimComp-Tools/releases/tag/2.11.231208085516-app
 # 肚子饿饿
 - https://afdian.net/a/SCT-Editor
 
-# 功能如下
+# 部分功能如下
 - `聊天信息过滤/高亮`
   - 使用列表匹配内容,过滤隐藏或者高亮聊天信息
   - 同时匹配的时候过滤优先级更高
@@ -125,5 +127,4 @@ https://github.com/ShenHaiSu/SimComp-Tools/releases/tag/2.11.231208085516-app
   - 在基础组件设置里面将网页整体缩放比例.
 
 # 已知不适配 
-- [2.0之前]安卓Via浏览器 存在未知问题导致不能正常启动插件，请自行手动修改部分代码。
 - [`网页全局缩放`]火狐浏览器全系列不可用
