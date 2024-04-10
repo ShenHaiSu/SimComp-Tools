@@ -89,6 +89,13 @@ class warehouseCustomQuantitySelect extends BaseComponent {
   // 选择器内容变动函数
   selectChangeHandle(e) {
     let newValue = e.target.value;
+    if (newValue == "full") {
+      // 全部库存
+      let resName = decodeURI(location.href.match(/warehouse\/(.*)/)[1]);
+      let quality = this.getQuality(tools.getParentByIndex(e.target, 4));
+      let realm = runtimeData.basisCPT.realm;
+      newValue = indexDBData.basisCPT.warehouse[realm].find(item => item.quality == quality && item.kind.name == resName)?.amount || 0;
+    }
     let targetInput = tools.getParentByIndex(e.target, 2).querySelector("input[name='amount']");
     tools.setInput(targetInput, newValue, 2);
   }
@@ -100,7 +107,7 @@ class warehouseCustomQuantitySelect extends BaseComponent {
 
     // 构建
     let newNode = document.createElement("div");
-    let innerHTML = `<select sct_cpt='warehouseCustomQuantitySelect' sct_id="selector"><option value="0">待选择...</option>`;
+    let innerHTML = `<select sct_cpt='warehouseCustomQuantitySelect' sct_id="selector"><option value="0">待选择...</option><option value="full">全部</option>`;
     for (let i = 0; i < this.indexDBData.quantityList.length; i++) {
       let quantity = this.indexDBData.quantityList[i];
       innerHTML += `<option value="${quantity}">${tools.numberAddCommas(quantity)}</option>`;
@@ -114,6 +121,14 @@ class warehouseCustomQuantitySelect extends BaseComponent {
 
     // 挂载
     this.componentData.tempNode = newNode;
+  }
+
+  // 获取品质
+  getQuality(formNode) {
+    let starsCount = formNode.previousElementSibling.querySelectorAll("span > svg").length;
+    if (starsCount == 0) return 0;
+    let qualityNumber = parseInt(formNode.previousElementSibling.querySelectorAll("span > svg")[0].parentElement.innerText);
+    return isNaN(qualityNumber) ? starsCount : qualityNumber;
   }
 }
 

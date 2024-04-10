@@ -23,6 +23,7 @@ async function scriptMainInit() {
   // 获取基础信息
   tools.checkWindowHorV(); // 窗口横纵
   tools.checkBrowser(); // 浏览器类型
+  tools.checkIPArea(); // 获取用户网络地区
   // 格式化组件信息，形成函数列表
   for (const key in componentList) {
     let component = componentList[key];

@@ -33,6 +33,7 @@ class tools {
   static mutationUrlTemp = ""; // Mutation监控使用的url缓存
   static dialogNode = undefined; // 消息显示对象
   static dialogMain = undefined; // 消息挂载对象
+  static userArea = undefined; // 用户IP所在地 用来判断使用哪个API地址的
   static confirmNode = {
     mainNode: undefined, // 主节点
     msgNode: undefined, // 信息挂载节点
@@ -52,9 +53,9 @@ class tools {
     // 高管信息
     executives: "https://www.simcompanies.com/api/v2/companies/me/executives/",
     // 自建服务器 国内线
-    sctServerCN:"http://103.40.13.68:45154/",
+    sctServerCN: "http://103.40.13.68:45154/",
     // 自建服务器 海外线
-    sctServerOS:"http://rack1.raincs.cc:45154/"
+    sctServerOS: "http://rack1.raincs.cc:45154/"
   }
   static log() {
     if (!feature_config.debug) return;
@@ -115,7 +116,7 @@ class tools {
    * 获取运行时的IP国别，以此来确定访问缓存服务器使用的地址
    */
   static checkIPArea() {
-
+    
   }
   /**
    * 生成与自建服务器通信使用的token
