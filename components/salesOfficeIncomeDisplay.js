@@ -55,7 +55,7 @@ class salesOfficeIncomeDisplay extends BaseComponent {
     let qualityBonus = parseFloat(dataRootNode.innerText.split(/\n/).filter(text => text.match(/品质奖励/))[0]) / 100;
     let htmlText = `<div>Quality 品质: ${quality}</div>`;
     itemInfo.forEach(item => {
-      let bonus = item[1] * (quality * qualityBonus);
+      let bonus = Number((item[1] * (quality * qualityBonus)).toFixed(1));
       htmlText += `<div>${item[0]} $${tools.numberAddCommas(item[1] + bonus)} (+$${tools.numberAddCommas(bonus)})</div>`
     });
     event.target.nextElementSibling.innerHTML = htmlText;
