@@ -223,7 +223,7 @@ class retailDisplayProfit extends BaseComponent {
       // 前置行为
       let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
       // 开始模拟
-      let maxProfit = 0.0;
+      let maxProfit = -Infinity;
       let baseInfo;
       for (let tampPrice = basePrice; tampPrice < maxPrice; tampPrice += step) {
         await tools.dely(1);
