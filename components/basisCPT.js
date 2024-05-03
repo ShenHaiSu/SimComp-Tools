@@ -30,6 +30,7 @@ class basisCPT extends BaseComponent {
     ],
     SCT_divHorizontal: false, // SCT 悬浮窗横向排列
     SCT_divFixedDisplay: false, // SCT 悬浮窗固定显示
+    mapMarginTop: 0, // 地图上边界
   }
   componentData = {
     settingNodeList: {}, // 设置界面
@@ -42,6 +43,7 @@ class basisCPT extends BaseComponent {
     cptSettingShow: false, // 设置元素展示标记
     avtiveTagList: [], // 被激活的tag过滤器列表
     cptSearchText: "", // 组件搜索输入的内容
+    mapNode: undefined, // 临时地图div容器
   }
   // 函数挂载
   startupFuncList = [
@@ -53,6 +55,12 @@ class basisCPT extends BaseComponent {
     this.startupExecutives,
     this.startupForDonation,
     this.startupForLang
+  ]
+  commonFuncList = [
+    {
+      match: () => /zh\/landscape\//.test(location.href),
+      func: this.mapMarginTopMain
+    }
   ]
   netFuncList = [
     {    // 用户信息拦截
@@ -397,12 +405,13 @@ class basisCPT extends BaseComponent {
       let canDisable = component.canDisable;
       htmlText += `<tr><td><span title='${describe}'>${name}</span></td><td><input class='form-control' type="checkbox" ${enable ? "checked" : ""} ${canDisable ? "" : "disabled"}></td></tr>`;
     }
-    htmlText += `</table></div><div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=打开debug模式会有大量信息输出,可能会影响到性能,如非必要不要打开.>DEBUG模式<td><input class='form-control' type='checkbox' #####><tr><td title="只有插件主动发起的请求会被此项目限制\n官方文档说明低于5分钟就不安全了,用户请酌情设置. \n默认[10000ms]=10s">插件主动网络请求最小间隔<td><input type=number class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 #ffffff">插件通用文字配色<td><input class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 100 ">网页缩放比例<td><input type=number class=form-control value=#####><tr><td title="首要通知模式,默认是 网页内通知">主要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="次要通知模式,默认是 无">次要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="默认不勾选,勾选后SCT悬浮窗使用横向布局">悬浮窗横向排列</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divHorizontal ? "checked" : ""} ></td></tr><tr><td title="默认不勾选,勾选后SCT悬浮窗会固定在右下角不受hover影响">悬浮窗固定位置</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divFixedDisplay ? "checked" : ""} ></td></tr><tr><td title="无确认,删除插件所有缓存.非必要不用点">清除插件缓存</td><td><button class="btn form-control" id="script_reset">清除</button></td></tr><tr><td>插件缓存读写</td><td><button class="btn form-control" id="script_confEdit_enter">进入读写操作</button></td></tr></table></div></div></div>`;
+    htmlText += `</table></div><div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=打开debug模式会有大量信息输出,可能会影响到性能,如非必要不要打开.>DEBUG模式<td><input class='form-control' type='checkbox' #####><tr><td title="只有插件主动发起的请求会被此项目限制\n官方文档说明低于5分钟就不安全了,用户请酌情设置. \n默认[10000ms]=10s">插件主动网络请求最小间隔<td><input type=number class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 #ffffff">插件通用文字配色<td><input class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 100 ">网页缩放比例<td><input type=number class=form-control value=#####> <tr><td title='地图界面上方的间隔，注意与网页缩放比例搭配使用。'>地图上方间距<td><input type='number' class=form-control value=#####>  <tr><td title="首要通知模式,默认是 网页内通知">主要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="次要通知模式,默认是 无">次要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="默认不勾选,勾选后SCT悬浮窗使用横向布局">悬浮窗横向排列</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divHorizontal ? "checked" : ""} ></td></tr><tr><td title="默认不勾选,勾选后SCT悬浮窗会固定在右下角不受hover影响">悬浮窗固定位置</td><td><input type="checkbox" class="form-control" ${this.indexDBData.SCT_divFixedDisplay ? "checked" : ""} ></td></tr><tr><td title="无确认,删除插件所有缓存.非必要不用点">清除插件缓存</td><td><button class="btn form-control" id="script_reset">清除</button></td></tr><tr><td>插件缓存读写</td><td><button class="btn form-control" id="script_confEdit_enter">进入读写操作</button></td></tr></table></div></div></div>`;
     // 修改input已有参数
     htmlText = htmlText.replace("#####", feature_config.debug ? "checked" : "");
     htmlText = htmlText.replace("#####", feature_config.net_gap_ms.toString());
     htmlText = htmlText.replace("#####", feature_config.fontColor.toString());
     htmlText = htmlText.replace("#####", parseFloat(feature_config.zoomRate));
+    htmlText = htmlText.replace("#####", parseInt(this.indexDBData.mapMarginTop));
     newNode.innerHTML = htmlText;
     // 修改select的已有参数
     let selectList = newNode.querySelectorAll("td>select");
@@ -437,17 +446,19 @@ class basisCPT extends BaseComponent {
     if (Math.floor(valueList[cptCount + 1]) < 60000) return tools.alert("插件主动网络请求最小间隔 不允许设置小于1分钟");
     if (!tools.hexArgbCheck(valueList[cptCount + 2])) return tools.alert("只支持HEX格式颜色和RGB格式颜色.");
     if (valueList[cptCount + 3] > 100 || valueList[cptCount + 3] <= 0) return tools.alert("网页缩放比例太离谱嗷.\n只允许 (0-100].");
-    if (valueList[cptCount + 4] == -1 && valueList[cptCount + 5] != -1) return tools.alert("如果仅设置一个通知模式请使用主要通知模式.");
-    if (valueList[cptCount + 4] == valueList[cptCount + 5] && valueList[cptCount + 4] != -1) return tools.alert("没必要都设置一样的.");
+    if (valueList[cptCount + 4] < 0) return tools.alert("间距不允许是负数");
+    if (valueList[cptCount + 5] == -1 && valueList[cptCount + 6] != -1) return tools.alert("如果仅设置一个通知模式请使用主要通知模式.");
+    if (valueList[cptCount + 5] == valueList[cptCount + 6] && valueList[cptCount + 5] != -1) return tools.alert("没必要都设置一样的.");
     // 挂载内容
     Object.values(componentList).forEach(component => component.enable = valueList[flagCount++]);
     feature_config.debug = valueList[cptCount + 0];
     feature_config.net_gap_ms = Math.floor(valueList[cptCount + 1]);
     feature_config.fontColor = valueList[cptCount + 2];
     feature_config.zoomRate = valueList[cptCount + 3] + "%";
-    feature_config.notificationMode = [valueList[cptCount + 4], valueList[cptCount + 5]];
-    this.indexDBData.SCT_divHorizontal = valueList[cptCount + 6];
-    this.indexDBData.SCT_divFixedDisplay = valueList[cptCount + 7];
+    feature_config.notificationMode = [valueList[cptCount + 5], valueList[cptCount + 6]];
+    this.indexDBData.SCT_divHorizontal = valueList[cptCount + 7];
+    this.indexDBData.SCT_divFixedDisplay = valueList[cptCount + 8];
+    this.indexDBData.mapMarginTop = valueList[cptCount + 4];
     // 更新内容
     tools.indexDB_updateFeatureConf();
     tools.indexDB_updateIndexDBData();
@@ -535,6 +546,21 @@ class basisCPT extends BaseComponent {
     }
     this.indexDBData.executives[realm] = netData;
     await tools.indexDB_updateIndexDBData();
+  }
+  // 给地图添加上边距
+  mapMarginTopMain() {
+    try {
+      let targetNode = Object.values(document.querySelectorAll(`a[top][left][href]`)).filter(node => /\/zh\/b\//.test(node.getAttribute("href")))[0];
+      targetNode = tools.getParentByIndex(targetNode, 1);
+
+      if (this.componentData.mapNode && this.componentData.mapNode === targetNode) return;
+
+      this.componentData.mapNode = targetNode;
+      this.componentData.mapNode.style.margin = this.indexDBData.mapMarginTop + "px auto";
+    } catch (e) {
+      tools.errorLog(e);
+      return;
+    }
   }
 }
 new basisCPT();
