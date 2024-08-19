@@ -265,7 +265,7 @@ class retailDisplayProfit extends BaseComponent {
   }
   // 获取步长
   getStep(basePrice) {
-    let baseStep = 0.01;
+    let baseStep = 0;
     let percentStep = basePrice * 0.01;
 
     if (basePrice < 8) {
