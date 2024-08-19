@@ -1,5 +1,11 @@
 const BaseComponent = require("../tools/baseComponent.js");
-const { tools, componentList, runtimeData, indexDBData, feature_config } = require("../tools/tools.js");
+const {
+  tools,
+  componentList,
+  runtimeData,
+  indexDBData,
+  feature_config
+} = require("../tools/tools.js");
 
 // 零售显示总利润/时利润/建议定价
 class retailDisplayProfit extends BaseComponent {
@@ -56,7 +62,11 @@ class retailDisplayProfit extends BaseComponent {
     let quantity = tools.getParentByIndex(activeNode, 2).previousElementSibling.querySelector("div > p > input[name='quantity']").value;
     let price = activeNode.value;
     let baseInfo;
-    try { baseInfo = this.getInfo(targetNode) } catch (error) { return }
+    try {
+      baseInfo = this.getInfo(targetNode)
+    } catch (error) {
+      return
+    }
     // 异常处理取消计算
     if (quantity == "" || quantity <= 0) return; // 零售数量小于0 不处理
     if (price == "" || price <= 0) return; // 零售单价小于0 不处理
@@ -68,7 +78,9 @@ class retailDisplayProfit extends BaseComponent {
     if (!this.componentData.containerNode) {
       let newNode = document.createElement("div");
       newNode.id = "retail_display_div";
-      Object.assign(newNode.style, { display: "none" });
+      Object.assign(newNode.style, {
+        display: "none"
+      });
       this.componentData.containerNode = newNode;
       document.body.appendChild(newNode);
       // 挂载锁定时利润事件委派
@@ -99,16 +111,28 @@ class retailDisplayProfit extends BaseComponent {
 
     // 创建计时器
     this.componentData.fadeTimer = setTimeout(() => {
-      Object.assign(this.componentData.containerNode.style, { display: "none" });
+      Object.assign(this.componentData.containerNode.style, {
+        display: "none"
+      });
     }, 3000)
   }
   getInfo(node) {
     let textList = node.innerText.split("\n");
     let name = textList[0];
-    let profit = parseFloat(textList[3].replaceAll(",", "").match(/\$(-)?\d+\.\d+/)[0].replace("$", ""));
-    let matchList = textList[4].match(/(\d+:\d+)|(\(.+\))/g);
-    let duration_hour = this.getTimeFormat(matchList[0], matchList[1]);
-    return { name, profit, duration_hour };
+
+    // 检查 textList[3] 是否存在，并确保正则匹配结果有效
+    let profit = textList[3] ? parseFloat(textList[3].replaceAll(",", "").match(/\$(-)?\d+\.\d+/)?.[0].replace("$", "")) : null;
+
+
+    // 检查 textList[4] 是否存在，并确保正则匹配结果有效
+    let matchList = textList[4] ? textList[4].match(/(\d+:\d+)|(\(.+\))/g) : null;
+    let duration_hour = matchList ? this.getTimeFormat(matchList[0], matchList[1]) : null;
+
+    return {
+      name,
+      profit,
+      duration_hour
+    };
   }
   getTimeFormat(targetStamp, durationTime) {
     let nowTime = new Date();
@@ -167,7 +191,13 @@ class retailDisplayProfit extends BaseComponent {
       // 锁定填写框
       this.componentData.lastActiveInputNode.disabled = true;
       // 前置行为
-      let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      let {
+        targetNode,
+        quantity,
+        basePrice,
+        maxPrice,
+        step
+      } = this.preAction();
       // 开始模拟
       let maxUnitProfit = 0.0;
       let baseInfo;
@@ -175,6 +205,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
+        if(baseInfo.duration_hour == null) break;
         let tempUnitProfit = parseFloat(baseInfo.profit);
         if (tempUnitProfit <= maxUnitProfit) continue;
         maxUnitProfit = tempUnitProfit;
@@ -195,7 +226,13 @@ class retailDisplayProfit extends BaseComponent {
       // 锁定填写框
       this.componentData.lastActiveInputNode.disabled = true;
       // 前置行为
-      let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      let {
+        targetNode,
+        quantity,
+        basePrice,
+        maxPrice,
+        step
+      } = this.preAction();
       // 开始模拟
       let maxProfit = parseFloat(targetHourProfit);
       let baseInfo;
@@ -203,6 +240,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
+        if(baseInfo.duration_hour == null) break;
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
         if (tempProfit <= maxProfit) continue;
         basePrice = tampPrice;
@@ -221,7 +259,13 @@ class retailDisplayProfit extends BaseComponent {
       // 锁定填写框
       this.componentData.lastActiveInputNode.disabled = true;
       // 前置行为
-      let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      let {
+        targetNode,
+        quantity,
+        basePrice,
+        maxPrice,
+        step
+      } = this.preAction();
       // 开始模拟
       let maxProfit = -Infinity;
       let baseInfo;
@@ -229,6 +273,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
+        if(baseInfo.duration_hour == null) break;
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
         if (tempProfit <= maxProfit) continue;
         maxProfit = tempProfit;
@@ -252,7 +297,13 @@ class retailDisplayProfit extends BaseComponent {
     let basePrice = parseFloat(avgPrice) * this.indexDBData.minRate;
     let maxPrice = parseFloat(avgPrice) * this.indexDBData.maxRate;
     let step = this.getStep(basePrice);
-    return { targetNode, quantity, basePrice, maxPrice, step };
+    return {
+      targetNode,
+      quantity,
+      basePrice,
+      maxPrice,
+      step
+    };
   }
   // 获取步长
   getStep(basePrice) {
@@ -261,8 +312,12 @@ class retailDisplayProfit extends BaseComponent {
 
     if (basePrice <= 8) {
       baseStep = 0.01
-    } else if (basePrice <= 500) {
+    } else if (basePrice <= 100) {
       baseStep = 0.1
+    } else if (basePrice <= 500) {
+      baseStep = 0.2
+    } else if (basePrice <= 2000) {
+      baseStep = 0.5
     } else {
       baseStep = 1;
     }
