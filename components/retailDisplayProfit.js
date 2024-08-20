@@ -105,9 +105,15 @@ class retailDisplayProfit extends BaseComponent {
   getInfo(node) {
     let textList = node.innerText.split("\n");
     let name = textList[0];
-    let profit = parseFloat(textList[3].replaceAll(",", "").match(/\$(-)?\d+\.\d+/)[0].replace("$", ""));
-    let matchList = textList[4].match(/(\d+:\d+)|(\(.+\))/g);
-    let duration_hour = this.getTimeFormat(matchList[0], matchList[1]);
+
+    // 检查 textList[3] 是否存在，并确保正则匹配结果有效
+    let profit = textList[3] ? parseFloat(textList[3].replaceAll(",", "").match(/\$(-)?\d+\.\d+/)?.[0].replace("$", "")) : null;
+
+
+    // 检查 textList[4] 是否存在，并确保正则匹配结果有效
+    let matchList = textList[4] ? textList[4].match(/(\d+:\d+)|(\(.+\))/g) : null;
+    let duration_hour = matchList ? this.getTimeFormat(matchList[0], matchList[1]) : null;
+
     return { name, profit, duration_hour };
   }
   getTimeFormat(targetStamp, durationTime) {
@@ -175,6 +181,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
+        if(baseInfo.duration_hour == null) break;
         let tempUnitProfit = parseFloat(baseInfo.profit);
         if (tempUnitProfit <= maxUnitProfit) continue;
         maxUnitProfit = tempUnitProfit;
@@ -203,6 +210,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
+        if(baseInfo.duration_hour == null) break;
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
         if (tempProfit <= maxProfit) continue;
         basePrice = tampPrice;
@@ -229,6 +237,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
+        if(baseInfo.duration_hour == null) break;
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
         if (tempProfit <= maxProfit) continue;
         maxProfit = tempProfit;
@@ -259,9 +268,9 @@ class retailDisplayProfit extends BaseComponent {
     let baseStep = 0;
     let percentStep = basePrice * 0.01;
 
-    if (basePrice <= 8) {
+    if (basePrice < 8) {
       baseStep = 0.01
-    } else if (basePrice <= 500) {
+    } else if (basePrice < 2001) {
       baseStep = 0.1
     } else {
       baseStep = 1;
