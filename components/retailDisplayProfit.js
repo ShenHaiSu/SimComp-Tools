@@ -19,13 +19,18 @@ class retailDisplayProfit extends BaseComponent {
     fadeTimer: undefined, // 自动消失计时器标签
     containerNode: undefined, // 显示容器元素
     lastActiveInputNode: undefined, // 最后一次激活中的input标签
+    tempStepConfig: {   // 临时步长配置
+      step: 0, // 临时使用步长
+      minRate: 0, // 临时最小倍率
+      maxRate: 0, // 临时最大倍率
+    },
   }
   indexDBData = {
     minRate: 0.8, // 遍历价格初始倍率
     maxRate: 1.2, // 遍历价格最大倍率
     roughMode: false, // 粗略步长模式
   }
-  cssText = [`#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform: translateY(-50%) translateX(-50%);width:270px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}`];
+  cssText = [`#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform:translateX(-50%);width:220px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}`];
 
   settingUI = () => {
     let newNode = document.createElement("div");
@@ -85,22 +90,26 @@ class retailDisplayProfit extends BaseComponent {
     htmlText += `<div>预估数据: </div>`
     htmlText += `<div>总利润：${totalProfit}</div>`;
     htmlText += `<div>时利润：${hourProfit}</div>`;
-    htmlText += `<div>`;
+    htmlText += `<div style="display:flex;justify-content:space-around;;align-items:center;flex-wrap: wrap;" >`;
     htmlText += `  <button class='btn' id='script_reatil_maxHour'>最大时利</button>`;
     htmlText += `  <button class='btn' id='script_reatil_maxUnit'>最大单利</button>`
     htmlText += `  <button class='btn' id='script_reatil_targetHour'>指定时利</button>`;
+    htmlText += `  <button class='btn' id='script_reatil_editStep'>临时步长</button>`;
+    htmlText += `</div>`;
+    htmlText += `<div style='display:none;' >`;
+    htmlText += `<div><span>使用步长</span> <input step=0.1 style=width:70% placeholder="填0取消临时步长" type=number value=0.1></div><div><span>最小倍率</span> <input step=0.1 style=width:70% type=number value=0.8></div><div><span>最大倍率</span> <input step=0.1 style=width:70% type=number value=1.2></div>`;
     htmlText += `</div>`;
     this.componentData.containerNode.innerHTML = htmlText;
     Object.assign(this.componentData.containerNode.style, {
       display: "block",
-      top: `${activeNodeRect.top + activeNodeRect.height + 100}px`,
+      top: `${activeNodeRect.top + activeNodeRect.height + 50}px`,
       left: `${activeNodeRect.left + activeNodeRect.width}px`,
     })
 
     // 创建计时器
     this.componentData.fadeTimer = setTimeout(() => {
       Object.assign(this.componentData.containerNode.style, { display: "none" });
-    }, 3000)
+    }, 3000);
   }
   getInfo(node) {
     let textList = node.innerText.split("\n");
@@ -116,6 +125,7 @@ class retailDisplayProfit extends BaseComponent {
 
     return { name, profit, duration_hour };
   }
+
   getTimeFormat(targetStamp, durationTime) {
     let nowTime = new Date();
     let [targetHour, targetMinutes] = targetStamp.split(":");
@@ -129,6 +139,7 @@ class retailDisplayProfit extends BaseComponent {
     tools.log(`销售完成时间:${new Date(new Date().getTime() + timeDiff * 60 * 60 * 1000).toLocaleString()}`);
     return timeDiff;
   }
+
   getQuality(node) {
     let rootNode = tools.getParentByIndex(node, 6);
     let quality = 0;
@@ -136,6 +147,7 @@ class retailDisplayProfit extends BaseComponent {
     quality += (rootNode.querySelectorAll("svg[data-icon='star'][role='img']").length * 0.5);
     return quality;
   }
+
   getCost(resName, quantity) {
     // 统计未被封锁的物品,直到抵达总量符合
     let nowQuantity = 0;
@@ -160,13 +172,21 @@ class retailDisplayProfit extends BaseComponent {
     }
     return (totalCost / nowQuantity).toFixed(2);
   }
-  // 按钮事件委派
+
+  // 点击事件委派
   clickEventHandle(event) {
-    // if (event.target.tagName == "INPUT" && event.target.id == "script_lockProfit") return this.lockHourProfit(event);
+    // 重置浮窗消失倒计时
+    clearTimeout(this.componentData.fadeTimer);
+    this.componentData.fadeTimer = setTimeout(() => {
+      Object.assign(this.componentData.containerNode.style, { display: "none" });
+    }, 5000);
+    // 分发事件处理器
     if (event.target.tagName == "BUTTON" && event.target.id == "script_reatil_maxHour") return this.setMaxProfitPrice(event);
     if (event.target.tagName == "BUTTON" && event.target.id == "script_reatil_maxUnit") return this.setMaxUnitProfit(event);
     if (event.target.tagName == "BUTTON" && event.target.id == "script_reatil_targetHour") return this.lockHourProfit(event);
+    if (event.target.tagName == "BUTTON" && event.target.id == "script_reatil_editStep") return this.editStep(event);
   }
+
   // 最大单利润
   async setMaxUnitProfit() {
     try {
@@ -174,6 +194,13 @@ class retailDisplayProfit extends BaseComponent {
       this.componentData.lastActiveInputNode.disabled = true;
       // 前置行为
       let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      // 使用临时步长信息覆写
+      if (this.componentData.tempStepConfig.step != 0) {
+        let avgPrice = parseFloat(tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.innerText.split(/\n/).filter(text => text.match("平均价格"))[0].replace(/平均价格： \$|,/g, ""))
+        step = this.componentData.tempStepConfig.step;
+        basePrice = avgPrice * this.componentData.tempStepConfig.minRate;
+        maxPrice = avgPrice * this.componentData.tempStepConfig.maxRate;
+      }
       // 开始模拟
       let maxUnitProfit = 0.0;
       let baseInfo;
@@ -181,7 +208,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
-        if(baseInfo.duration_hour == null) break;
+        if (baseInfo.duration_hour == null) break;
         let tempUnitProfit = parseFloat(baseInfo.profit);
         if (tempUnitProfit <= maxUnitProfit) continue;
         maxUnitProfit = tempUnitProfit;
@@ -194,6 +221,7 @@ class retailDisplayProfit extends BaseComponent {
       this.componentData.lastActiveInputNode.disabled = false;
     }
   }
+
   // 指定时利润
   async lockHourProfit(event) {
     let targetHourProfit = window.prompt("输入期望的小时收益", "0.0");
@@ -203,6 +231,13 @@ class retailDisplayProfit extends BaseComponent {
       this.componentData.lastActiveInputNode.disabled = true;
       // 前置行为
       let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      // 使用临时步长信息覆写
+      if (this.componentData.tempStepConfig.step != 0) {
+        let avgPrice = parseFloat(tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.innerText.split(/\n/).filter(text => text.match("平均价格"))[0].replace(/平均价格： \$|,/g, ""))
+        step = this.componentData.tempStepConfig.step;
+        basePrice = avgPrice * this.componentData.tempStepConfig.minRate;
+        maxPrice = avgPrice * this.componentData.tempStepConfig.maxRate;
+      }
       // 开始模拟
       let maxProfit = parseFloat(targetHourProfit);
       let baseInfo;
@@ -210,7 +245,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
-        if(baseInfo.duration_hour == null) break;
+        if (baseInfo.duration_hour == null) break;
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
         if (tempProfit <= maxProfit) continue;
         basePrice = tampPrice;
@@ -223,6 +258,7 @@ class retailDisplayProfit extends BaseComponent {
       this.componentData.lastActiveInputNode.disabled = false;
     }
   }
+
   // 最大时利润
   async setMaxProfitPrice(event) {
     try {
@@ -230,6 +266,13 @@ class retailDisplayProfit extends BaseComponent {
       this.componentData.lastActiveInputNode.disabled = true;
       // 前置行为
       let { targetNode, quantity, basePrice, maxPrice, step } = this.preAction();
+      // 使用临时步长信息覆写
+      if (this.componentData.tempStepConfig.step != 0) {
+        let avgPrice = parseFloat(tools.getParentByIndex(this.componentData.lastActiveInputNode, 5).previousElementSibling.innerText.split(/\n/).filter(text => text.match("平均价格"))[0].replace(/平均价格： \$|,/g, ""))
+        step = this.componentData.tempStepConfig.step;
+        basePrice = avgPrice * this.componentData.tempStepConfig.minRate;
+        maxPrice = avgPrice * this.componentData.tempStepConfig.maxRate;
+      }
       // 开始模拟
       let maxProfit = -Infinity;
       let baseInfo;
@@ -237,7 +280,7 @@ class retailDisplayProfit extends BaseComponent {
         await tools.dely(1);
         tools.setInput(this.componentData.lastActiveInputNode, tampPrice);
         baseInfo = this.getInfo(targetNode);
-        if(baseInfo.duration_hour == null) break;
+        if (baseInfo.duration_hour == null) break;
         let tempProfit = parseFloat(baseInfo.profit * quantity / baseInfo.duration_hour);
         if (tempProfit <= maxProfit) continue;
         maxProfit = tempProfit;
@@ -250,6 +293,35 @@ class retailDisplayProfit extends BaseComponent {
       this.componentData.lastActiveInputNode.disabled = false;
     }
   }
+
+  // 编辑临时步长
+  editStep(event) {
+    const editBase = event.target.parentElement.nextElementSibling;
+    const inputList = editBase.querySelectorAll("input");
+    // 检查是否是编辑模式
+    if (event.target.innerText == "临时步长") {
+      // 切换到编辑临时步长模式
+      event.target.innerText = "确定设置";
+      editBase.style.display = "block";
+      inputList[0].value = this.componentData.tempStepConfig.step;
+      inputList[1].value = this.componentData.tempStepConfig.minRate;
+      inputList[2].value = this.componentData.tempStepConfig.maxRate;
+    } else {
+      // 保存临时步长设置
+      // 审核数据
+      if (inputList[0].value == "" || inputList[1].value == "" || inputList[2].value == "") return tools.alert("数据不正确");
+      if (inputList[0].value < 0 || inputList[1].value <= 0 || inputList[2].value <= 0) return tools.alert("数据不正确");
+      if (inputList[1].value >= inputList[2].value) return tools.alert("数据不正确");
+      // 修改样式
+      event.target.innerText = "临时步长";
+      editBase.style.display = "none";
+      // 保存配置
+      this.componentData.tempStepConfig.step = parseFloat(inputList[0].value);
+      this.componentData.tempStepConfig.minRate = parseFloat(inputList[1].value);
+      this.componentData.tempStepConfig.maxRate = parseFloat(inputList[2].value);
+    }
+  }
+
   // 步进模拟前置行为
   preAction() {
     // 获取平均价格
@@ -263,15 +335,20 @@ class retailDisplayProfit extends BaseComponent {
     let step = this.getStep(basePrice);
     return { targetNode, quantity, basePrice, maxPrice, step };
   }
+
   // 获取步长
   getStep(basePrice) {
     let baseStep = 0;
     let percentStep = basePrice * 0.01;
 
-    if (basePrice < 8) {
+    if (basePrice <= 8) {
       baseStep = 0.01
-    } else if (basePrice < 2001) {
+    } else if (basePrice <= 100) {
       baseStep = 0.1
+    } else if (basePrice <= 500) {
+      baseStep = 0.2
+    } else if (basePrice <= 2000) {
+      baseStep = 0.5
     } else {
       baseStep = 1;
     }
