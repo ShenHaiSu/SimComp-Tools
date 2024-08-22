@@ -30,7 +30,7 @@ class retailDisplayProfit extends BaseComponent {
     maxRate: 1.2, // 遍历价格最大倍率
     roughMode: false, // 粗略步长模式
   }
-  cssText = [`#retail_display_div {color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0, 0, 0, 0.5);position:fixed;top:50%;right:0;transform:translateX(-50%);width:220px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}`];
+  cssText = [`#retail_display_div{color:var(--fontColor);padding:5px;border-radius:5px;background-color:rgba(0,0,0,0.5);position:fixed;top:50%;right:0;transform:translateX(-50%);width:220px;z-index:1032;justify-content:center;align-items:center;}#retail_display_div button{background:#1e1818;margin-top:5px;transition:ease-in-out 0.25s;}#retail_display_div button:hover{background-color:white;color:black;}#retail_display_div>div[sct-tempstep]{margin-top:10px;}#retail_display_div>div[sct-tempstep]>div>input{width:70%;background-color:rgb(0,0,0,0.8);border-radius:5px;}`];
 
   settingUI = () => {
     let newNode = document.createElement("div");
@@ -96,8 +96,8 @@ class retailDisplayProfit extends BaseComponent {
     htmlText += `  <button class='btn' id='script_reatil_targetHour'>指定时利</button>`;
     htmlText += `  <button class='btn' id='script_reatil_editStep'>临时步长</button>`;
     htmlText += `</div>`;
-    htmlText += `<div style='display:none;' >`;
-    htmlText += `<div><span>使用步长</span> <input step=0.1 style=width:70% placeholder="填0取消临时步长" type=number value=0.1></div><div><span>最小倍率</span> <input step=0.1 style=width:70% type=number value=0.8></div><div><span>最大倍率</span> <input step=0.1 style=width:70% type=number value=1.2></div>`;
+    htmlText += `<div sct-tempstep style='display:none;' >`;
+    htmlText += `<div><span>使用步长</span> <input step=0.1  placeholder="填0取消临时步长" type=number></div><div><span>最小倍率</span> <input step=0.1  type=number></div><div><span>最大倍率</span> <input step=0.1  type=number></div>`;
     htmlText += `</div>`;
     this.componentData.containerNode.innerHTML = htmlText;
     Object.assign(this.componentData.containerNode.style, {
@@ -297,28 +297,28 @@ class retailDisplayProfit extends BaseComponent {
   // 编辑临时步长
   editStep(event) {
     const editBase = event.target.parentElement.nextElementSibling;
-    const inputList = editBase.querySelectorAll("input");
+    const valueList = Object.values(editBase.querySelectorAll("input")).map(node => parseInt(node.value) || 0);
     // 检查是否是编辑模式
     if (event.target.innerText == "临时步长") {
       // 切换到编辑临时步长模式
       event.target.innerText = "确定设置";
       editBase.style.display = "block";
-      inputList[0].value = this.componentData.tempStepConfig.step;
-      inputList[1].value = this.componentData.tempStepConfig.minRate;
-      inputList[2].value = this.componentData.tempStepConfig.maxRate;
+      valueList[0] = this.componentData.tempStepConfig.step;
+      valueList[1] = this.componentData.tempStepConfig.minRate;
+      valueList[2] = this.componentData.tempStepConfig.maxRate;
     } else {
       // 保存临时步长设置
       // 审核数据
-      if (inputList[0].value == "" || inputList[1].value == "" || inputList[2].value == "") return tools.alert("数据不正确");
-      if (inputList[0].value < 0 || inputList[1].value <= 0 || inputList[2].value <= 0) return tools.alert("数据不正确");
-      if (inputList[1].value >= inputList[2].value) return tools.alert("数据不正确");
+      if (valueList[0] != 0 && (valueList[1] == 0 || valueList[2] == 0)) return tools.alert("设置了临时步长请也设置临时范围。");
+      if (valueList[0] != 0 && valueList[1] >= valueList[2]) return tools.alert("起始倍率不能小于或者等于终止倍率");
+      if (valueList[0] < 0) return tools.alert("数据不合法");
       // 修改样式
       event.target.innerText = "临时步长";
       editBase.style.display = "none";
       // 保存配置
-      this.componentData.tempStepConfig.step = parseFloat(inputList[0].value);
-      this.componentData.tempStepConfig.minRate = parseFloat(inputList[1].value);
-      this.componentData.tempStepConfig.maxRate = parseFloat(inputList[2].value);
+      this.componentData.tempStepConfig.step = valueList[0];
+      this.componentData.tempStepConfig.minRate = valueList[1];
+      this.componentData.tempStepConfig.maxRate = valueList[2];
     }
   }
 
