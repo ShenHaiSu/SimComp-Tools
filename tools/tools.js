@@ -1,10 +1,14 @@
+// 库引入
+const md5 = require("md5");
+
+// 全局变量
 let componentList = {}; // 子组件列表 {name:{cpt}}
 let runtimeData = {};
 let indexDBData = {};
 let feature_config = {
   debug: false, // debug模式
   version: 2, // 配置的版本，当前配置
-  net_gap_ms: 10000, // 网络请求最小间隔 默认10s 10000ms
+  net_gap_ms: 60000, // 网络请求最小间隔 默认60s 60000ms
   notificationMode: [1, 0], // 通知模式，0 原生Notification对象 1 网页内信息 -1 是无
   fontColor: "#ffffff", // 插件通用文本颜色 默认#ffffff  ##FONTCOLOR##
   zoomRate: "100%", // 主界面缩放比例
@@ -116,7 +120,7 @@ class tools {
    * 获取运行时的IP国别，以此来确定访问缓存服务器使用的地址
    */
   static checkIPArea() {
-    
+
   }
   /**
    * 生成与自建服务器通信使用的token
@@ -333,6 +337,27 @@ class tools {
       clone[key] = this.deepCloneObj(input[key]);
     }
     return clone;
+  }
+  /**
+   * 生成MD5值
+   * @param {String} str 字符串入参
+   * @returns {String} 转换后的字符串
+   */
+  static md5 = (str) => md5(str);
+  /**
+   * 生成X-Prot请求头参数
+   * @param {String} url 请求路径字符串
+   * @returns `Prot` 请求头参数 字符串
+   */
+  static getProtHeader = (url = "") => {
+    if (url.length == 0) return "";
+    const timeStamp = new Date().getTime();
+    const apiUrl = url.replace("http://", "").replace("www.simcompanies.com", "");
+    return {
+      url: apiUrl,
+      timestamp: timeStamp,
+      prot: md5(apiUrl + timeStamp)
+    };
   }
   static async indexDB_openDB() {
     return new Promise((resolve, reject) => {

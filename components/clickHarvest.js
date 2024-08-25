@@ -7,7 +7,7 @@ class clickHarvest extends BaseComponent {
     super()
     this.name = "一键收菜";
     this.describe = "组件包括了一键收菜的功能，在地图主页面点击收取按钮可以完成一键收菜"
-    this.enable = true;
+    this.enable = false;
     this.tagList = ['快捷'];
   }
   commonFuncList = [{
@@ -17,6 +17,9 @@ class clickHarvest extends BaseComponent {
     match: event => !Boolean(location.href.match(/landscape\/$/)),
     func: this.hideBtn
   }];
+  startupFuncList = [
+    this.userWarnFunc, // 用户安全警告提醒
+  ];
   indexDBData = {
     buttonText: "一键收菜",
     nodePosition: 0, // 0 右上角 1 左上角 2 中间悬浮
@@ -90,9 +93,6 @@ class clickHarvest extends BaseComponent {
     mainNode.innerHTML = htmlText;
     mainNode.querySelector("select").value = this.indexDBData.nodePosition;
     mainNode.querySelector("button.script_opt_submit").addEventListener("click", () => this.settingSubmitHandle());
-    // tools.log(mainNode.querySelector("button.script_opt_submit"));
-    // tools.log(mainNode);
-    // tools.log(this);
     return mainNode;
   }
   // 设置界面提交按钮处理函数
@@ -108,6 +108,12 @@ class clickHarvest extends BaseComponent {
     this.clearBtn();
     tools.alert("已提交更新");
     return;
+  }
+
+  // 用户安全警告提醒
+  userWarnFunc() {
+    tools.msg_send("一键收菜 - 该组件在2024年8月25日前后由协管“KINGMAK3R”明确认定为违规功能，此组件的默认开关已改为关闭状态，开启后注意账号风险，插件开发者不承担任何责任。");
+    tools.msg_send("一键收菜 - 该组件的其他实现方式正在开发中，也欢迎在Github页面提交建议或者Pull Request。");
   }
 }
 new clickHarvest();
