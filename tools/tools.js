@@ -4,7 +4,7 @@ let indexDBData = {};
 let feature_config = {
   debug: false, // debug模式
   version: 2, // 配置的版本，当前配置
-  net_gap_ms: 60000, // 网络请求最小间隔 默认60s 60000ms
+  net_gap_ms: 10000, // 网络请求最小间隔 默认10s 10000ms
   notificationMode: [1, 0], // 通知模式，0 原生Notification对象 1 网页内信息 -1 是无
   fontColor: "#ffffff", // 插件通用文本颜色 默认#ffffff  ##FONTCOLOR##
   zoomRate: "100%", // 主界面缩放比例

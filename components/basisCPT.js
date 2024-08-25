@@ -443,7 +443,7 @@ class basisCPT extends BaseComponent {
       }
     });
     // 检测内容
-    if (Math.floor(valueList[cptCount + 1]) < 60000) return tools.alert("插件主动网络请求最小间隔 不允许设置小于1分钟,请填写大于等于60000的数值。");
+    if (Math.floor(valueList[cptCount + 1]) < 60000) return tools.alert("插件主动网络请求最小间隔 不允许设置小于1分钟");
     if (!tools.hexArgbCheck(valueList[cptCount + 2])) return tools.alert("只支持HEX格式颜色和RGB格式颜色.");
     if (valueList[cptCount + 3] > 100 || valueList[cptCount + 3] <= 0) return tools.alert("网页缩放比例太离谱嗷.\n只允许 (0-100].");
     if (valueList[cptCount + 4] < 0) return tools.alert("间距不允许是负数");
