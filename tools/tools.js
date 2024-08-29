@@ -141,26 +141,36 @@ class tools {
     result = result.map(item => item == Infinity ? 0 : item);
     return result;
   }
+  
   static zoomRateApply() {
-    if (this.browserKind != "Firefox") {
-      // 非火狐系浏览器
+    if (this.browserKind !== "Firefox") {
+    //非Firefox浏览器使用 zoom
       document.body.style.zoom = feature_config.zoomRate;
     } else {
-      // 火狐系浏览器
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+      // Firefox 浏览器使用 transform
+      let scaleRatio = parseFloat(feature_config.zoomRate) / 100; // 将百分比转换为浮点数
+      let viewportWidth = window.innerWidth;
+      let viewportHeight = window.innerHeight;
+
       document.body.style.transform = `scale(${scaleRatio})`;
       document.body.style.transformOrigin = '0 0';
+
+      // 调整页面宽度和高度，使其在缩放后铺满屏幕
       document.body.style.width = `${viewportWidth / scaleRatio}px`;
       document.body.style.height = `${viewportHeight / scaleRatio}px`;
+
+      // 移除可能导致滚动的样式
       document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden"; // 隐藏水平和垂直滚动
-      window.addEventListener('resize', function () {
+      document.body.style.overflow = "hidden";
+      
+      // 监听窗口尺寸变化，自动调整缩放
+      window.addEventListener('resize', function() {
         document.body.style.width = `${window.innerWidth / scaleRatio}px`;
         document.body.style.height = `${window.innerHeight / scaleRatio}px`;
       });
     }
   }
+  
   static hexArgbCheck(input) {
     if (input == "" || input == undefined) return false;
     return /^#[0-9a-fA-F]{6}$/.test(input) || /^rgba?\((\s*\d+\s*,){2}\s*\d+(\.\d+)?(\s*,\s*\d+(\.\d+)?)?\s*\)$/.test(input);
