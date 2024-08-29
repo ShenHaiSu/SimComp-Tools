@@ -476,7 +476,7 @@ class basisCPT extends BaseComponent {
     cssNode.setAttribute("sct_id", "scriptConfEdit_css");
     cssNode.textContent = `#scriptConfEdit_maim{width:100%;}#scriptConfEdit_maim button{height:100%;}#scriptConfEdit_maim textarea{height:5em;resize:none;width:100%;}#scriptConfEdit_maim table{border-spacing:10px;border-collapse:separate;}`;
     newNode.id = `scriptConfEdit_maim`;
-    newNode.innerHTML = `<div id=scriptConfEdit_maim><table><tr><td>导出文本<td><textarea>${await tools.indexDB_genAllData2String()}</textarea><tr><td colspan=2><button class="btn form-control"script_id=download>下载json文件</button><tr><td>导入文本<td><textarea placeholder=在这里输入导入配置的文本></textarea><tr><td colspan=2><button class="btn form-control"script_id=submit>点击导入</button></table></div>`
+    newNode.innerHTML = `<div id=scriptConfEdit_maim><table><tr><td>导出文本<td><textarea style=color:var(--fontColor)>${await tools.indexDB_genAllData2String()}</textarea><tr><td colspan=2><button class="btn form-control"script_id=download>下载json文件</button><tr><td>导入文本<td><textarea style=color:var(--fontColor) placeholder=在这里输入导入配置的文本></textarea><tr><td colspan=2><button class="btn form-control"script_id=submit>点击导入</button></table></div>`
     // 拉起提示
     tools.alert(newNode, cssNode);
     // 添加监听

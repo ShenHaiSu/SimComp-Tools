@@ -142,8 +142,24 @@ class tools {
     return result;
   }
   static zoomRateApply() {
-    if (this.browserKind != "Firefox") return document.body.style.zoom = feature_config.zoomRate;
-    // document.body.style.setProperty("-moz-transform", `scale(${feature_config.zoomRate})`);
+    if (this.browserKind != "Firefox") {
+      // 非火狐系浏览器
+      document.body.style.zoom = feature_config.zoomRate;
+    } else {
+      // 火狐系浏览器
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      document.body.style.transform = `scale(${scaleRatio})`;
+      document.body.style.transformOrigin = '0 0';
+      document.body.style.width = `${viewportWidth / scaleRatio}px`;
+      document.body.style.height = `${viewportHeight / scaleRatio}px`;
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden"; // 隐藏水平和垂直滚动
+      window.addEventListener('resize', function () {
+        document.body.style.width = `${window.innerWidth / scaleRatio}px`;
+        document.body.style.height = `${window.innerHeight / scaleRatio}px`;
+      });
+    }
   }
   static hexArgbCheck(input) {
     if (input == "" || input == undefined) return false;
