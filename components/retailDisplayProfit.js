@@ -97,7 +97,43 @@ class retailDisplayProfit extends BaseComponent {
     htmlText += `  <button class='btn' id='script_reatil_editStep'>临时步长</button>`;
     htmlText += `</div>`;
     htmlText += `<div sct-tempstep style='display:none;' >`;
-    htmlText += `<div><span>使用步长</span> <input step=0.1  placeholder="填0取消临时步长" type=number></div><div><span>最小倍率</span> <input step=0.1  type=number></div><div><span>最大倍率</span> <input step=0.1  type=number></div>`;
+    htmlText += `<div>
+    <div><span>使用步长</span></div>
+    <div>
+		<input type="radio" id="step_0" name="step" value="0">
+        <label for="step_0">关闭</label>
+        <input type="radio" id="step_0.1" name="step" value="0.1">
+        <label for="step_0.1">0.1</label>
+        <input type="radio" id="step_0.5" name="step" value="0.5">
+        <label for="step_0.5">0.5</label>
+        <input type="radio" id="step_1.0" name="step" value="1.0">
+        <label for="step_1.0">1.0</label>
+    </div>
+
+    <div><span>最小倍率</span></div>
+    <div>
+        <input type="radio" id="min_0.6" name="min_magnification" value="0.6">
+        <label for="min_0.6">0.6</label>
+        <input type="radio" id="min_0.7" name="min_magnification" value="0.7">
+		<label for="min_0.7">0.7</label>
+		<input type="radio" id="min_0.8" name="min_magnification" value="0.8">
+        <label for="min_0.8">0.8</label>
+        <input type="radio" id="min_0.9" name="min_magnification" value="0.9">
+        <label for="min_0.9">0.9</label>
+    </div>
+
+    <div><span>最大倍率</span></div>
+    <div>
+        <input type="radio" id="max_1.2" name="max_magnification" value="1.2">
+        <label for="max_1.2">1.2</label>
+        <input type="radio" id="max_1.3" name="max_magnification" value="1.3">
+        <label for="max_1.3">1.3</label>
+        <input type="radio" id="max_1.5" name="max_magnification" value="1.5">
+		<label for="max_1.5">1.5</label>
+		<input type="radio" id="max_2.0" name="max_magnification" value="2.0">
+        <label for="max_2.0">2.0</label>
+    </div>
+</div>`;
     htmlText += `</div>`;
     this.componentData.containerNode.innerHTML = htmlText;
     Object.assign(this.componentData.containerNode.style, {
@@ -297,30 +333,42 @@ class retailDisplayProfit extends BaseComponent {
   // 编辑临时步长
   editStep(event) {
     const editBase = event.target.parentElement.nextElementSibling;
-    const valueList = Object.values(editBase.querySelectorAll("input")).map(node => parseInt(node.value) || 0);
+    const selectedStep = editBase.querySelector("input[name='step']:checked")?.value || 0;
+    const selectedMinRate = editBase.querySelector("input[name='min_magnification']:checked")?.value || 0;
+    const selectedMaxRate = editBase.querySelector("input[name='max_magnification']:checked")?.value || 0;
+    
+    // 确保值是数字
+    const valueList = [
+        parseFloat(selectedStep),
+        parseFloat(selectedMinRate),
+        parseFloat(selectedMaxRate)
+    ];
+    
     // 检查是否是编辑模式
-    if (event.target.innerText == "临时步长") {
-      // 切换到编辑临时步长模式
-      event.target.innerText = "确定设置";
-      editBase.style.display = "block";
-      valueList[0] = this.componentData.tempStepConfig.step;
-      valueList[1] = this.componentData.tempStepConfig.minRate;
-      valueList[2] = this.componentData.tempStepConfig.maxRate;
+    if (event.target.innerText === "临时步长") {
+        // 切换到编辑临时步长模式
+        event.target.innerText = "确定设置";
+        editBase.style.display = "block";
+        // 初始化输入框的值
+        editBase.querySelector("input[name='step'][value='" + this.componentData.tempStepConfig.step + "']").checked = true;
+        editBase.querySelector("input[name='min_magnification'][value='" + this.componentData.tempStepConfig.minRate + "']").checked = true;
+        editBase.querySelector("input[name='max_magnification'][value='" + this.componentData.tempStepConfig.maxRate + "']").checked = true;
     } else {
-      // 保存临时步长设置
-      // 审核数据
-      if (valueList[0] != 0 && (valueList[1] == 0 || valueList[2] == 0)) return tools.alert("设置了临时步长请也设置临时范围。");
-      if (valueList[0] != 0 && valueList[1] >= valueList[2]) return tools.alert("起始倍率不能小于或者等于终止倍率");
-      if (valueList[0] < 0) return tools.alert("数据不合法");
-      // 修改样式
-      event.target.innerText = "临时步长";
-      editBase.style.display = "none";
-      // 保存配置
-      this.componentData.tempStepConfig.step = valueList[0];
-      this.componentData.tempStepConfig.minRate = valueList[1];
-      this.componentData.tempStepConfig.maxRate = valueList[2];
+        // 保存临时步长设置
+        // 审核数据
+        if (valueList[0] !== 0 && (valueList[1] === 0 || valueList[2] === 0)) return tools.alert("设置了临时步长请也设置临时范围。");
+        if (valueList[0] !== 0 && valueList[1] >= valueList[2]) return tools.alert("起始倍率不能小于或者等于终止倍率");
+        if (valueList[0] < 0) return tools.alert("数据不合法");
+        // 修改样式
+        event.target.innerText = "临时步长";
+        editBase.style.display = "none";
+        // 保存配置
+        this.componentData.tempStepConfig.step = valueList[0];
+        this.componentData.tempStepConfig.minRate = valueList[1];
+        this.componentData.tempStepConfig.maxRate = valueList[2];
     }
-  }
+}
+
 
   // 步进模拟前置行为
   preAction() {
