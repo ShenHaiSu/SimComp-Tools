@@ -86,60 +86,11 @@ class retailDisplayProfit extends BaseComponent {
     // 审核过滤内容
     if (isNaN(totalProfit) || isNaN(hourProfit)) return; // 数据错误
     // 挂载显示
-    let htmlText = ``;
-    htmlText += `<div>预估数据: </div>`
-    htmlText += `<div>总利润：${totalProfit}</div>`;
-    htmlText += `<div>时利润：${hourProfit}</div>`;
-    htmlText += `<div style="display:flex;justify-content:space-around;;align-items:center;flex-wrap: wrap;" >`;
-    htmlText += `  <button class='btn' id='script_reatil_maxHour'>最大时利</button>`;
-    htmlText += `  <button class='btn' id='script_reatil_maxUnit'>最大单利</button>`
-    htmlText += `  <button class='btn' id='script_reatil_targetHour'>指定时利</button>`;
-    htmlText += `  <button class='btn' id='script_reatil_editStep'>临时步长</button>`;
-    htmlText += `</div>`;
-    htmlText += `<div sct-tempstep style='display:none;' >`;
-    htmlText += `<div>
-    <div><span>使用步长</span></div>
-    <div>
-		<input type="radio" id="step_0" name="step" value="0">
-        <label for="step_0">关闭</label>
-        <input type="radio" id="step_0.1" name="step" value="0.1">
-        <label for="step_0.1">0.1</label>
-        <input type="radio" id="step_0.5" name="step" value="0.5">
-        <label for="step_0.5">0.5</label>
-        <input type="radio" id="step_1.0" name="step" value="1.0">
-        <label for="step_1.0">1.0</label>
-    </div>
-
-    <div><span>最小倍率</span></div>
-    <div>
-        <input type="radio" id="min_0.6" name="min_magnification" value="0.6">
-        <label for="min_0.6">0.6</label>
-        <input type="radio" id="min_0.7" name="min_magnification" value="0.7">
-		<label for="min_0.7">0.7</label>
-		<input type="radio" id="min_0.8" name="min_magnification" value="0.8">
-        <label for="min_0.8">0.8</label>
-        <input type="radio" id="min_0.9" name="min_magnification" value="0.9">
-        <label for="min_0.9">0.9</label>
-    </div>
-
-    <div><span>最大倍率</span></div>
-    <div>
-        <input type="radio" id="max_1.2" name="max_magnification" value="1.2">
-        <label for="max_1.2">1.2</label>
-        <input type="radio" id="max_1.3" name="max_magnification" value="1.3">
-        <label for="max_1.3">1.3</label>
-        <input type="radio" id="max_1.5" name="max_magnification" value="1.5">
-		<label for="max_1.5">1.5</label>
-		<input type="radio" id="max_2.0" name="max_magnification" value="2.0">
-        <label for="max_2.0">2.0</label>
-    </div>
-</div>`;
-    htmlText += `</div>`;
-    this.componentData.containerNode.innerHTML = htmlText;
+    this.componentData.containerNode.innerHTML = `<div>预估数据:</div><div>总利润：${totalProfit}</div><div>时利润：${hourProfit}</div><div style=display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap><button class=btn id=script_reatil_maxHour>最大时利</button> <button class=btn id=script_reatil_maxUnit>最大单利</button> <button class=btn id=script_reatil_targetHour>指定时利</button> <button class=btn id=script_reatil_editStep>临时步长</button></div><div style=display:none sct-tempstep=""><div><div><span>使用步长</span></div><div><input id=step_0 name=step type=radio value=0> <label for=step_0>关闭</label> <input id=step_0.1 name=step type=radio value=0.1> <label for=step_0.1>0.1</label> <input id=step_0.5 name=step type=radio value=0.5> <label for=step_0.5>0.5</label> <input id=step_1.0 name=step type=radio value=1.0> <label for=step_1.0>1.0</label></div><div><span>最小倍率</span></div><div><input id=min_0 name=min_magnification type=radio value=0 style=display:none> <label for=min_0 style=display:none>0</label> <input id=min_0.6 name=min_magnification type=radio value=0.6> <label for=min_0.6>0.6</label> <input id=min_0.7 name=min_magnification type=radio value=0.7> <label for=min_0.7>0.7</label> <input id=min_0.8 name=min_magnification type=radio value=0.8> <label for=min_0.8>0.8</label> <input id=min_0.9 name=min_magnification type=radio value=0.9> <label for=min_0.9>0.9</label></div><div><span>最大倍率</span></div><div><input id=max_0 name=max_magnification type=radio value=0 style=display:none> <label for=max_0 style=display:none>0</label> <input id=max_1.2 name=max_magnification type=radio value=1.2> <label for=max_1.2>1.2</label> <input id=max_1.3 name=max_magnification type=radio value=1.3> <label for=max_1.3>1.3</label> <input id=max_1.5 name=max_magnification type=radio value=1.5> <label for=max_1.5>1.5</label> <input id=max_2.0 name=max_magnification type=radio value=2.0> <label for=max_2.0>2.0</label></div></div></div>`;
     Object.assign(this.componentData.containerNode.style, {
       display: "block",
       top: `${activeNodeRect.top + activeNodeRect.height + 50}px`,
-      left: `${activeNodeRect.left + activeNodeRect.width}px`,
+      left: `${activeNodeRect.left + activeNodeRect.width - 30}px`,
     })
 
     // 创建计时器
@@ -147,21 +98,20 @@ class retailDisplayProfit extends BaseComponent {
       Object.assign(this.componentData.containerNode.style, { display: "none" });
     }, 3000);
   }
+  
+  // 从节点中获取当前零售的商品名称，单利润，销售用时
   getInfo(node) {
     let textList = node.innerText.split("\n");
     let name = textList[0];
-
     // 检查 textList[3] 是否存在，并确保正则匹配结果有效
     let profit = textList[3] ? parseFloat(textList[3].replaceAll(",", "").match(/\$(-)?\d+\.\d+/)?.[0].replace("$", "")) : null;
-
-
     // 检查 textList[4] 是否存在，并确保正则匹配结果有效
     let matchList = textList[4] ? textList[4].match(/(\d+:\d+)|(\(.+\))/g) : null;
     let duration_hour = matchList ? this.getTimeFormat(matchList[0], matchList[1]) : null;
-
     return { name, profit, duration_hour };
   }
 
+  // 将将时间戳
   getTimeFormat(targetStamp, durationTime) {
     let nowTime = new Date();
     let [targetHour, targetMinutes] = targetStamp.split(":");
@@ -176,6 +126,7 @@ class retailDisplayProfit extends BaseComponent {
     return timeDiff;
   }
 
+  // 从节点获取品质
   getQuality(node) {
     let rootNode = tools.getParentByIndex(node, 6);
     let quality = 0;
@@ -184,6 +135,7 @@ class retailDisplayProfit extends BaseComponent {
     return quality;
   }
 
+  // 从物品名字与数量计算实际成本
   getCost(resName, quantity) {
     // 统计未被封锁的物品,直到抵达总量符合
     let nowQuantity = 0;
@@ -332,43 +284,43 @@ class retailDisplayProfit extends BaseComponent {
 
   // 编辑临时步长
   editStep(event) {
-    const editBase = event.target.parentElement.nextElementSibling;
-    const selectedStep = editBase.querySelector("input[name='step']:checked")?.value || 0;
-    const selectedMinRate = editBase.querySelector("input[name='min_magnification']:checked")?.value || 0;
-    const selectedMaxRate = editBase.querySelector("input[name='max_magnification']:checked")?.value || 0;
-    
-    // 确保值是数字
-    const valueList = [
-        parseFloat(selectedStep),
-        parseFloat(selectedMinRate),
-        parseFloat(selectedMaxRate)
-    ];
-    
-    // 检查是否是编辑模式
     if (event.target.innerText === "临时步长") {
-        // 切换到编辑临时步长模式
-        event.target.innerText = "确定设置";
-        editBase.style.display = "block";
-        // 初始化输入框的值
-        editBase.querySelector("input[name='step'][value='" + this.componentData.tempStepConfig.step + "']").checked = true;
-        editBase.querySelector("input[name='min_magnification'][value='" + this.componentData.tempStepConfig.minRate + "']").checked = true;
-        editBase.querySelector("input[name='max_magnification'][value='" + this.componentData.tempStepConfig.maxRate + "']").checked = true;
+      // 切换到编辑临时步长模式
+      return this.enterTempStepEditMode(event, event.target.parentElement.nextElementSibling);
     } else {
-        // 保存临时步长设置
-        // 审核数据
-        if (valueList[0] !== 0 && (valueList[1] === 0 || valueList[2] === 0)) return tools.alert("设置了临时步长请也设置临时范围。");
-        if (valueList[0] !== 0 && valueList[1] >= valueList[2]) return tools.alert("起始倍率不能小于或者等于终止倍率");
-        if (valueList[0] < 0) return tools.alert("数据不合法");
-        // 修改样式
-        event.target.innerText = "临时步长";
-        editBase.style.display = "none";
-        // 保存配置
-        this.componentData.tempStepConfig.step = valueList[0];
-        this.componentData.tempStepConfig.minRate = valueList[1];
-        this.componentData.tempStepConfig.maxRate = valueList[2];
+      // 保存临时步长设置
+      return this.exitTempStepEditMode(event, event.target.parentElement.nextElementSibling);
     }
-}
+  }
 
+  // 进入临时步长编辑模式
+  enterTempStepEditMode(event, editBase) {
+    event.target.innerText = "确定设置";
+    editBase.style.display = "block";
+    // 初始化输入框的值
+    editBase.querySelector("input[name='step'][value='" + this.componentData.tempStepConfig.step + "']").checked = true;
+    editBase.querySelector("input[name='min_magnification'][value='" + this.componentData.tempStepConfig.minRate + "']").checked = true;
+    editBase.querySelector("input[name='max_magnification'][value='" + this.componentData.tempStepConfig.maxRate + "']").checked = true;
+  }
+
+  // 退出临时步长编辑模式
+  exitTempStepEditMode(event, editBase) {
+    const valueList = [];
+    valueList[0] = parseFloat(editBase.querySelector("input[name='step']:checked")?.value || 0) || 0;
+    valueList[1] = parseFloat(editBase.querySelector("input[name='min_magnification']:checked")?.value || 0) || 0;
+    valueList[2] = parseFloat(editBase.querySelector("input[name='max_magnification']:checked")?.value || 0) || 0;
+    // 审核数据
+    if (valueList[0] !== 0 && (valueList[1] === 0 || valueList[2] === 0)) return tools.alert("设置了临时步长请也设置临时范围。");
+    if (valueList[0] !== 0 && valueList[1] >= valueList[2]) return tools.alert("起始倍率不能小于或者等于终止倍率");
+    if (valueList[0] < 0) return tools.alert("数据不合法");
+    // 修改样式
+    event.target.innerText = "临时步长";
+    editBase.style.display = "none";
+    // 保存配置
+    this.componentData.tempStepConfig.step = valueList[0];
+    this.componentData.tempStepConfig.minRate = valueList[1];
+    this.componentData.tempStepConfig.maxRate = valueList[2];
+  }
 
   // 步进模拟前置行为
   preAction() {

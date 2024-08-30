@@ -7,8 +7,9 @@
 # 使用方法 [选其一即可]
 - 从Github最新Release下载build.user.js导入油猴插件
 - 从我建好的分发服务器下载更新
-  - 大陆用户：http://103.40.13.68:45154/file/download
-  - 海外用户：http://rack1.raincs.cc:45154/file/download
+  - 大陆用户：http://yuyun-mainland.daoluolts.de:45154/file/download
+  - 海外用户：http://yuyun-outsea.daoluolts.de:45154/file/download
+  - 后续将会改用https协议，请注意前缀的更换。
 - 从代码构建 
   - 下载代码
   - `yarn`
@@ -20,9 +21,6 @@ https://github.com/ShenHaiSu/SimComp-Tools/releases/tag/2.11.231208085516-app
 - WindowsPC 基于Electron (可以使用原生Notification通知对象拉起系统级通知)
 - Android 基于系统WebView (可以通过安卓通知通道拉起通知)
 - IOS与MacOS客户端开发 无计划
-
-# 肚子饿饿
-- https://afdian.net/a/SCT-Editor
 
 # 部分功能如下
 - `聊天信息过滤/高亮`
@@ -125,6 +123,3 @@ https://github.com/ShenHaiSu/SimComp-Tools/releases/tag/2.11.231208085516-app
   - 左上角待处理消息强制显示
 - `网页全局缩放` 
   - 在基础组件设置里面将网页整体缩放比例.
-
-# 已知不适配 
-- [`网页全局缩放`]火狐浏览器全系列不可用

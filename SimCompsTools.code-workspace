@@ -5,14 +5,6 @@
 			"path": "."
 		},
 		{
-			"name": "SimCompsToolsV3",
-			"path": "../SimCompsToolsV3"
-		},
-		{
-			"name": "SimComp-APIProxy",
-			"path": "../SimComp-APIProxy"
-		},
-		{
 			"path": "../SimCompsTools-Electron"
 		},
 		{

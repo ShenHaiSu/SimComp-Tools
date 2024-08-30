@@ -112,8 +112,8 @@ class clickHarvest extends BaseComponent {
 
   // 用户安全警告提醒
   userWarnFunc() {
-    tools.msg_send("一键收菜 - 该组件在2024年8月25日前后由协管“KINGMAK3R”明确认定为违规功能，此组件的默认开关已改为关闭状态，开启后注意账号风险，插件开发者不承担任何责任。");
-    tools.msg_send("一键收菜 - 该组件的其他实现方式正在开发中，也欢迎在Github页面提交建议或者Pull Request。");
+    tools.msg_send("一键收菜", "该组件在2024年8月25日前后由协管“KINGMAK3R”明确认定为违规功能，此组件的默认开关已改为关闭状态，开启后注意账号风险，插件开发者不承担任何责任。", 1);
+    tools.msg_send("一键收菜", "该组件的其他实现方式正在开发中，也欢迎在Github页面提交建议或者Pull Request。", 1);
   }
 }
 new clickHarvest();
