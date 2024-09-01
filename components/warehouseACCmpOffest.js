@@ -182,7 +182,7 @@ class warehouseACCmpOffest extends BaseComponent {
         result = 0;
         return;
     }
-    return Number(result.toFixed(2));
+    return Number(result.toFixed(3));
   }
   // 特殊Value赋值处理器
   specialValueHandler(optionNode, value, market_price) {
