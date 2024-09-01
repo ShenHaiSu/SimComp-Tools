@@ -100,9 +100,15 @@ class warehouseACCmpOffest extends BaseComponent {
       let optionList = Object.values(selectorNode.querySelectorAll("option"));
       for (let i = 0; i < optionList.length; i++) {
         let optionNode = optionList[i];
-        let oriContent = this.indexDBData.offestList[realm][Number(optionNode.value)];
-        let realPrice = this.realPriceCalc(oriContent, market_price);
-        optionNode.innerHTML = `${oriContent}： ${realPrice}`;
+        if (isNaN(parseInt(optionNode.value))) {
+          // 特殊Value处理器
+          this.specialValueHandler(optionNode, optionNode.value, market_price);
+        } else {
+          // 常规计算处理器
+          let oriContent = this.indexDBData.offestList[realm][parseInt(optionNode.value)];
+          let realPrice = this.realPriceCalc(oriContent, market_price);
+          optionNode.innerHTML = `${oriContent}: ${realPrice}`;
+        }
       }
       // 挂载节点
       targetNode.appendChild(selectorNode);
@@ -123,7 +129,8 @@ class warehouseACCmpOffest extends BaseComponent {
     let realm = (this.componentData.realm == undefined) ? await tools.getRealm() : this.componentData.realm;
     this.componentData.realm = realm;
     let newNode = document.createElement("select");
-    let htmlText = this.indexDBData.offestList[realm].map((value, index) => `<option value='${index}'>${value}</option>`).join("");
+    let htmlText = `<option value='#mp' disabled >MP:</option>`;
+    htmlText += this.indexDBData.offestList[realm].map((value, index) => `<option value='${index}'>${value}</option>`).join("");
     newNode.innerHTML = htmlText;
     newNode.addEventListener("change", e => this.selectorChange(e));
     newNode.setAttribute("sct_cpt", "warehouseACCmpOffest");
@@ -133,10 +140,12 @@ class warehouseACCmpOffest extends BaseComponent {
   // 选择器被点击
   selectorChange(e) {
     try {
+      // 特殊Value拦截处理器
+      if (isNaN(parseInt(e.target.selectedOptions[0].value))) return; // 非常规value值，暂不处理。Date:2024年9月1日
       let realm = this.componentData.realm;
       let index = e.target.selectedIndex;
       let market_price = Number(e.target.getAttribute("mp"));
-      let realPrice = this.realPriceCalc(this.indexDBData.offestList[realm][index], market_price);
+      let realPrice = this.realPriceCalc(this.indexDBData.offestList[realm][parseInt(e.target.selectedOptions[0].value)], market_price);
       let targetNode = e.target.previousElementSibling;
       tools.log(`index:${index} value:${this.indexDBData.offestList[realm][index]} output:${realPrice}`);
       tools.setInput(targetNode, realPrice, 3);
@@ -173,8 +182,18 @@ class warehouseACCmpOffest extends BaseComponent {
         result = 0;
         return;
     }
-    return Number(result.toFixed(3));
+    return Number(result.toFixed(2));
   }
-
+  // 特殊Value赋值处理器
+  specialValueHandler(optionNode, value, market_price) {
+    switch (value) {
+      case "#mp":
+        optionNode.innerHTML = `MP: ${market_price}`;
+        return;
+      default:
+        optionNode.innerHTML = `#####`;
+        return;
+    }
+  }
 }
 new warehouseACCmpOffest();
