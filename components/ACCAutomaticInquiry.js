@@ -338,7 +338,7 @@ class ACCAutomaticInquiry extends BaseComponent {
       let outputString = "";
       let totalList = indexDBData.basisCPT.warehouse[realm].filter(item => item.kind.db_letter == resID);
       let qualityItem = totalList.find(item => item.quality == quality) || { amount: 0 };
-      let totalCount = totalList.reduce((a, b) => (a.amount || 0) + (b.amount || 0), 0);
+      let totalCount = totalList.reduce((a, b) => a + (b.amount || 0), 0);
       switch (mode) {
         case 1: // 显示所有
           outputString = `T:${tools.numberAddCommas(totalCount)}`;
