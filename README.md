@@ -1,15 +1,10 @@
 # Sim Companies Little Tools
  - 作者：道洛LTS_Kim
- - QQ交流群：926159075
  - 插件显示的所有数据均为参考，请以实际为准。 如有巨大偏差，请联系开发者并尽可能详细描述
  - 插件主要适配：PC浏览器+油猴插件+简中游戏语言.（其他环境不代表不能用，但是不保证正常，偶尔做做适配）
 
 # 使用方法 [选其一即可]
 - 从Github最新Release下载build.user.js导入油猴插件
-- 从我建好的分发服务器下载更新
-  - 大陆用户：http://yuyun-mainland.daoluolts.de:45154/file/download
-  - 海外用户：http://yuyun-outsea.daoluolts.de:45154/file/download
-  - 后续将会改用https协议，请注意前缀的更换。
 - 从代码构建 
   - 下载代码
   - `yarn`
