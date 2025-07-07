@@ -1,5 +1,5 @@
-let fs = require('fs');
-let path = require('path');
+let fs = require('node:fs');
+let path = require('node:path');
 let distPath = path.join(__dirname, 'dist');
 
 // 添加前缀
@@ -9,16 +9,15 @@ const addPreText = (nowVersion) => {
   let preText = [
     `// ==UserScript==`,
     `// @name         SimComps - tools`,
-    `// @namespace    http://shenhaisu.cc/`,
+    `// @namespace    https://daoluolts.de`,
     `// @version      ${nowVersion.join(".")}`,
     `// @description  给国人使用的SimComps脚本`,
     `// @author       ShenHaiSu`,
-    `// @match        http://www.simcompanies.com/*`,
     `// @match        https://www.simcompanies.com/*`,
-    `// @updateURL    http://yuyun-mainland.daoluolts.de:45154/file/download`,
-    `// @downloadURL  http://yuyun-mainland.daoluolts.de:45154/file/download`,
-    `// @updateURL    http://yuyun-outsea.daoluolts.de:45154/file/download`,
-    `// @downloadURL  http://yuyun-outsea.daoluolts.de:45154/file/download`,
+    `// @updateURL    https://scs1.daoluolts.de:8080/api/plugin-download`,
+    `// @downloadURL  https://scs1.daoluolts.de:8080/api/plugin-download`,
+    `// @updateURL    https://scs1.daoluolts.de:8080/api/plugin-download`,
+    `// @downloadURL  https://scs1.daoluolts.de:8080/api/plugin-download`,
     `// @license      MIT`,
     `// @grant        none`,
     `// @noframes`,
@@ -31,7 +30,7 @@ const addPreText = (nowVersion) => {
 
 // 获取版本号
 const getVersion = () => {
-  let oldFile = JSON.parse(fs.readFileSync(path.join(distPath, "version.json")));
+  const oldFile = JSON.parse(fs.readFileSync(path.join(distPath, "version.json"), 'utf-8'));
   return oldFile.version;
 }
 

@@ -1,5 +1,5 @@
 const BaseComponent = require("../tools/baseComponent.js");
-const { tools, componentList, runtimeData, indexDBData, feature_config } = require("../tools/tools.js");
+const {tools, componentList, runtimeData, indexDBData, feature_config} = require("../tools/tools.js");
 
 // 一键收菜组件
 class clickHarvest extends BaseComponent {
@@ -10,6 +10,7 @@ class clickHarvest extends BaseComponent {
     this.enable = false;
     this.tagList = ['快捷'];
   }
+
   commonFuncList = [{
     match: event => Boolean(location.href.match(/landscape\/$/)),
     func: this.createBtn
@@ -34,14 +35,14 @@ class clickHarvest extends BaseComponent {
 
   // 创建按钮标签
   createBtn(event) {
-    // 检查btn存在
+    // 检查btn存在Script_oneClickHarvest_Btn
     let buttonNode = document.querySelector("#Script_oneClickHarvest_Btn");
     if (buttonNode) {
       buttonNode.style.display = "block";
       return;
     }
     // 检查内存中是否存在
-    if (this.componentData.btnNode == undefined) {
+    if (this.componentData.btnNode === undefined) {
       let newNode = document.createElement("button");
       newNode.innerText = this.indexDBData.buttonText;
       newNode.id = "Script_oneClickHarvest_Btn";
@@ -50,27 +51,40 @@ class clickHarvest extends BaseComponent {
       this.componentData.btnNode.addEventListener("click", this.btnClickHandle);
     }
 
-    if (this.indexDBData.nodePosition == 0) {
+    if (this.indexDBData.nodePosition === 0) {
       // 挂载右上角
       document.querySelector(".navbar-container").appendChild(this.componentData.btnNode);
-    } else if (this.indexDBData.nodePosition == 1) {
+    } else if (this.indexDBData.nodePosition === 1) {
       // 挂载左上角
       let parentElement = document.querySelector(".navbar-container");
       parentElement.insertBefore(this.componentData.btnNode, parentElement.children[1]);
-    } else if (this.indexDBData.nodePosition == 2) {
+    } else if (this.indexDBData.nodePosition === 2) {
       // 悬浮挂载
       this.componentData.btnNode.className = "btn fixedDisplay";
       document.body.appendChild(this.componentData.btnNode);
     }
   }
+
   // 按钮点击处理函数
   btnClickHandle() {
-    if (!Boolean(location.href.match(/landscape\/$/))) return document.querySelector("#Script_oneClickHarvest_Btn").remove();
-    document.querySelectorAll("div > div > div > a").forEach((item) => {
-      if (!item.className.match("headquarter") && item.querySelectorAll("a > img").length == 3) item.click();
-    });
+    // 如果不在对应界面，就删除挂载的元素。
+    if (!Boolean(location.href.match(/landscape\/$/))) {
+      return document.querySelector("#Script_oneClickHarvest_Btn").remove();
+    }
+    // 获取节点并过滤
+    const nodeList = Object.values(document.querySelectorAll("div > div > div > a"))
+      .filter(node => !node.className.match("headquarter")) // 排除总部建筑
+      .filter(node => Object.values(node.querySelectorAll("img")).length === 4) // 排除没有四个图像的节点
+
+    // 遍历节点并点击
+    for (let i = 0; i < nodeList.length; i++) {
+      nodeList[i].click();
+    }
+
+    // 发送消息
     tools.msg_send("一键收取", "完成收取啦!", 1);
   }
+
   // 删除按钮标签
   clearBtn() {
     let node = document.querySelector("#Script_oneClickHarvest_Btn");
@@ -78,12 +92,14 @@ class clickHarvest extends BaseComponent {
     node.remove();
     this.componentData.btnNode = undefined;
   }
+
   // 隐藏按钮标签
   hideBtn() {
     let node = document.querySelector("#Script_oneClickHarvest_Btn");
     if (!node) return;
-    Object.assign(node.style, { display: "none" });
+    Object.assign(node.style, {display: "none"});
   }
+
   // 设置界面
   uisetting() {
     let mainNode = document.createElement("div");
@@ -95,6 +111,7 @@ class clickHarvest extends BaseComponent {
     mainNode.querySelector("button.script_opt_submit").addEventListener("click", () => this.settingSubmitHandle());
     return mainNode;
   }
+
   // 设置界面提交按钮处理函数
   settingSubmitHandle() {
     let valueList = [
@@ -102,7 +119,7 @@ class clickHarvest extends BaseComponent {
       parseInt(document.querySelector("#script_setting_clickHarvest select").value)
     ];
     tools.log("一键收菜设置设置更新", valueList);
-    this.indexDBData.buttonText = valueList[0] == "" ? "一键收取" : valueList[0];
+    this.indexDBData.buttonText = valueList[0] === "" ? "一键收取" : valueList[0];
     this.indexDBData.nodePosition = valueList[1];
     tools.indexDB_updateIndexDBData();
     this.clearBtn();
@@ -116,4 +133,5 @@ class clickHarvest extends BaseComponent {
     tools.msg_send("一键收菜", "该组件的其他实现方式正在开发中，也欢迎在Github页面提交建议或者Pull Request。", 1);
   }
 }
+
 new clickHarvest();
