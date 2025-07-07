@@ -26,5 +26,5 @@ const server = https.createServer(options, app);
 // 启动监听
 server.listen(ServerPort, () => {
   console.log(`Server is running on port ${ServerPort}`);
-  console.log(`https://sct1.daoluolts.de:${ServerPort}`);
+  console.log(`https://scs1.daoluolts.de:${ServerPort}`);
 })
