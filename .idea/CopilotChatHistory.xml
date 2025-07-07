@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotChatHistory">
+    <option name="conversations">
+      <list>
+        <Conversation>
+          <option name="createTime" value="1751888608108" />
+          <option name="id" value="0197e4b2bb6c751ea54166ee5511a37c" />
+          <option name="title" value="新对话 2025年7月07日 19:43:28" />
+          <option name="updateTime" value="1751888608108" />
+        </Conversation>
+        <Conversation>
+          <option name="createTime" value="1751811321713" />
+          <option name="id" value="0197e01777c8722db4369f16905d1c06" />
+          <option name="title" value="提示 实参类型与形参不匹配   这是为啥" />
+          <option name="updateTime" value="1751811321713" />
+        </Conversation>
+      </list>
+    </option>
+  </component>
+</project>

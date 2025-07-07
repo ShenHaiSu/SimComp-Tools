@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotWebChatHistory">
+    <option name="currentConversation">
+      <WebConversation>
+        <option name="session">
+          <ChatSession>
+            <option name="messages">
+              <list>
+                <UIChatMessage>
+                  <option name="command" value="" />
+                  <option name="content" value="提示 实参类型与形参不匹配   这是为啥" />
+                  <option name="cost" value="0" />
+                  <option name="createdAt" value="1751812228462" />
+                  <option name="localReferences">
+                    <list>
+                      <LocalReferences>
+                        <option name="isRequestStage" value="true" />
+                        <option name="range">
+                          <RefRange />
+                        </option>
+                        <option name="uri" value="{&quot;path&quot;:&quot;file:///F:/MyProgram/SimCompsToolsServer/mainRouter.mjs&quot;}" />
+                      </LocalReferences>
+                    </list>
+                  </option>
+                  <option name="parser">
+                    <SimpleMarkdownStreamParser>
+                      <option name="content" value="提示 实参类型与形参不匹配   这是为啥" />
+                      <option name="nodes">
+                        <list>
+                          <MarkdownNode>
+                            <option name="children">
+                              <list />
+                            </option>
+                            <option name="content" value="提示 实参类型与形参不匹配   这是为啥" />
+                            <option name="contentId" value="116144388" />
+                            <option name="settled" value="false" />
+                            <option name="type" value="line" />
+                            <option name="xmlData">
+                              <XmlNode />
+                            </option>
+                          </MarkdownNode>
+                        </list>
+                      </option>
+                      <option name="parserState">
+                        <ParserState>
+                          <option name="column" value="19" />
+                          <option name="offset" value="20" />
+                          <option name="moveCursor" value="true" />
+                        </ParserState>
+                      </option>
+                    </SimpleMarkdownStreamParser>
+                  </option>
+                  <option name="role" value="user" />
+                  <option name="selectedRanges">
+                    <list />
+                  </option>
+                  <option name="uri" value="" />
+                  <option name="variables">
+                    <list />
+                  </option>
+                </UIChatMessage>
+              </list>
+            </option>
+            <option name="messagesV3">
+              <list />
+            </option>
+            <option name="sessionId" value="0197e01777c8722db4369f16905d1c06" />
+          </ChatSession>
+        </option>
+        <option name="conversationId" value="0197e01777c8722db4369f16905d1c06" />
+        <option name="conversation">
+          <Conversation>
+            <option name="createTime" value="1751811321713" />
+            <option name="id" value="0197e01777c8722db4369f16905d1c06" />
+            <option name="title" value="提示 实参类型与形参不匹配   这是为啥" />
+            <option name="updateTime" value="1751811321713" />
+          </Conversation>
+        </option>
+      </WebConversation>
+    </option>
+  </component>
+</project>
