@@ -1,53 +1,93 @@
 const { componentList } = require("./tools.js")
 
+/**
+ * @typedef {Object} CommonFunc
+ * @property {RegExp|string} match - 匹配规则
+ * @property {Function} func - 处理函数
+ */
 
-// 基础组件
+/**
+ * @typedef {Object} NetFunc
+ * @property {RegExp|string} urlMatch - URL匹配规则
+ * @property {Function} func - 处理函数
+ */
+
+/**
+ * @typedef {Object} DebounceFunc
+ * @property {number} bounce - 防抖延迟时间(ms)
+ * @property {Function} func - 处理函数
+ */
+
+/**
+ * @typedef {Object} Dependency
+ * @property {string} name - 依赖名称
+ * @property {string} url - 依赖地址
+ */
+
+/**
+ * 基础组件类
+ * @class BaseComponent
+ */
 class BaseComponent {
-  // 组件名称
+  /** @type {string} 组件名称 */
   name = "";
-  // 组件描述
+  
+  /** @type {string} 组件描述 */
   describe = "";
-  // 组件开关
+  
+  /** @type {boolean} 组件开关 */
   enable = false;
-  // 允许关闭
+  
+  /** @type {boolean} 允许关闭 */
   canDisable = true;
-  // 通用处理函数列表
-  // [{match, func}, {match, func}]
+  
+  /** @type {CommonFunc[]} 通用处理函数列表 */
   commonFuncList = [];
-  // 网络请求拦截处理函数列表
-  // [{urlMatch,func}, {urlMatch,func}]
+  
+  /** @type {NetFunc[]} 网络请求拦截处理函数列表 */
   netFuncList = [];
-  // 防抖通用处理函数列表
-  // [{bounce:20, func}]
+  
+  /** @type {DebounceFunc[]} 防抖通用处理函数列表 */
   debounceFuncList = [];
-  // 自启动函数列表
-  // [func]
+  
+  /** @type {Function[]} 自启动函数列表 */
   startupFuncList = [];
-  // 聊天室信息处理函数列表
-  // [func]
+  
+  /** @type {Function[]} 聊天室信息处理函数列表 */
   chatMsgFuncList = [];
-  // UI设置界面
-  // func
+  
+  /** @type {Function|undefined} UI设置界面 */
   settingUI = undefined;
-  // 前台界面
+  
+  /** @type {Function|undefined} 前台界面 */
   frontUI = undefined;
-  // 组件内部数据
+  
+  /** @type {any} 组件内部数据 */
   componentData;
-  // 数据库数据
+  
+  /** @type {any} 数据库数据 */
   indexDBData;
-  // css追加
-  // ["", ""]
+  
+  /** @type {string[]} css追加 */
   cssText;
-  // 依赖前置库
-  // [{name:"asd",url:"asd"}]
+  
+  /** 
+   * @type {{
+   *   cpt: Dependency[], // 内部依赖
+   *   url: Dependency[]  // 外部库依赖
+   * }} 
+   */
   dependence = {
-    cpt: [], // 内部依赖
-    url: [], // 外部库依赖
+    cpt: [],
+    url: [],
   }
-  // 点击次数
+  
+  /** @type {number} 点击次数 */
   tapCount = 0
-  // tag列表
-  tagList = [] // ["tag1","tag2","tag3"]
+  
+  /** @type {string[]} tag列表 */
+  tagList = []
+
   constructor() {
     componentList[this.constructor.name] = this;
   }
