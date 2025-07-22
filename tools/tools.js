@@ -33,7 +33,7 @@ class tools {
   static lastMutation = undefined; // 最近一次元素变动记录
   static lastMutationTime = 0; // 最近一次元素变动的时间
   static windowMask = undefined; // 网页遮罩页面
-  static msgShowFlag = { timer: undefined, flag: false };// SCT底色改变
+  static msgShowFlag = { timer: undefined, flag: false }; // SCT底色改变
   static mutationUrlTemp = ""; // Mutation监控使用的url缓存
   static dialogNode = undefined; // 消息显示对象
   static dialogMain = undefined; // 消息挂载对象
@@ -42,12 +42,12 @@ class tools {
     mainNode: undefined, // 主节点
     msgNode: undefined, // 信息挂载节点
     resolveFunc: null, // 存储间接函数
-  }
+  };
   static noSaveClose = false; // 不保存数据进行关闭
 
   static baseURL = {
     // 用户基础信息 GET
-    userBase: "https://www.simcompanies.com/api/v2/companies/me/",
+    userBase: "https://www.simcompanies.com/api/v3/companies/auth-data/",
     // 建筑信息 GET
     building: "https://www.simcompanies.com/api/v2/companies/me/buildings/",
     // 仓库数据 GET
@@ -56,11 +56,7 @@ class tools {
     market: "https://www.simcompanies.com/api/v3/market/all",
     // 高管信息
     executives: "https://www.simcompanies.com/api/v2/companies/me/executives/",
-    // 自建服务器 国内线
-    sctServerCN: "http://103.40.13.68:45154/",
-    // 自建服务器 海外线
-    sctServerOS: "http://rack1.raincs.cc:45154/"
-  }
+  };
   static log() {
     if (!feature_config.debug) return;
     console.log.call(this, ...arguments);
@@ -73,10 +69,12 @@ class tools {
     return index ? this.getParentByIndex(node.parentElement, --index) : node;
   }
   static async dely(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
   static formatFeatureConfigComponentList() {
-    Object.values(componentList).forEach(item => feature_config.componentSwitchList[item.constructor.name] = item.enable);
+    Object.values(componentList).forEach(
+      (item) => (feature_config.componentSwitchList[item.constructor.name] = item.enable)
+    );
   }
   static CSSMount(cptName = "", cssText = "") {
     let newNode = document.createElement("style");
@@ -95,7 +93,7 @@ class tools {
     return true;
   }
   static checkWindowHorV() {
-    // 0 横屏 1 竖屏  
+    // 0 横屏 1 竖屏
     this.log(`height:`, window.innerHeight);
     this.log(`width:`, window.innerWidth);
     this.clientHorV = window.innerHeight > window.innerWidth ? 1 : 0;
@@ -103,34 +101,54 @@ class tools {
   static checkBrowser() {
     let userAgent = navigator.userAgent;
     // 判断是Electron
-    if (userAgent.includes('Electron')) return this.browserKind = "Electron";
+    if (userAgent.includes("Electron")) return (this.browserKind = "Electron");
     // 判断是否为 Chrome 浏览器
-    if (userAgent.includes('Chrome')) return this.browserKind = "Chrome";
+    if (userAgent.includes("Chrome")) return (this.browserKind = "Chrome");
     // 判断是否为 Firefox 浏览器
-    if (userAgent.includes('Firefox')) return this.browserKind = "Firefox";
+    if (userAgent.includes("Firefox")) return (this.browserKind = "Firefox");
     // 判断是否为 Safari 浏览器
-    if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return this.browserKind = "Safari";
+    if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) return (this.browserKind = "Safari");
     // 判断是否为 Edge 浏览器
-    if (userAgent.includes('Edge')) return this.browserKind = "Edge";
+    if (userAgent.includes("Edge")) return (this.browserKind = "Edge");
     // 判断是否为 IE 浏览器
-    if (userAgent.includes('Trident') || userAgent.includes('MSIE')) return this.browserKind = "IE";
-    return this.browserKind = "Unknown";
+    if (userAgent.includes("Trident") || userAgent.includes("MSIE")) return (this.browserKind = "IE");
+    return (this.browserKind = "Unknown");
   }
   /**
    * 获取运行时的IP国别，以此来确定访问缓存服务器使用的地址
    */
-  static checkIPArea() {
-
-  }
+  static checkIPArea() {}
   /**
    * 生成与自建服务器通信使用的token
    */
   static genToken(t = "", e = 30) {
-    const n = t + Math.floor(Date.now() / (60 * 60 * 1e3)).toString(); let o = 0; for (let t = 0; t < n.length; t++) { o = (o << 5) - o + n.charCodeAt(t), o &= o } let l = Math.abs(o).toString(36); if (l.length < e) { l += this.genToken(l + t, e - l.length) }
-    return l.slice(0, e)
+    const n = t + Math.floor(Date.now() / (60 * 60 * 1e3)).toString();
+    let o = 0;
+    for (let t = 0; t < n.length; t++) {
+      (o = (o << 5) - o + n.charCodeAt(t)), (o &= o);
+    }
+    let l = Math.abs(o).toString(36);
+    if (l.length < e) {
+      l += this.genToken(l + t, e - l.length);
+    }
+    return l.slice(0, e);
   }
   static mpFormat(mpData = []) {
-    let result = [Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity];
+    let result = [
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+      Infinity,
+    ];
     for (let i = 0; i < mpData.length; i++) {
       if (result[mpData[i].quality] != Infinity) continue;
       result[mpData[i].quality] = mpData[i].price;
@@ -138,13 +156,13 @@ class tools {
     for (let i = 0; i < result.length; i++) {
       result[i] = Math.min(result[i], ...result.slice(i + 1));
     }
-    result = result.map(item => item == Infinity ? 0 : item);
+    result = result.map((item) => (item == Infinity ? 0 : item));
     return result;
   }
-  
+
   static zoomRateApply() {
     if (this.browserKind !== "Firefox") {
-    //非Firefox浏览器使用 zoom
+      //非Firefox浏览器使用 zoom
       document.body.style.zoom = feature_config.zoomRate;
     } else {
       // Firefox 浏览器使用 transform
@@ -153,7 +171,7 @@ class tools {
       let viewportHeight = window.innerHeight;
 
       document.body.style.transform = `scale(${scaleRatio})`;
-      document.body.style.transformOrigin = '0 0';
+      document.body.style.transformOrigin = "0 0";
 
       // 调整页面宽度和高度，使其在缩放后铺满屏幕
       document.body.style.width = `${viewportWidth / scaleRatio}px`;
@@ -162,18 +180,20 @@ class tools {
       // 移除可能导致滚动的样式
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
-      
+
       // 监听窗口尺寸变化，自动调整缩放
-      window.addEventListener('resize', function() {
+      window.addEventListener("resize", function () {
         document.body.style.width = `${window.innerWidth / scaleRatio}px`;
         document.body.style.height = `${window.innerHeight / scaleRatio}px`;
       });
     }
   }
-  
+
   static hexArgbCheck(input) {
     if (input == "" || input == undefined) return false;
-    return /^#[0-9a-fA-F]{6}$/.test(input) || /^rgba?\((\s*\d+\s*,){2}\s*\d+(\.\d+)?(\s*,\s*\d+(\.\d+)?)?\s*\)$/.test(input);
+    return (
+      /^#[0-9a-fA-F]{6}$/.test(input) || /^rgba?\((\s*\d+\s*,){2}\s*\d+(\.\d+)?(\s*,\s*\d+(\.\d+)?)?\s*\)$/.test(input)
+    );
   }
   static setInput(inputNode, value, count = 3) {
     let lastValue = inputNode.value;
@@ -193,7 +213,9 @@ class tools {
     styleElement.textContent = `div#script_tools_windowMask{height:100%;width:100%;position:absolute;top:0;left:0;z-index:5000;background-color:rgb(0,0,0,0.5);}div#script_tools_windowMask>div>svg{width:30%;height:30%;display:block;position:absolute;top:35%;left:50%;transform:translateX(-50%) translateY(-50%);}div#script_tools_windowMask>div:nth-of-type(2){color:var(--fontColor);align-items:center;text-align:center;display:block;width:fit-content;height:fit-content;transform:translateX(-50%) translateY(-50%);position:absolute;top:65%;left:50%;}div#script_tools_windowMask>div:nth-of-type(2)>div{padding:20px;font-size:30px;width:fit-content;height:fit-content;border:solid 5px black;border-radius:10px;box-shadow:0 0 10px 10px white;background-color:rgb(0,0,0,0.5);}div#script_tools_windowMask>div:nth-of-type(2)>button{background-color:rgb(0,0,0,0.8);margin-top:20px;width:160px;height:40px;}`;
     windowMaskNode.id = "script_tools_windowMask";
     windowMaskNode.innerHTML = `<div><svg viewBox="0 0 24 24" xmlns=http://www.w3.org/2000/svg><path d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"fill=currentColor opacity=.5></path><path d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"fill=currentColor><animateTransform attributeName=transform dur=1s from="0 12 12"repeatCount=indefinite to="360 12 12"type=rotate></animateTransform></path></svg></div><div><div><span>操作进行中</span></div><button class=btn>取消操作</button></div>`;
-    windowMaskNode.querySelector("button").addEventListener('click', () => window.confirm("确定终止操作并刷新网页吗?") ? location.reload() : null);
+    windowMaskNode
+      .querySelector("button")
+      .addEventListener("click", () => (window.confirm("确定终止操作并刷新网页吗?") ? location.reload() : null));
     Object.assign(windowMaskNode.style, { display: "none" });
     tools.windowMask = windowMaskNode;
     // 挂载标签
@@ -217,7 +239,7 @@ class tools {
     return parseFunc(Math.random() * (max - min)) + min;
   }
   static arrayIsAllZero(arrayInput) {
-    return (arrayInput.filter(value => value != 0 || value != 0.0).length == 0)
+    return arrayInput.filter((value) => value != 0 || value != 0.0).length == 0;
   }
   static itemName2Index(name) {
     for (const key in langData) {
@@ -281,16 +303,17 @@ class tools {
   static arrayCompareByProp(arr, property) {
     if (arr.length === 0 || arr.length === 1) return true; // 空数组默认为完全相同
     const firstValue = arr[0][property];
-    return arr.every(item => item[property] === firstValue);
+    return arr.every((item) => item[property] === firstValue);
   }
   static arrayCompareByFunc(arr, compareFn) {
     if (arr.length === 0 || arr.length === 1) return true; // 空数组默认为完全相同
     const firstValue = compareFn(arr[0]);
-    return arr.every(item => compareFn(item) === firstValue);
+    return arr.every((item) => compareFn(item) === firstValue);
   }
   static async generateUUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-      const r = (Math.random() * 16) | 0, v = c === "x" ? r : (r & 0x3) | 0x8;
+      const r = (Math.random() * 16) | 0,
+        v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   }
@@ -307,9 +330,9 @@ class tools {
   static convertPropertiesToRegex(input) {
     for (let key in input) {
       if (!input.hasOwnProperty(key)) continue;
-      if (typeof input[key] === 'object' && input[key] !== null) {
+      if (typeof input[key] === "object" && input[key] !== null) {
         this.convertPropertiesToRegex(input[key]); // 递归遍历子对象
-      } else if (typeof input[key] === 'string' && this.regStringCheck(input[key])) {
+      } else if (typeof input[key] === "string" && this.regStringCheck(input[key])) {
         try {
           input[key] = this.regStringCheck(input[key]); // 将属性值转换为正则表达式
         } catch (error) {
@@ -333,18 +356,18 @@ class tools {
     if (id == 0) return undefined;
     let realm = runtimeData.basisCPT.realm;
     if (indexDBData.basisCPT.building[realm].length == 0) return undefined;
-    let building = indexDBData.basisCPT.building[realm].find(building => building.id == id);
+    let building = indexDBData.basisCPT.building[realm].find((building) => building.id == id);
     return building == undefined ? undefined : building.kind;
   }
   static numberAddCommas(number = 0) {
-    let parts = number.toString().split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return parts.join('.');
+    let parts = number.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
   }
   static downloadTextFile(filename, text) {
-    let blob = new Blob([text], { type: 'text/plain' });
+    let blob = new Blob([text], { type: "text/plain" });
     let url = URL.createObjectURL(blob);
-    let downloadLink = document.createElement('a');
+    let downloadLink = document.createElement("a");
     downloadLink.href = url;
     downloadLink.download = filename;
     document.body.appendChild(downloadLink);
@@ -356,7 +379,7 @@ class tools {
     if (input === null) return input;
     if (input === Infinity) return `Infinity`;
     if (input instanceof RegExp) return `/${input.source}/${input.flags}`;
-    if (typeof input !== 'object') return input;
+    if (typeof input !== "object") return input;
     let clone = Array.isArray(input) ? [] : {};
     for (let key in input) {
       if (!input.hasOwnProperty(key)) continue;
@@ -382,30 +405,31 @@ class tools {
     return {
       url: apiUrl,
       timestamp: timeStamp,
-      prot: md5(apiUrl + timeStamp)
+      prot: md5(apiUrl + timeStamp),
     };
-  }
+  };
   static async indexDB_openDB() {
     return new Promise((resolve, reject) => {
       let request = window.indexedDB.open("SimCompsScriptDB1", 1);
       request.onupgradeneeded = (event) => {
         indexedDB.dbObj = event.target.result;
-        if (!indexedDB.dbObj.objectStoreNames.contains(this.dbStoreName)) indexedDB.storeObj = indexedDB.dbObj.createObjectStore(this.dbStoreName, { keyPath: "id" });
-      }
+        if (!indexedDB.dbObj.objectStoreNames.contains(this.dbStoreName))
+          indexedDB.storeObj = indexedDB.dbObj.createObjectStore(this.dbStoreName, { keyPath: "id" });
+      };
       request.onerror = () => reject("数据库的打开失败");
       request.onsuccess = (event) => {
         this.dbOpenTime = new Date().getTime();
         this.dbObj = event.target.result;
         this.dbOpenFlag = true;
         resolve("数据库连接完毕");
-      }
-    })
+      };
+    });
   }
   static async indexDB_getData(id) {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
       let request = this.dbObj.transaction([this.dbStoreName]).objectStore(this.dbStoreName).get(id);
-      request.onsuccess = event => resolve(event.target.result);
+      request.onsuccess = (event) => resolve(event.target.result);
       request.onerror = () => reject("获取数据失败");
     });
   }
@@ -414,7 +438,8 @@ class tools {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if ((data.id != "langData" && id != "langData") && (new Date().getTime() - this.dbOpenTime <= 5 * 1000)) return resolve("请等待");
+      if (data.id != "langData" && id != "langData" && new Date().getTime() - this.dbOpenTime <= 5 * 1000)
+        return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -429,7 +454,8 @@ class tools {
       // console.log(data, id);
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if ((data.id != "langData" && id != "langData") && (new Date().getTime() - this.dbOpenTime <= 5 * 1000)) return resolve("请等待");
+      if (data.id != "langData" && id != "langData" && new Date().getTime() - this.dbOpenTime <= 5 * 1000)
+        return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -441,7 +467,7 @@ class tools {
         let updateRequest = objectStore.put(existingData);
         updateRequest.onsuccess = () => resolve("数据更新成功");
         updateRequest.onerror = () => reject("更新数据失败");
-      }
+      };
       getRequest.onerror = () => this.indexDB_addData(data, id);
     });
   }
@@ -457,17 +483,17 @@ class tools {
   }
   /**
    * 更新/创建脚本内存uuid
-   * @returns 
+   * @returns
    */
   static async indexDB_updateUUID() {
     let dbData = await this.indexDB_getData("uuid");
-    if (dbData) return this.uuid = dbData.uuid;
+    if (dbData) return (this.uuid = dbData.uuid);
     this.uuid = await this.generateUUID();
     await this.indexDB_updateData({ id: "uuid", uuid: this.uuid });
   }
   /**
    * 加载数据库的插件通用基础配置
-   * @returns 
+   * @returns
    */
   static async indexDB_loadFeatureConf() {
     let dbData = await this.indexDB_getData("feature_conf");
@@ -483,7 +509,9 @@ class tools {
         feature_config[key] = dbData[key];
       } else if (Array.isArray(feature_config[key])) {
         // 数组赋值
-        feature_config[key] = feature_config[key].map((value, index) => dbData[key][index] == undefined ? value : dbData[key][index]);
+        feature_config[key] = feature_config[key].map((value, index) =>
+          dbData[key][index] == undefined ? value : dbData[key][index]
+        );
       } else {
         // 对象赋值
         for (const key2 in feature_config[key]) {
@@ -504,7 +532,7 @@ class tools {
   }
   /**
    * 加载数据库的插件子组件数据
-   * @returns 
+   * @returns
    */
   static async indexDB_loadIndexDBData() {
     let dbData = await this.indexDB_getData("indexDBData");
@@ -520,7 +548,7 @@ class tools {
   }
   /**
    * 更新/创建数据库组件通用基础配置
-   * @returns 
+   * @returns
    */
   static async indexDB_updateFeatureConf() {
     this.formatFeatureConfigComponentList();
@@ -528,7 +556,7 @@ class tools {
   }
   /**
    * 更新/创建数据库子组件私有数据
-   * @returns 
+   * @returns
    */
   static async indexDB_updateIndexDBData() {
     tools.indexDB_updateTabCount();
@@ -536,7 +564,7 @@ class tools {
   }
   /**
    * 更新/创建启动计数
-   * @returns 
+   * @returns
    */
   static async indexDB_updateLoadCount() {
     let dbData = await this.indexDB_getData("loadCount");
@@ -554,7 +582,6 @@ class tools {
       console.log(dataNameList[i]);
       await this.indexDB_deleteData(dataNameList[i]);
     }
-
   }
   /**
    * 加载IndexedDB中的语言包文件
@@ -562,7 +589,7 @@ class tools {
   static async indexDB_loadLangData() {
     let dbData = await this.indexDB_getData("langData");
     if (!dbData) return;
-    delete dbData.id
+    delete dbData.id;
     langData = dbData;
   }
   /**
@@ -585,7 +612,7 @@ class tools {
       this.indexDB_updateTabCount(nowList);
       return;
     }
-    delete dbData.id
+    delete dbData.id;
     // 更新挂载数据
     for (const key in dbData) {
       if (!Object.hasOwnProperty.call(dbData, key) || !Object.hasOwnProperty.call(componentList, key)) continue;
@@ -650,19 +677,29 @@ class tools {
     //  0 原生Notification对象
     //  1 网页内信息
     //  2 安卓通知通道
-    let actimeChannel = channel ? (feature_config.notificationMode.includes(channel) ? [channel] : []) : feature_config.notificationMode;
+    let actimeChannel = channel
+      ? feature_config.notificationMode.includes(channel)
+        ? [channel]
+        : []
+      : feature_config.notificationMode;
 
     // 判断是否有通道0
     try {
-      if (actimeChannel.includes(0) && body.tagName == undefined)
-        new Notification(title, { body });
-    } catch (error) { tools.errorLog("渠道0 原生Notification通知报错", error) }
+      if (actimeChannel.includes(0) && body.tagName == undefined) new Notification(title, { body });
+    } catch (error) {
+      tools.errorLog("渠道0 原生Notification通知报错", error);
+    }
 
     // 判断是否有通道1
     try {
       if (actimeChannel.includes(1)) {
         let newNode = document.createElement("tr");
-        let time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+        let time = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        });
         if (body.tagName == undefined) {
           newNode.innerHTML = `<td>${time}</td><td>${title}\n${body}</td>`;
         } else {
@@ -673,17 +710,22 @@ class tools {
         // 底色改变通知
         if (this.msgShowFlag.timer) clearInterval(this.msgShowFlag.timer);
         this.msgShowFlag.timer = setInterval(() => {
-          Object.assign(document.querySelector("div#script_hover_node>div>span").style, { backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c" });
+          Object.assign(document.querySelector("div#script_hover_node>div>span").style, {
+            backgroundColor: this.msgShowFlag.flag ? "rgb(0,0,0,0)" : "#792c2c",
+          });
           this.msgShowFlag.flag = !this.msgShowFlag.flag;
         }, 10 * 1000);
       }
-    } catch (error) { tools.errorLog("渠道1 网页内通知通道报错", error) }
+    } catch (error) {
+      tools.errorLog("渠道1 网页内通知通道报错", error);
+    }
 
     // 判断是否有通道2
     try {
-      if (actimeChannel.includes(2) && body.tagName == undefined)
-        AndroidInterface.sendNotification(title, body);
-    } catch (error) { tools.errorLog("渠道2 安卓通知通道报错", error) }
+      if (actimeChannel.includes(2) && body.tagName == undefined) AndroidInterface.sendNotification(title, body);
+    } catch (error) {
+      tools.errorLog("渠道2 安卓通知通道报错", error);
+    }
   }
   /**
    * 数组去重
@@ -694,7 +736,9 @@ class tools {
     if (arr.length == 0 || (pro !== undefined && arr[0][pro] == undefined)) return [];
     let output = [];
     for (let outIndex = 0; outIndex < arr.length; outIndex++) {
-      let isExist = output.some(item => (pro === undefined ? arr[outIndex] === item : arr[outIndex][pro] === item[pro]));
+      let isExist = output.some((item) =>
+        pro === undefined ? arr[outIndex] === item : arr[outIndex][pro] === item[pro]
+      );
       if (!isExist) output.push(arr[outIndex]);
     }
     return output;
@@ -714,11 +758,14 @@ class tools {
     this.dialogMain = newNode.querySelector("#script_dialog_container");
     this.dialogNode = newNode;
     document.body.appendChild(newNode);
-    newNode.addEventListener("click", event => {
+    newNode.addEventListener("click", (event) => {
       if (event.target.id == "script_dialog_overlay") return this.alertFade();
       if (event.target.getAttribute("sct_id") == "dialog_close") return this.alertFade();
     });
-    this.CSSMount("main_alert", `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;max-height:80%;overflow-y:auto;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`);
+    this.CSSMount(
+      "main_alert",
+      `#script_dialog_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_dialog_overlay>#script_dialog_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;max-height:80%;overflow-y:auto;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_dialog_overlay #script_dialog_main h2{margin-top:0;margin-bottom:20px;}#script_dialog_overlay #script_dialog_main p{margin-bottom:20px;}#script_dialog_overlay #script_dialog_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_dialog_overlay #script_dialog_main button:hover{box-shadow:0 0 5px 5px white;}`
+    );
   }
   // alert的dialog窗口消失
   static alertFade() {
@@ -744,12 +791,15 @@ class tools {
     this.confirmNode.msgNode = newNode.querySelector("p");
     this.confirmNode.mainNode = newNode;
     document.body.appendChild(newNode);
-    newNode.addEventListener('click', event => {
+    newNode.addEventListener("click", (event) => {
       if (event.target.id == "script_confirm_overlay") this.hideConfirm(false);
       if (event.target.tagName == "BUTTON" && /取消/.test(event.target.innerText)) this.hideConfirm(false);
       if (event.target.tagName == "BUTTON" && /确认/.test(event.target.innerText)) this.hideConfirm(true);
     });
-    this.CSSMount("main_confirm", `#script_confirm_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_confirm_overlay>#script_confirm_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_confirm_overlay #script_confirm_main h2{margin-top:0;margin-bottom:20px;}#script_confirm_overlay #script_confirm_main p{margin-bottom:20px;}#script_confirm_overlay #script_confirm_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_confirm_overlay #script_confirm_main button:hover{box-shadow:0 0 5px 5px white;}`);
+    this.CSSMount(
+      "main_confirm",
+      `#script_confirm_overlay{background-color:rgba(0,0,0,0.25);transition:ease-in-out 0.15s;position:fixed;top:0;left:0;width:100%;height:100%;display:flex;justify-content:center;align-items:center;z-index:10000;backdrop-filter:blur(10px)}#script_confirm_overlay>#script_confirm_main{color:var(--fontColor);padding:20px;border-radius:5px;box-shadow:0 0 10px 10px rgba(0,0,0,0.3);max-width:400px;min-width:200px;background-color:rgb(0,0,0,0.9);border:2px white dashed;}#script_confirm_overlay #script_confirm_main h2{margin-top:0;margin-bottom:20px;}#script_confirm_overlay #script_confirm_main p{margin-bottom:20px;}#script_confirm_overlay #script_confirm_main button{padding:10px 20px;border:none;background-color:#4C4C4C;color:var(--fontColor);border-radius:5px;cursor:pointer;transition:ease-in-out 0.25s;}#script_confirm_overlay #script_confirm_main button:hover{box-shadow:0 0 5px 5px white;}`
+    );
   }
   // Confirm窗口隐藏
   static hideConfirm(input = false) {
@@ -765,11 +815,11 @@ class tools {
     } else {
       this.confirmNode.msgNode.innerText = message;
     }
-    return new Promise((resolve, reject) => this.confirmNode.resolveFunc = resolve);
+    return new Promise((resolve, reject) => (this.confirmNode.resolveFunc = resolve));
   }
   // 组件依赖检查
   static async dependenceCheck() {
-    let componentArray = Object.values(componentList).filter(component => component.enable || !component.canDisable);
+    let componentArray = Object.values(componentList).filter((component) => component.enable || !component.canDisable);
     let urlDepLoad = []; // ["name"]
     for (let i = 0; i < componentArray.length; i++) {
       let component = componentArray[i];
@@ -780,17 +830,17 @@ class tools {
       // 排除无依赖的组件
       if (innerDep.length == 0 && outterDep.length == 0) continue;
       // 检查内部组件依赖
-      if (innerDep.some(dep => componentArray.findIndex(cpt => cpt.constructor.name == dep) == -1))
+      if (innerDep.some((dep) => componentArray.findIndex((cpt) => cpt.constructor.name == dep) == -1))
         return console.log(`${name} ${component.name} 组件的依赖未被开启`);
       // 检查并挂载外部依赖
       outterDep
-        .filter(dep => !urlDepLoad.includes(dep.name))
-        .forEach(dep => {
+        .filter((dep) => !urlDepLoad.includes(dep.name))
+        .forEach((dep) => {
           urlDepLoad.push(dep.name);
           let newNode = document.createElement("script");
           newNode.src = dep.url;
           document.head.appendChild(newNode);
-        })
+        });
     }
   }
   static eventBus(event) {
@@ -808,7 +858,11 @@ class tools {
         try {
           if (!funcObj.match.call(component, event)) continue;
           setTimeout(function () {
-            try { funcObj.func.call(component, event) } catch (error) { tools.errorLog(error) }
+            try {
+              funcObj.func.call(component, event);
+            } catch (error) {
+              tools.errorLog(error);
+            }
           }, 1);
         } catch (error) {
           tools.errorLog(error);
@@ -822,14 +876,17 @@ class tools {
         try {
           if (this.eventCount % funcObj.bounce != 0) continue;
           setTimeout(function () {
-            try { funcObj.func.call(component, event) } catch (error) { tools.errorLog(error) }
+            try {
+              funcObj.func.call(component, event);
+            } catch (error) {
+              tools.errorLog(error);
+            }
           }, 1);
         } catch (error) {
           tools.errorLog(error);
           continue;
         }
       }
-
     }
   }
   static intervalEventBus() {
@@ -866,7 +923,11 @@ class tools {
 
       if (/messages\/$/.test(this.mutationUrlTemp) && /messages\/.+\/$/.test(location.href)) {
         let tempList = Array.from(mutations).filter(this.mutationHandle_chatMsgNodeCheck2);
-        let nodeList = Array.from(tempList[0].addedNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0].childNodes).map(node => { return { addedNodes: [node] } });
+        let nodeList = Array.from(
+          tempList[0].addedNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0].childNodes
+        ).map((node) => {
+          return { addedNodes: [node] };
+        });
         for (let i = 0; i < nodeList.length; i++) this.chatMsgEventHandle(nodeList[i]);
         resolveFlag = true;
       }
@@ -912,7 +973,9 @@ class tools {
   static mutationHandle_chatMsgNodeCheck2(mutation) {
     try {
       let flag1 = mutation.addedNodes[0].tagName == "DIV";
-      let falg2 = /well-header text-uppercase/.test(mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].className);
+      let falg2 = /well-header text-uppercase/.test(
+        mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].className
+      );
       return flag1 && falg2;
     } catch {
       return false;
@@ -923,14 +986,18 @@ class tools {
     try {
       for (const key in componentList) {
         if (!Object.hasOwnProperty.call(componentList, key)) continue;
-        let component = componentList[key]
+        let component = componentList[key];
         if (!component.enable && component.canDisable) continue;
         let chatMsgFuncList = component.chatMsgFuncList;
         for (let i = 0; i < chatMsgFuncList.length; i++) {
           try {
-            let textList = Object.values(mutation.addedNodes[0].childNodes[2].childNodes).map(node => this.formatMsgText(node));
-            chatMsgFuncList[i].call(component, mutation.addedNodes[0], textList)
-          } catch (error) { tools.errorLog(error) }
+            let textList = Object.values(mutation.addedNodes[0].childNodes[2].childNodes).map((node) =>
+              this.formatMsgText(node)
+            );
+            chatMsgFuncList[i].call(component, mutation.addedNodes[0], textList);
+          } catch (error) {
+            tools.errorLog(error);
+          }
         }
       }
     } catch (error) {
@@ -946,10 +1013,10 @@ class tools {
       let result = "";
       let targetNode = node.childNodes[0];
       if (targetNode.tagName == "I") targetNode = node.childNodes[1];
-      let nodeList = Object.values(targetNode.children).filter(node => node.tagName == "SPAN");
+      let nodeList = Object.values(targetNode.children).filter((node) => node.tagName == "SPAN");
       for (let i = 0; i < nodeList.length; i++) {
         let spanNode = nodeList[i];
-        result += (nodeList[i].children.length == 0) ? spanNode.innerText : this.getSpanText(spanNode);
+        result += nodeList[i].children.length == 0 ? spanNode.innerText : this.getSpanText(spanNode);
       }
       return result;
     } catch (error) {
@@ -960,7 +1027,12 @@ class tools {
   static getSpanText(node) {
     let tempArray = Array.from(node.children);
     let length = tempArray.length;
-    if (length == 1 && tempArray[0].tagName == "SPAN" && tempArray[0].children.length == 1 && tempArray[0].children[0].tagName == "IMG") {
+    if (
+      length == 1 &&
+      tempArray[0].tagName == "SPAN" &&
+      tempArray[0].children.length == 1 &&
+      tempArray[0].children[0].tagName == "IMG"
+    ) {
       // 游戏图标适配
       return tempArray[0].children[0].alt;
     } else if (length == 1 && tempArray[0].tagName == "IMG" && tempArray[0].className == "emoji") {
@@ -974,10 +1046,10 @@ class tools {
       return tempArray[0].href;
     } else if (length > 1 && tools.arrayCompareByProp(tempArray, "className")) {
       // 多emoji适配
-      return tempArray.map(node => node.alt).join("");
+      return tempArray.map((node) => node.alt).join("");
     }
     return "";
   }
 }
 
-module.exports = { tools, componentList, runtimeData, indexDBData, feature_config, langData }
+module.exports = { tools, componentList, runtimeData, indexDBData, feature_config, langData };
