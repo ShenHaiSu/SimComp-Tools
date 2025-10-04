@@ -47,11 +47,13 @@ class tools {
 
   static baseURL = {
     // 用户基础信息 GET
-    userBase: "https://www.simcompanies.com/api/v3/companies/auth-data/",
+    userBase: "https://www.simcompanies.com/api/v2/players/me/companies/",
+    // AuthData信息 Get
+    authData: "https://www.simcompanies.com/api/v3/companies/auth-data/",
     // 建筑信息 GET
     building: "https://www.simcompanies.com/api/v2/companies/me/buildings/",
     // 仓库数据 GET
-    warehouse: "https://www.simcompanies.com/api/v2/resources/",
+    warehouse: "https://www.simcompanies.com/api/v3/resources/", // 后面需要拼接userid/
     // 交易所 /realm/resid
     market: "https://www.simcompanies.com/api/v3/market/all",
     // 高管信息
@@ -72,9 +74,7 @@ class tools {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
   static formatFeatureConfigComponentList() {
-    Object.values(componentList).forEach(
-      (item) => (feature_config.componentSwitchList[item.constructor.name] = item.enable)
-    );
+    Object.values(componentList).forEach((item) => (feature_config.componentSwitchList[item.constructor.name] = item.enable));
   }
   static CSSMount(cptName = "", cssText = "") {
     let newNode = document.createElement("style");
@@ -134,21 +134,7 @@ class tools {
     return l.slice(0, e);
   }
   static mpFormat(mpData = []) {
-    let result = [
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-      Infinity,
-    ];
+    let result = [Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity];
     for (let i = 0; i < mpData.length; i++) {
       if (result[mpData[i].quality] != Infinity) continue;
       result[mpData[i].quality] = mpData[i].price;
@@ -191,9 +177,7 @@ class tools {
 
   static hexArgbCheck(input) {
     if (input == "" || input == undefined) return false;
-    return (
-      /^#[0-9a-fA-F]{6}$/.test(input) || /^rgba?\((\s*\d+\s*,){2}\s*\d+(\.\d+)?(\s*,\s*\d+(\.\d+)?)?\s*\)$/.test(input)
-    );
+    return /^#[0-9a-fA-F]{6}$/.test(input) || /^rgba?\((\s*\d+\s*,){2}\s*\d+(\.\d+)?(\s*,\s*\d+(\.\d+)?)?\s*\)$/.test(input);
   }
   static setInput(inputNode, value, count = 3) {
     let lastValue = inputNode.value;
@@ -213,9 +197,7 @@ class tools {
     styleElement.textContent = `div#script_tools_windowMask{height:100%;width:100%;position:absolute;top:0;left:0;z-index:5000;background-color:rgb(0,0,0,0.5);}div#script_tools_windowMask>div>svg{width:30%;height:30%;display:block;position:absolute;top:35%;left:50%;transform:translateX(-50%) translateY(-50%);}div#script_tools_windowMask>div:nth-of-type(2){color:var(--fontColor);align-items:center;text-align:center;display:block;width:fit-content;height:fit-content;transform:translateX(-50%) translateY(-50%);position:absolute;top:65%;left:50%;}div#script_tools_windowMask>div:nth-of-type(2)>div{padding:20px;font-size:30px;width:fit-content;height:fit-content;border:solid 5px black;border-radius:10px;box-shadow:0 0 10px 10px white;background-color:rgb(0,0,0,0.5);}div#script_tools_windowMask>div:nth-of-type(2)>button{background-color:rgb(0,0,0,0.8);margin-top:20px;width:160px;height:40px;}`;
     windowMaskNode.id = "script_tools_windowMask";
     windowMaskNode.innerHTML = `<div><svg viewBox="0 0 24 24" xmlns=http://www.w3.org/2000/svg><path d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z"fill=currentColor opacity=.5></path><path d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"fill=currentColor><animateTransform attributeName=transform dur=1s from="0 12 12"repeatCount=indefinite to="360 12 12"type=rotate></animateTransform></path></svg></div><div><div><span>操作进行中</span></div><button class=btn>取消操作</button></div>`;
-    windowMaskNode
-      .querySelector("button")
-      .addEventListener("click", () => (window.confirm("确定终止操作并刷新网页吗?") ? location.reload() : null));
+    windowMaskNode.querySelector("button").addEventListener("click", () => (window.confirm("确定终止操作并刷新网页吗?") ? location.reload() : null));
     Object.assign(windowMaskNode.style, { display: "none" });
     tools.windowMask = windowMaskNode;
     // 挂载标签
@@ -438,8 +420,7 @@ class tools {
     return new Promise((resolve, reject) => {
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if (data.id != "langData" && id != "langData" && new Date().getTime() - this.dbOpenTime <= 5 * 1000)
-        return resolve("请等待");
+      if (data.id != "langData" && id != "langData" && new Date().getTime() - this.dbOpenTime <= 5 * 1000) return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -454,8 +435,7 @@ class tools {
       // console.log(data, id);
       if (!this.dbOpenFlag) return reject("数据库未连接");
       if (this.dbOpenTime == 0) return;
-      if (data.id != "langData" && id != "langData" && new Date().getTime() - this.dbOpenTime <= 5 * 1000)
-        return resolve("请等待");
+      if (data.id != "langData" && id != "langData" && new Date().getTime() - this.dbOpenTime <= 5 * 1000) return resolve("请等待");
       if (!data.id && !id) return reject("缺少主键");
       id = data.id || id;
       data.id = id;
@@ -509,9 +489,7 @@ class tools {
         feature_config[key] = dbData[key];
       } else if (Array.isArray(feature_config[key])) {
         // 数组赋值
-        feature_config[key] = feature_config[key].map((value, index) =>
-          dbData[key][index] == undefined ? value : dbData[key][index]
-        );
+        feature_config[key] = feature_config[key].map((value, index) => (dbData[key][index] == undefined ? value : dbData[key][index]));
       } else {
         // 对象赋值
         for (const key2 in feature_config[key]) {
@@ -597,7 +575,7 @@ class tools {
    * @param {Object} langData 语言包数据
    */
   static async indexDB_updateLangData(langData) {
-    if (langData.id != "langData") langData.id = "langData";
+    if (langData.id !== "langData") langData.id = "langData";
     await this.indexDB_updateData(langData);
   }
   /**
@@ -677,11 +655,7 @@ class tools {
     //  0 原生Notification对象
     //  1 网页内信息
     //  2 安卓通知通道
-    let actimeChannel = channel
-      ? feature_config.notificationMode.includes(channel)
-        ? [channel]
-        : []
-      : feature_config.notificationMode;
+    let actimeChannel = channel ? (feature_config.notificationMode.includes(channel) ? [channel] : []) : feature_config.notificationMode;
 
     // 判断是否有通道0
     try {
@@ -736,9 +710,7 @@ class tools {
     if (arr.length == 0 || (pro !== undefined && arr[0][pro] == undefined)) return [];
     let output = [];
     for (let outIndex = 0; outIndex < arr.length; outIndex++) {
-      let isExist = output.some((item) =>
-        pro === undefined ? arr[outIndex] === item : arr[outIndex][pro] === item[pro]
-      );
+      let isExist = output.some((item) => (pro === undefined ? arr[outIndex] === item : arr[outIndex][pro] === item[pro]));
       if (!isExist) output.push(arr[outIndex]);
     }
     return output;
@@ -923,11 +895,11 @@ class tools {
 
       if (/messages\/$/.test(this.mutationUrlTemp) && /messages\/.+\/$/.test(location.href)) {
         let tempList = Array.from(mutations).filter(this.mutationHandle_chatMsgNodeCheck2);
-        let nodeList = Array.from(
-          tempList[0].addedNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0].childNodes
-        ).map((node) => {
-          return { addedNodes: [node] };
-        });
+        let nodeList = Array.from(tempList[0].addedNodes[0].childNodes[0].childNodes[0].childNodes[1].childNodes[0].childNodes[0].childNodes).map(
+          (node) => {
+            return { addedNodes: [node] };
+          }
+        );
         for (let i = 0; i < nodeList.length; i++) this.chatMsgEventHandle(nodeList[i]);
         resolveFlag = true;
       }
@@ -973,9 +945,7 @@ class tools {
   static mutationHandle_chatMsgNodeCheck2(mutation) {
     try {
       let flag1 = mutation.addedNodes[0].tagName == "DIV";
-      let falg2 = /well-header text-uppercase/.test(
-        mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].className
-      );
+      let falg2 = /well-header text-uppercase/.test(mutation.addedNodes[0].childNodes[0].childNodes[0].childNodes[0].className);
       return flag1 && falg2;
     } catch {
       return false;
@@ -991,9 +961,7 @@ class tools {
         let chatMsgFuncList = component.chatMsgFuncList;
         for (let i = 0; i < chatMsgFuncList.length; i++) {
           try {
-            let textList = Object.values(mutation.addedNodes[0].childNodes[2].childNodes).map((node) =>
-              this.formatMsgText(node)
-            );
+            let textList = Object.values(mutation.addedNodes[0].childNodes[2].childNodes).map((node) => this.formatMsgText(node));
             chatMsgFuncList[i].call(component, mutation.addedNodes[0], textList);
           } catch (error) {
             tools.errorLog(error);
@@ -1027,12 +995,7 @@ class tools {
   static getSpanText(node) {
     let tempArray = Array.from(node.children);
     let length = tempArray.length;
-    if (
-      length == 1 &&
-      tempArray[0].tagName == "SPAN" &&
-      tempArray[0].children.length == 1 &&
-      tempArray[0].children[0].tagName == "IMG"
-    ) {
+    if (length == 1 && tempArray[0].tagName == "SPAN" && tempArray[0].children.length == 1 && tempArray[0].children[0].tagName == "IMG") {
       // 游戏图标适配
       return tempArray[0].children[0].alt;
     } else if (length == 1 && tempArray[0].tagName == "IMG" && tempArray[0].className == "emoji") {

@@ -182,9 +182,7 @@ class basisCPT extends BaseComponent {
       } else if (/me\/my-note\/$/.test(url)) {
         // 给自己写的笔记
         let data = window.decodeURI(
-          resp
-            .replace(/(^")|("$)/g, "")
-            .replace(/\\u[\dA-F]{4}/gi, (match) => String.fromCharCode(parseInt(match.substr(2), 16)))
+          resp.replace(/(^")|("$)/g, "").replace(/\\u[\dA-F]{4}/gi, (match) => String.fromCharCode(parseInt(match.substr(2), 16)))
         );
         this.indexDBData.notes[realm].in = data;
         tools.log(`R${realm + 1} 私人笔记: ${data}`);
@@ -211,17 +209,29 @@ class basisCPT extends BaseComponent {
   async startupUserInfo() {
     let netData = await tools.getNetData(tools.baseURL.userBase);
     if (!netData) return;
-    this.indexDBData.userInfo[netData.authCompany.realmId] = netData;
-    this.componentData.realm = netData.authCompany.realmId;
+    if (netData.length === 0) return;
+    for (let i = 0; i < netData.length; i++) {
+      const targetRealm = netData[i];
+      const realmId = targetRealm.realmId;
+      this.indexDBData.userInfo[realmId] = targetRealm;
+    }
+    // 使用AuthData网络请求来获取当前是哪个Realm;
+    const authData = await tools.getNetData(tools.baseURL.authData);
+    if (!authData) return tools.log("获取当前realm失败");
+    this.componentData.realm = authData.authCompany.realmId;
     tools.log("用户数据获取完毕：", netData);
   }
+
   // 自启动仓库信息检索
   async startupWarehouseInfo() {
-    let netData = await tools.getNetData(tools.baseURL.warehouse);
+    const userId = this.indexDBData.userInfo[this.componentData.realm].id;
+    const fullUrl = tools.baseURL.warehouse + userId + "/";
+    let netData = await tools.getNetData(fullUrl);
     if (!netData || this.componentData.realm == undefined) return;
     this.indexDBData.warehouse[this.componentData.realm] = netData;
     tools.log("仓库数据更新完毕：", netData);
   }
+
   // 侧边栏构建
   async startupSideBarMain() {
     // 创建侧边栏开启用的小窗
@@ -274,15 +284,14 @@ class basisCPT extends BaseComponent {
     });
     msgMainNode.addEventListener("click", (e) => {
       if (!e.target.closest("span[sct_id='msgClear']")) return;
-      document.querySelector(
-        "div#scriptMsg_main tbody#scriptMsg_mainBody"
-      ).innerHTML = `<tr><td>时间</td><td>内容</td></tr>`;
+      document.querySelector("div#scriptMsg_main tbody#scriptMsg_mainBody").innerHTML = `<tr><td>时间</td><td>内容</td></tr>`;
     });
     // 挂载元素
     document.body.appendChild(sideBarSmall);
     document.body.appendChild(msgMainNode);
     document.body.appendChild(cptSwitchNode);
   }
+
   sideBarSub_componentNode() {
     let resultNode = document.createElement("div");
     // 拼接侧边栏头部
@@ -319,19 +328,13 @@ class basisCPT extends BaseComponent {
     for (let i = 0; i < trList.length; i++) {
       let element = trList[i];
       let component = componentList[element.id];
-      let frontUI = !Boolean(component.frontUI)
-        ? () => this.sideBarSub_noFront()
-        : () => this.sideBarSub_showFront(component);
-      let settingUI = !Boolean(component.settingUI)
-        ? () => this.sideBarSub_noSetting()
-        : () => this.sideBarSub_showSetting(component);
+      let frontUI = !Boolean(component.frontUI) ? () => this.sideBarSub_noFront() : () => this.sideBarSub_showFront(component);
+      let settingUI = !Boolean(component.settingUI) ? () => this.sideBarSub_noSetting() : () => this.sideBarSub_showSetting(component);
       element.querySelector("button.CPTOptionLeft").addEventListener("click", frontUI);
       element.querySelector("button.CPTOptionRight").addEventListener("click", settingUI);
     }
     // 组件搜索
-    resultNode
-      .querySelector("input#script_cptSearch_input")
-      .addEventListener("change", (event) => this.sideBarSub_cptNameSearch(event));
+    resultNode.querySelector("input#script_cptSearch_input").addEventListener("change", (event) => this.sideBarSub_cptNameSearch(event));
     // tag搜索
     resultNode.querySelector("div#scriptCPT_tagSerach").addEventListener("click", (e) => this.sideBarSub_tagSearch(e));
     return resultNode;
@@ -346,8 +349,7 @@ class basisCPT extends BaseComponent {
     if (this.componentData.cptSettingShow) return;
     let cptSettingNode = await component.settingUI.call(component);
     // 添加默认class
-    if (!cptSettingNode.className.includes("col-sm-12 setting-container"))
-      cptSettingNode.className += " col-sm-12 setting-container";
+    if (!cptSettingNode.className.includes("col-sm-12 setting-container")) cptSettingNode.className += " col-sm-12 setting-container";
     this.componentData.cptSettingBodyNode.appendChild(cptSettingNode);
     Object.assign(document.querySelector("div#script_cpt_setting_container").style, { display: "block" });
     this.componentData.cptSettingShow = true;
@@ -425,9 +427,9 @@ class basisCPT extends BaseComponent {
       let describe = component.describe;
       let enable = component.enable;
       let canDisable = component.canDisable;
-      htmlText += `<tr><td><span title='${describe}'>${name}</span></td><td><input class='form-control' type="checkbox" ${
-        enable ? "checked" : ""
-      } ${canDisable ? "" : "disabled"}></td></tr>`;
+      htmlText += `<tr><td><span title='${describe}'>${name}</span></td><td><input class='form-control' type="checkbox" ${enable ? "checked" : ""} ${
+        canDisable ? "" : "disabled"
+      }></td></tr>`;
     }
     htmlText += `</table></div><div><table><thead><tr><td>功能<td>设置<tbody><tr><td title=打开debug模式会有大量信息输出,可能会影响到性能,如非必要不要打开.>DEBUG模式<td><input class='form-control' type='checkbox' #####><tr><td title="只有插件主动发起的请求会被此项目限制\n官方文档说明低于5分钟就不安全了,用户请酌情设置. \n默认[10000ms]=10s">插件主动网络请求最小间隔<td><input type=number class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 #ffffff">插件通用文字配色<td><input class=form-control value=#####><tr><td title="允许使用hex代码和rgb标号. \n默认 100 ">网页缩放比例<td><input type=number class=form-control value=#####> <tr><td title='地图界面上方的间隔，注意与网页缩放比例搭配使用。'>地图上方间距<td><input type='number' class=form-control value=#####>  <tr><td title="首要通知模式,默认是 网页内通知">主要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="次要通知模式,默认是 无">次要通知模式<td><select class=form-control><option value=-1>无<option value=0>网页浏览器原生Notification对象(仅pc浏览器可用)<option value=1>网页内通知<option value=2>安卓通知通道</select><tr><td title="默认不勾选,勾选后SCT悬浮窗使用横向布局">悬浮窗横向排列</td><td><input type="checkbox" class="form-control" ${
       this.indexDBData.SCT_divHorizontal ? "checked" : ""
@@ -459,30 +461,24 @@ class basisCPT extends BaseComponent {
     let valueList = [];
     let flagCount = 0;
     let cptCount = Object.keys(componentList).length;
-    document
-      .querySelectorAll("div#script_setting_basisCPT input, div#script_setting_basisCPT select")
-      .forEach((node) => {
-        if (node.tagName == "INPUT" && node.type == "checkbox") {
-          valueList.push(node.checked);
-        } else if (node.tagName == "INPUT" && node.type == "number") {
-          valueList.push(parseFloat(node.value));
-        } else if (node.tagName == "INPUT") {
-          valueList.push(node.value);
-        } else if (node.tagName == "SELECT") {
-          valueList.push(parseInt(node.value));
-        }
-      });
+    document.querySelectorAll("div#script_setting_basisCPT input, div#script_setting_basisCPT select").forEach((node) => {
+      if (node.tagName == "INPUT" && node.type == "checkbox") {
+        valueList.push(node.checked);
+      } else if (node.tagName == "INPUT" && node.type == "number") {
+        valueList.push(parseFloat(node.value));
+      } else if (node.tagName == "INPUT") {
+        valueList.push(node.value);
+      } else if (node.tagName == "SELECT") {
+        valueList.push(parseInt(node.value));
+      }
+    });
     // 检测内容
-    if (Math.floor(valueList[cptCount + 1]) < 60000)
-      return tools.alert("插件主动网络请求最小间隔 不允许设置小于1分钟，也就是不小于60000.");
+    if (Math.floor(valueList[cptCount + 1]) < 60000) return tools.alert("插件主动网络请求最小间隔 不允许设置小于1分钟，也就是不小于60000.");
     if (!tools.hexArgbCheck(valueList[cptCount + 2])) return tools.alert("只支持HEX格式颜色和RGB格式颜色.");
-    if (valueList[cptCount + 3] > 100 || valueList[cptCount + 3] <= 0)
-      return tools.alert("网页缩放比例太离谱嗷.\n只允许 (0-100].");
+    if (valueList[cptCount + 3] > 100 || valueList[cptCount + 3] <= 0) return tools.alert("网页缩放比例太离谱嗷.\n只允许 (0-100].");
     if (valueList[cptCount + 4] < 0) return tools.alert("间距不允许是负数");
-    if (valueList[cptCount + 5] == -1 && valueList[cptCount + 6] != -1)
-      return tools.alert("如果仅设置一个通知模式请使用主要通知模式.");
-    if (valueList[cptCount + 5] == valueList[cptCount + 6] && valueList[cptCount + 5] != -1)
-      return tools.alert("没必要都设置一样的.");
+    if (valueList[cptCount + 5] == -1 && valueList[cptCount + 6] != -1) return tools.alert("如果仅设置一个通知模式请使用主要通知模式.");
+    if (valueList[cptCount + 5] == valueList[cptCount + 6] && valueList[cptCount + 5] != -1) return tools.alert("没必要都设置一样的.");
     // 挂载内容
     Object.values(componentList).forEach((component) => (component.enable = valueList[flagCount++]));
     feature_config.debug = valueList[cptCount + 0];
@@ -568,6 +564,7 @@ class basisCPT extends BaseComponent {
     msgBody.appendChild(donationList);
     tools.msg_send("肚肚饿饿", msgBody, 1);
   }
+
   // 主动获取语言包文件
   async startupForLang() {
     let originName = new URL(document.querySelector("script[type='module']").src).origin;
@@ -575,6 +572,7 @@ class basisCPT extends BaseComponent {
     if (!langData) return;
     tools.indexDB_updateLangData(langData);
   }
+
   // 主动获取高管信息
   async startupExecutives() {
     let realm = await tools.getRealm();
@@ -586,6 +584,7 @@ class basisCPT extends BaseComponent {
     this.indexDBData.executives[realm] = netData;
     await tools.indexDB_updateIndexDBData();
   }
+  
   // 给地图添加上边距
   mapMarginTopMain() {
     try {
