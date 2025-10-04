@@ -54,7 +54,7 @@ class basisCPT extends BaseComponent {
     this.startupSideBarMain,
     this.startupSettingContainer,
     this.startupExecutives,
-    // this.startupForDonation,
+    // this.startupForDonation, // 求捐赠信息的显示，自从插件停更之后不再显示
     this.startupForLang,
   ];
   commonFuncList = [
