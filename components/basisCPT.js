@@ -586,13 +586,9 @@ class basisCPT extends BaseComponent {
   // 给地图添加上边距
   mapMarginTopMain() {
     try {
-      const targetChildNode = Object.values(document.querySelectorAll(`a[top][left][href]`)).filter((node) =>
-        /\/zh\/b\//.test(node.getAttribute("href"))
-      )[0];
-      const targetNode = tools.getParentByIndex(targetChildNode, 1);
-      if (this.componentData.mapNode && this.componentData.mapNode === targetNode) return;
-      this.componentData.mapNode = targetNode;
-      this.componentData.mapNode.style.margin = this.indexDBData.mapMarginTop + "px auto";
+      // todo 尚未解决问题等待继续解决
+      const targetNode = document.querySelector("div#page>div>div");
+      targetNode.style.marginTop = this.indexDBData.mapMarginTop + "px";
     } catch (e) {
       tools.errorLog(e);
       return;
