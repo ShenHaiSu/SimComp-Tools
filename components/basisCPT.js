@@ -568,33 +568,29 @@ class basisCPT extends BaseComponent {
   // 主动获取语言包文件
   async startupForLang() {
     let originName = new URL(document.querySelector("script[type='module']").src).origin;
-    let langData = await tools.getNetData(originName + "/static/js/lang6/zh.json?" + (await tools.generateUUID()));
+    let langData = await tools.getNetData(originName + "/static/js/lang6/zh-cn.0cd438c1121b.json?" + (await tools.generateUUID()));
     if (!langData) return;
     tools.indexDB_updateLangData(langData);
   }
 
   // 主动获取高管信息
   async startupExecutives() {
-    let realm = await tools.getRealm();
-    let netData = await tools.getNetData(tools.baseURL.executives);
-    if (!netData) {
-      await tools.dely(5000);
-      return this.startupExecutives();
-    }
-    this.indexDBData.executives[realm] = netData;
+    const realm = await tools.getRealm();
+    const userId = this.indexDBData.userInfo[realm].id;
+    const targetUrl = tools.baseURL.executives.replace("$1", userId);
+    const netData = await tools.getNetData(targetUrl);
+    this.indexDBData.executives[realm] = [...netData.executives];
     await tools.indexDB_updateIndexDBData();
   }
-  
+
   // 给地图添加上边距
   mapMarginTopMain() {
     try {
-      let targetNode = Object.values(document.querySelectorAll(`a[top][left][href]`)).filter((node) =>
+      const targetChildNode = Object.values(document.querySelectorAll(`a[top][left][href]`)).filter((node) =>
         /\/zh\/b\//.test(node.getAttribute("href"))
       )[0];
-      targetNode = tools.getParentByIndex(targetNode, 1);
-
+      const targetNode = tools.getParentByIndex(targetChildNode, 1);
       if (this.componentData.mapNode && this.componentData.mapNode === targetNode) return;
-
       this.componentData.mapNode = targetNode;
       this.componentData.mapNode.style.margin = this.indexDBData.mapMarginTop + "px auto";
     } catch (e) {

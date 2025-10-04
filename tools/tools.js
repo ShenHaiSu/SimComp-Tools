@@ -57,7 +57,7 @@ class tools {
     // 交易所 /realm/resid
     market: "https://www.simcompanies.com/api/v3/market/all",
     // 高管信息
-    executives: "https://www.simcompanies.com/api/v2/companies/me/executives/",
+    executives: "https://www.simcompanies.com/api/v3/companies/$1/executives/", // 使用 companyid拼接到$1位置
   };
   static log() {
     if (!feature_config.debug) return;
